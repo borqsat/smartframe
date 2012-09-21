@@ -1,0 +1,128 @@
+#loading{position:absolute;width:300px;top:200px;left:50%;margin-left:-150px;text-align:center;padding:7px 0 0 0;font:bold 11px Arial, Helvetica, sans-serif;}
+.scrollablecontent{
+width:100%; 
+height:540px;
+overflow:auto;
+scrollbar-face-color: #D4D4D4;/*滚动条滑块颜色*/  
+scrollbar-hightlight-color: #ffffff;/*滚动条3D界面的亮边颜色*/  
+scrollbar-shadow-color: #919192;/*滚动条3D界面的暗边颜色*/  
+scrollbar-3dlight-color: #ffffff;/*滚动条亮边框颜色*/  
+scrollbar-arrow-color: #919192;/*箭头颜色*/  
+scrollbar-track-color: #E3E9ED;/*滚动条底色*/  
+scrollbar-darkshadow-color: #E3E9ED;/*滚动条暗边框颜色*/
+}
+
+.scrollabledetail{
+width:100%; 
+height:550px;
+overflow:auto;
+scrollbar-face-color: #D4D4D4;/*滚动条滑块颜色*/  
+scrollbar-hightlight-color: #ffffff;/*滚动条3D界面的亮边颜色*/  
+scrollbar-shadow-color: #919192;/*滚动条3D界面的暗边颜色*/  
+scrollbar-3dlight-color: #ffffff;/*滚动条亮边框颜色*/  
+scrollbar-arrow-color: #919192;/*箭头颜色*/  
+scrollbar-track-color: #E3E9ED;/*滚动条底色*/  
+scrollbar-darkshadow-color: #E3E9ED;/*滚动条暗边框颜色*/
+}
+
+.mtbfunitinner {
+  width:100%;
+  padding: 10px;
+  margin-bottom: 4px;
+  background-color: #E3E9ED;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  border-radius: 6px;
+  border-style:inset;
+}
+
+.mtbfunitinner h1 {
+  margin-bottom: 0;
+  font-size: 60px;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.mtbfunitinner p {
+  font-size: 18px;
+  font-weight: 200;
+  line-height: 27px;
+}
+
+
+.mtbfunitcycle {
+  padding: 1px;
+  margin-bottom: 4px;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  border-radius: 6px;
+  border-style:solid;
+}
+
+.mtbfunitcycle h1 {
+  margin-bottom: 0;
+  font-size: 60px;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.mtbfunitcycle p {
+  font-size: 18px;
+  font-weight: 200;
+  line-height: 27px;
+}
+
+
+.mtbfunit {
+  padding: 10px;
+  margin-bottom: 30px;
+  background-color: #E3E9ED;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  border-radius: 6px;
+  border-style:solid;
+}
+
+.mtbfunit h1 {
+  margin-bottom: 0;
+  font-size: 60px;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.mtbfunit p {
+  font-size: 18px;
+  font-weight: 200;
+  line-height: 27px;
+}
+
+
+body {
+  padding-top: 50px;
+}
+
+.sidebar-nav {
+  padding: 9px 0;
+}
+
+a.popup_link {
+  color: red;
+}
+
+a.popup_link:hover {
+  color: red;
+}
+
+.popup_window {
+  display: none;
+  position: absolute;
+  left: 600px;
+  top: 100px;
+  /*border: solid #627173 1px; */
+  padding: 10px;
+  background-color: #f89406;
+  font-family: "Lucida Console", "Courier New", Courier, monospace;
+  text-align: left;
+  font-size: 8pt;
+  width: 550px;
+}

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>smartServer</title>
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <script type="text/javascript" src="static/js/jquery-1.7.2.min.js"></script>
+
+    <!-- global jquery.js -->
+    <script type="text/javascript" src="static/js/json2.js"></script>    
+    <script type="text/javascript" src="static/js/app.js"></script>
+    <script src="static/js/bootstrap.js"></script>
+    <script src="static/js/bootstrap-tooltip.js"></script>
+    <script src="static/js/bootstrap-popover.js"></script>
+    <script src="static/js/bootstrap-tab.js"></script>
+    <script type="text/javascript">$(window).load(function(){$("#loading").hide();})</script>
+    <!-- Le styles -->
+    <link href="static/css/bootstrap.css" rel="stylesheet">
+    <link href="static/css/bootstrap-responsive.css" rel="stylesheet">
+    <!--add app css file-->
+    <link href="static/css/app.css" rel="stylesheet">
+  </head>
+  
+  <body>
+    <div id="loading">Loading content, please wait...
+        <img src="static/img/loading.gif" alt="loading..." />
+    </div>
+    <div style="display: none;width:650px;max-height:800px" class="modal hide fade" id="myModal">
+       <div class="modal-header">
+           <a class="close" data-dismiss="modal">×</a>
+           <h3>snapshots</h3>
+       </div>
+       <div id='snapsDiv' class="modal-body">
+
+        </div>
+    </div>
+
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="#">SmartServer</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li class="active"><a href="#">result</a></li>
+            </ul>
+            <!--<p class="navbar-text pull-right">Logged in as <a href="#">username</a></p>-->
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+ </div>
+<div class="container-fluid">
+    <div class="row-fluid">
+      <div class="span6">
+         <div class="row-fluid">
+             <div id="cycle_panel">
+             </div>
+
+             <div id="live_panel">            
+                 <input type="button" class="label label-info" value="testresult" onclick="showTestDiv()">
+                 <input type="button" class="label label-info" value="snapshot" onclick="showSnapDiv()">
+                 <div id="test_panel">
+                    <textarea id="myTerminal" border="1px" style="height:400px;width:98%"></textarea>
+                 </div>
+                 <div id="snap_panel" style="display:none">
+                    <canvas id="myCanvas" border="1px"></canvas>
+                 </div>
+            </div>
+         </div>
+      </div>
+
+      <div class="span6">
+            <div class="row-fluid">
+                <div class="mtbfunit">
+                    <span class="label label-info">Detail Result</span>
+                    <div class="scrollabledetail">
+            	         <div id="detail_panel">
+                            <!--here add detail table -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+     </div><!--span7-->   
+    </div>
+<hr>
+<footer>
+    <p class="pull-right"><a href="#">Back to top</a></p>
+    <p class="pull-left"><a href="#" title="blabla" data-content="asasa">2012</a></p>
+</footer>
+
+</div>
+  </body>
+</html>
