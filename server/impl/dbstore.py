@@ -242,7 +242,7 @@ class dbStore(object):
                 tid = d['curCase']
                 rr = caseresult.find({'tid':tid})
                 for x in rr:
-                    result.append('casename:%s,result:%s' % (x['casename'],x['result']))   
+                    result.append('casename:%s, result:%s' % (x['casename'],x['result']))   
         return result  
 
     def readTestHistorySnaps(self,sid, tid):

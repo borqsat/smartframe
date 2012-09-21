@@ -191,7 +191,7 @@ def handle_screen_websocket(sid):
             msgdata = 'nop'
             if lenf > 0:
                 msgdata = 'snapshot:' + base64.encodestring(snaplive[lenf-1])
-            time.sleep(0.3)
+            time.sleep(0.5)
             wsock.send(msgdata)
         except WebSocketError:
             break
@@ -214,7 +214,7 @@ def handle_console_websocket(sid):
             msgdata = 'nop'
             if lenf > 0:
                 msgdata = 'caseupdate:' + testlive[lenf-1]
-            time.sleep(0.3)
+            time.sleep(2)
             wsock.send(msgdata)
         except WebSocketError:
             break
