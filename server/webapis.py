@@ -214,7 +214,7 @@ def handle_console_websocket(sid):
             msgdata = 'nop'
             if lenf > 0:
                 msgdata = 'caseupdate:' + testlive[lenf-1]
-            time.sleep(2)
+            time.sleep(1)
             wsock.send(msgdata)
         except WebSocketError:
             break
