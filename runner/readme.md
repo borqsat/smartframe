@@ -13,4 +13,8 @@ You can follow python `unittest` style to write monkeyrunner cases.
 ### Assertion based on screenshot comparation
 
 ## References
-[Monkeyrunner]: http://developer.android.com/tools/help/monkeyrunner_concepts.html monkeyrunner
+
+[Monkeyrunner][]
+
+[Monkeyrunner]: http://developer.android.com/tools/help/monkeyrunner_concepts.html "monkeyrunner"
+[Android]: http://www.android.com "Google Android"
