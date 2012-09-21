@@ -83,7 +83,7 @@ function createSnapshotDiv(sid) {
     if(ws !== undefined) ws.close();
 
     //screen snap channel
-    ws = new WebSocket("ws://192.168.7.212:8080/test/session/"+sid+"/screen");
+    ws = new WebSocket("ws://192.168.7.212:8082/test/session/"+sid+"/screen");
     var c=document.getElementById("myCanvas");
     var cxt=c.getContext("2d");
 
@@ -120,7 +120,7 @@ function createCaseResultDiv(sid) {
 
     if(ws !== undefined) ws.close();
     //screen snap channel
-    ws = new WebSocket("ws://192.168.7.212:8080/test/session/"+sid+"/terminal");
+    ws = new WebSocket("ws://192.168.7.212:8082/test/session/"+sid+"/terminal");
 
     ws.onopen = function() {
         ws.send('sync:ok');
