@@ -3,27 +3,30 @@ var WebServerURL = 'http://192.168.7.212:8080';
 
 
 $(document).ready(function(){
-     invokeWebApi("/test/session", {}, createSessionTable);
+    createSessionList();
 });
+
+function createSessionList(){
+    invokeWebApi("/test/session", {}, createSessionTable);
+}
 
 function invokeWebApi(cmd, jdata, call){
     $.getJSON(WebServerURL+cmd+"?callback=?", jdata, call);
 }
 
 function createCaseSnaps(sid, tid){
-       invokeWebApi('/test/caseresult/'+sid+'/'+tid+'/snapshot',
-                    {},
-                    function(data){
-                        if(data.results === undefined) return;
-
-                        for(var d in data.results.snaps) {
-                           var ig = new Image();
-                           ig.src = 'data:image/png;base64,' + d;
-                           ig.width = '120px';
-                           ig.height = '200px';
-                           $('#snapsDiv').append(ig);
-                        }
-                  }); 
+    invokeWebApi('/test/caseresult/'+sid+'/'+tid+'/snapshot',
+                {},
+                function(data){
+                    if(data.results === undefined) return;
+                    for(var d in data.results.snaps) {
+                        var ig = new Image();
+                        ig.src = 'data:image/png;base64,' + d;
+                        ig.width = '120px';
+                        ig.height = '200px';
+                        $('#snapsDiv').append(ig);
+                }
+    }); 
 }
 
 
@@ -259,7 +262,7 @@ function createRunningSessionDiv(product_list,product_cycle_id,product_cycle_res
         if(plist[i]=='undefined') continue;
         if($("#ongoing"+plist[i]).length <=0 ){
             var $product_div = $('<div>').attr('id','ongoing'+plist[i]).attr('class','mtbfunitinner');
-            var $product_label ="<span class=\"label label-info\">"+plist[i]+"</span>";
+            var $product_label = "<span class=\"label label-info\">"+plist[i]+"</span><span align=right><input  type=\"button\" class=\"label label-info\" value=\"refresh\" onclick=\"createSessionList()\"></span>";
             var $product_table = $('<table>').attr('class','table table-bordered').attr('id','otable'+plist[i]);
             var $th = '<thead><tr><th>session</th><th>total</th><th>pass</th><th>fail</th><th>error</th><th>runtime</th></tr></thead>';
             var $tbody = '<tbody></tbody>';
