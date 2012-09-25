@@ -26,8 +26,8 @@ class PhoneTest(TestCaseBase):
         .sleep(2)\
         .touch(292,960)\
         .sleep(5)\
-        .waitForScreen(timeout=WAIT_FOR_SCREEN_TIMEOUT,rect=PHONE_RECT_CHECK_CALL)\
-        .touch(PHONE_POINT_END_CALL[0], PHONE_POINT_END_CALL[1])
+        .waitForScreen(timeout=WAIT_FOR_SCREEN_TIMEOUT,rect=PHONE_RECT_CHECK_CALL)
+        self.worker.touch(PHONE_POINT_END_CALL[0], PHONE_POINT_END_CALL[1])
 
     def tearDown(self):
         self.worker.pressKey('back,back,back')
