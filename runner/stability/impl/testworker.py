@@ -9,17 +9,31 @@ class testWorker:
     """
     provides the executing ability of each command-line in TestCase
     """
-    def __init__(self, context=None, case=None):
+    def __init__(self, options=None):
         self.logger = Logger.getLogger()
+        self.option = options
         self.assertion = assertion()
         self.logger.debug('init store')
-        self.store = store(context, case)
+        self.store = store()
         self.device = DeviceManager.getInstance().getDevice()
-        self._isRecord = context.isRecording()
         self._checkpoint = -1
 
-    def _isRecording(self):
-        return self._isRecord
+    def run(self,test,result=None, eResult=None):
+        self.itest = test
+        self.testResult = result
+        self.expResult = eResult
+        self.itest.worker = self
+        self.itest(self.testResult)
+
+    def check(self):
+        if self.option.recording:
+            assert False,'dont support recording mode.'
+        c = self.expResult.getCurrentPath()
+        self.logger.debug('check-----------------------------------------------------------check')
+        self.logger.debug(c)
+        img = self.saveImage()
+        return self
+
 
     def sleep(self,tsec):
         self.device.sleep(tsec)
@@ -68,7 +82,7 @@ class testWorker:
         if (string.find(string.ascii_letters, name[0]) == -1
             and string.find(string.digits, name[0]) == -1):
             return False
-        return True     
+        return True    
 
     def _compare(self, f1, f2):
         "Compare the two images in the two files: f1 and f2."
@@ -94,13 +108,18 @@ class testWorker:
             #    self.fail('Invalid checkpoint name: %s.' % name)
         self.logger.debug('Save snapshot at checkpoint: %s.' % name)
         
-        path = self.store.getWorkDir()
+        #path = self.store.getWorkDir()
+        if self.option.recording:
+            path = self.testResult.dirs['right']
+        elif self.option.testing:
+            path = self.testResult.dirs['all']
         names = self.store.basename(name)
+        #self.testResult.dirs['right'] = ''
         self.logger.debug('path:'+path)
 
         filename_snapshot = os.path.join(path, names['snapshot'])
         filename_checkpoint = os.path.join(path, names['checkpoint'])
-        filename_ocr = os.path.join(path, names['ocr'])   
+        filename_ocr = os.path.join(path, names['ocr'])
         rect_screen = rect and self.device.convert_to_screen_rect(rect)
         
         r = self.device.takeSnapshot()
@@ -108,8 +127,8 @@ class testWorker:
         #here ResultSender will upload snapshot to server by sid or tid
         #from handler import ResultSender
         #ResultSender.getInstance.addTask(path=filename_snapshot)
-        from pubsub import pub
-        pub.sendMessage('collectresult',path=filename_snapshot)
+        #####from pubsub import pub
+        #####pub.sendMessage('collectresult',path=filename_snapshot)
         if rect_screen is not None: # save subimage (checkpoint)
             r.getSubImage(rect_screen).writeToFile(filename_checkpoint, 'png')
             if ocr:
@@ -212,8 +231,8 @@ class testWorker:
             self.assertion.assertTrue(self._isValidName(name),'Invalid checkpoint name: %s.' % name)
             #if (not self._isValidName(name)):
             #    self.fail('Invalid checkpoint name: %s.', name)
-        
-        if self._isRecording():
+        # recording?
+        if self.option.recording:
             #recording
             self.logger.debug('Wait for %d seconds and then save snapshot as standard picture.'%timeout)
             self.device.sleep(timeout)
@@ -261,13 +280,13 @@ class testWorker:
         self.saveImage(name, rect)
         
         diff = 0
-        if not self._isRecording(): # not recording, so we should compare the image.
+        if not self.option.recording: # not recording, so we should compare the image.
             self.logger.debug("Not recording, so it's a checkpoint.")
             names = self.store.basename(name)
             #import sys
             #sys.stderr.write(str(os.path.exists(os.path.join(self.workspace_result_right, names['checkpoint']))))
-            filename_right = os.path.join(self.store.getRightDir(), names['checkpoint'])
-            filename = os.path.join(self.store.getWorkDir(), names['checkpoint'])
+            filename_right = os.path.join(self.testResult.dirs['right'], names['checkpoint'])
+            filename = os.path.join(self.testResult.dirs['all'], names['checkpoint'])
             #self.assertTrue(os.path.exists(filename_right) and os.path.exists(filename))
             self.assertion.assertTrue(os.path.exists(filename_right),'file does not exists %s '% filename_right)
             self.assertion.assertTrue(os.path.exists(filename),'file does not exists %s '% filename)

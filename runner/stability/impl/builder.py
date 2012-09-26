@@ -6,16 +6,22 @@ from stability.util.log import Logger
 
 class TestBuilder(object):
     '''Class for store test session properties '''
-    __instance = None 
+    __instance = None
     __mutex = threading.Lock()
     __buildOption = None
     def __init__(self,options=None):
         self.__buildOption = options
+        self.__testLoader = TestLoader()
 
+    def getProperty(self,attr):
+        assert self.__buildOption
+
+        return ''
+        
     def setBuildOption(self,option):
         '''Set an instance of CommandOption object which represent user commandline input'''
         self.__buildOption = option
-        
+
     def getStartTime(self):
         '''Return the test session start time'''
         return self.__buildOption.starttime
@@ -26,17 +32,12 @@ class TestBuilder(object):
         if not os.path.exists(workspace):
             os.makedirs(workspace)
                          
-        report_folder_name = ('%s-%s'%('result',self.__buildOption.starttime))
-        report_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),'report',report_folder_name)
-        report_path = os.path.join(workspace,report_folder_name)
-        if not os.path.exists(report_path):
-            os.makedirs(report_path)
+        #report_folder_name = ('%s-%s'%('result',self.__buildOption.starttime))
+        #report_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),'report',report_folder_name)
+        #report_path = os.path.join(workspace,report_folder_name)
+        #if not os.path.exists(report_path):
+        #    os.makedirs(report_path)
         return workspace
-
-    def getTests(self):
-        '''Return the test case list specified by plan file '''
-        tests = ConfigParser.readTests(self.__buildOption.plan)
-        return tests
 
     def getDeviceSerial(self):
         '''Return the device serial number '''
@@ -54,14 +55,7 @@ class TestBuilder(object):
 
     def isRecording(self):
         '''Return true if the session is recording and otherwise return false'''
-        if self.__buildOption.recording and self.__buildOption.testing:
-            return True
-            
-        if self.__buildOption.recording:
-            return True
-
-        if self.__buildOption.testing:
-            return False
+        return self.__buildOption.recording
 
     def isTesting(self):
         '''Return true is the session is testing and otherwise return false'''
@@ -94,13 +88,35 @@ class TestBuilder(object):
             pass     
         return TestBuilder.__instance
 
-    def loadTestSuites(self):
-        if self.isRecording:
-            return self.__loadRecordingTestSuites(self.getTests())
-        if self.isTesting:
-            return self.__loadTestingTestSuites(self.getTests())
+    def getTestSuites(self):
+        return self.createTestSuites()
+   
+    def createTestSuites(self):
+        return self.__testLoader.loadTestSuites(self.__buildOption.plan,self.__buildOption.recording,self.__buildOption.random)
 
-    def __loadRecordingTestSuites(self,tests):
+class TestLoader(object):
+    #testMethodPrefix = 'test' 
+    #sortTestMethodsUsing = cmp 
+    #suiteClass = TestSuite 
+    _defaultTestLoader =  unittest.TestLoader
+    _defaulConfiger = ConfigParser
+    def __init__(self,loader=None):
+        if not loader:
+            self.loader = TestLoader._defaultTestLoader()
+
+    def loadTestSuites(self,path,mode,isRandom=False):
+        tests = None
+        suites = None
+        if path:
+            tests = TestLoader._defaulConfiger.readTests(path)
+        assert tests, 'tests should not be null!'
+        if mode:
+            suites = self.__loadRecordingTestSuites(tests)
+        else:
+            suites = self.__loadTestingTestSuites(tests)
+        return suites
+
+    def __loadRecordingTestSuites(self,tests,isRandom=False):
         names = []
         t = None
         if type(tests) is type({}):
@@ -109,10 +125,10 @@ class TestBuilder(object):
             t = tests
         for (k,v) in t:
             names.append(k)
-        suite = unittest.TestLoader().loadTestsFromNames(names)
+        suite = self.loader.loadTestsFromNames(names)
         return suite
-     
-    def __loadTestingTestSuites(self,tests):
+
+    def __loadTestingTestSuites(self,tests,isRandom=False):
         names = []
         t = None
         if type(tests) is type({}):
@@ -122,5 +138,8 @@ class TestBuilder(object):
         for (k,v) in t:
             for i in range(v):
                 names.append(k)
-        suite = unittest.TestLoader().loadTestsFromNames(names)
+        suite = self.loader.loadTestsFromNames(names)
         return suite
+
+class TestParser(object):
+    pass

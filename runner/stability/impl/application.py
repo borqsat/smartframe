@@ -10,16 +10,7 @@ class Application(object):
         '''
         self.logger = Logger.getLogger()
         self.builder = TestBuilder.getBuilder(options)
-        self.runner = TestRunner.getRunner(self.builder)
+        self.runner = TestRunner(options)
 
     def run(self):
-        testsuites = self.builder.loadTestSuites()
-        if self.builder.isRecording():
-            self.logger.debug('test start -> recording') 
-            self.runner.run(testsuites)
-        if self.builder.isTesting():
-            self.logger.debug('test start -> executing')
-            for cycle in range(self.builder.getCycle()):
-                self.logger.debug('start cycle:'+str(cycle))
-                self.runner.run(testsuites)
-                self.logger.debug('end cycle:'+str(cycle))
+        self.runner.runTest(self.builder.getTestSuites())

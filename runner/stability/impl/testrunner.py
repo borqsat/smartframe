@@ -1,4 +1,4 @@
-import sys,time
+import sys,time,os
 import unittest
 from unittest import TestResult
 from pubsub import pub
@@ -6,19 +6,49 @@ from stability.util.log import Logger
 from testworker import testWorker
 from builder import TestBuilder
 from stability.util.log import Logger
+from expectresult import ExpectResult
 
 class TestRunner(object):
     '''
     Class for loading test runner
     '''
-    @staticmethod
-    def getRunner(options=None):
-        if not options is None:
-            return PYTestRunner(options)
-        else:
-            return None
+    def __init__(self,option=None):
+        self.logger = Logger.getLogger()
+        #option sys session
+        self.builder = TestBuilder.getBuilder()
+        self.worker = testWorker(option)
+        self.testResult = _TestResult()
+        self.expResult = ExpectResult(self.testResult.dirs['ws_right'])
 
-def collectResult(func):         
+    def runTest(self,test_suites):
+        self.logger.debug('run the testsuite!!')
+        if self.builder.isRecording():
+            self.logger.debug('test mode: recording')
+            for test in test_suites:
+                #case_name = '%s.%s' %(type( test).__name__,  test._testMethodName)
+                #self.logger.debug(type(test))
+                #test(self.testResult)
+                self.worker.run(test,self.testResult,self.expResult)
+                pass
+            self.logger.debug('recording end')
+        if self.builder.isTesting():
+            self.logger.debug('test mode: testing')
+            for cycle in range(self.builder.getCycle()):
+                self.logger.debug('start cycle: ' + str(cycle))
+                for test in test_suites:
+                    self.logger.debug('ttttttttttttttttttttt')
+                    case_name = '%s.%s' %(type( test).__name__,  test._testMethodName)
+                    self.logger.debug(os.path.join(self.testResult.dirs['ws_right'],case_name))
+                    #expResult = ExpectedResult(test,os.path.join(self.testResult.dirs['ws_right'],case_name))
+                    #expResult = ExpectedResult(self.testResult.dirs['ws_right'])
+                    #self.logger.debug(expResult.getCurrentPath())
+                    #pass
+                    #ExpectedResult
+                    self.worker.run(test,self.testResult,self.expResult)
+                    #test(self.testResult)
+                self.logger.debug('start cycle: ' + str(cycle))
+
+def collectResult(func):
     def wrap(*args, **argkw):
         func(*args, **argkw)
         if True:
@@ -28,19 +58,67 @@ def collectResult(func):
     return wrap
 
 class _TestResult(TestResult):
-    separator1 = '=' * 70 
-    separator2 = '-' * 70 
-    
+    separator1 = '=' * 70
+    separator2 = '-' * 70
+
     def __init__(self, stream=None, descriptions=None, verbosity=None):
         TestResult.__init__(self)
         self.logger = Logger.getLogger()
+        self.builder = TestBuilder.getBuilder()
+        self._makeDir()
+        #self.dirs['result'] = 
+        #resultFolderName = ('%s-%s'%('result',self.starttime))
+        #self. = os.path.join(self.workspace,resultFolderName)
+        #all_folder = os.path.join(workspaceReport, 'all')
+        #report result-stm all fail error
     
+    def _makeDir(self):
+        self.dirs = {}
+        self.dirs['ws_report'] = self.builder.getWorkspace()
+        self.dirs['ws_result'] = os.path.join(self.dirs['ws_report'],'%s-%s'%('result',self.builder.getStartTime()))
+        self.dirs['ws_right'] = os.path.join(self.dirs['ws_report'],'right')
+        #if not os.path.exists(self.dirs['ws_result']):
+        #    os.makedirs(self.dirs['ws_result'])
+    def _createDir(self,test):
+        #assert path,'Target dir path should not be null'
+        case_name = '%s.%s' %(type( test).__name__,  test._testMethodName)
+        case_start_time = time.strftime('%Y.%m.%d-%H.%M.%S', time.localtime(time.time()))
+        if self.builder.isRecording():
+            self.dirs['right'] = os.path.join(os.path.join(self.dirs['ws_report'],'right'),case_name)
+            if not os.path.exists(self.dirs['right']):
+                try:
+                    os.makedirs(self.dirs['right'])
+                except:
+                    pass
+
+        if self.builder.isTesting():
+            foldername_with_timestamp = '%s-%s' % (case_name, case_start_time)
+            self.dirs['right'] = os.path.join(os.path.join(self.dirs['ws_report'],'right'),case_name)
+            self.dirs['all'] = os.path.join(os.path.join(self.dirs['ws_result'],'all'), foldername_with_timestamp)
+            if not os.path.exists(self.dirs['all']):
+                try:
+                    os.makedirs(self.dirs['all'])
+                except:
+                    pass
+        #if not os.path.exists(path):
+        #    try:
+        #        os.makedirs(path)
+        #    except:
+        #        pass
+
     @collectResult
     def startTest(self, test):
         TestResult.startTest(self, test)
-        #need to add write and writln method for terminal output
-        self.logger.debug(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
-        self.logger.debug(self.getDescription(test)) 
+        # all right
+        #case_name = '%s.%s' %(type( test).__name__,  test._testMethodName)
+        #case_start_time = time.strftime('%Y.%m.%d-%H.%M.%S', time.localtime(time.time()))
+        #self.dirs['right'] = os.path.join(os.path.join(self.dirs['ws_report'],'right'),case_name)
+        self._createDir(test)
+        #self.logger.debug(self.dirs['all'])
+        #self.logger.debug(self.dirs['all'])
+
+        #self.logger.debug(case_start_time)
+        self.logger.debug(self.getDescription(test))
         self.logger.debug("START")
     
     @collectResult   
@@ -75,52 +153,6 @@ class _TestResult(TestResult):
             self.logger.debug(self.separator1)
             self.logger.debug("%s: %s" % (flavour,self.getDescription(test)))
             self.logger.debug(self.separator2)
-            self.logger.debug("%s" % err) 
+            self.logger.debug("%s" % err)
 
-class PYTestRunner(object):
-    '''
-    Implement of text test runner
-    '''
-    def __init__(self, context=None):
-        self.logger = Logger.getLogger()
-        self.context = context
 
-    def _makeResult(self):
-        return _TestResult()
-
-    def run(self, test):
-        self.logger.debug('run the testsuite!!')
-        #result output terminal
-        result = self._makeResult()
-        #test start time 
-        startTime = time.time()
-        #if test is instance of TestSuite:for t in test: i(result)
-        #run test/testsuite
-        test(result)
-        #test stop time
-        stopTime = time.time()
-        #test duration
-        timeTaken = stopTime - startTime
-        #if not self.verbosity:
-        #print all erros during test
-        result.printErrors()
-          #----------------
-        self.logger.debug(result.separator2)
-        #total case number has been ran
-        run = result.testsRun
-        self.logger.debug("Total ran %d test%s in %.3fs" % (run, run != 1 and "s" or "", timeTaken))
-        #space line output
-        #If test include failures or errors . special notification for failure and error
-        if not result.wasSuccessful():
-            self.logger.debug("FAILED (")
-            failed, errored = map(len, (result.failures, result.errors))
-            if failed:
-                self.logger.debug("failures=%d" % failed)
-            if errored:
-                if failed:
-                    self.logger.debug(", ")
-                self.logger.debug("errors=%d" % errored)
-            self.logger.debug(")")
-        else:
-            self.logger.debug("OK")
-        return result
