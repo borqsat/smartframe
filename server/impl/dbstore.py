@@ -205,7 +205,7 @@ class dbStore(object):
             snapshots = self.imgBuffer[sid+'-'+tid] 
             caseresult = self.db['caseresult']
             caseresult.update({'sid':sid,'tid':tid},{'$set':{'snapshots':snapshots}})
-        except
+        except:
             pass
 
     def readTestLiveSnaps(self,sid):
