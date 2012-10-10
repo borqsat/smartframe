@@ -1,0 +1,8 @@
+testapis	testapis-module.html
+testapis.doCreateSession	testapis-module.html#doCreateSession
+testapis.doCreateTestResult	testapis-module.html#doCreateTestResult
+testapis.doRegister	testapis-module.html#doRegister
+testapis.app	testapis-module.html#app
+testapis.doAuth	testapis-module.html#doAuth
+testapis.doUploadFile	testapis-module.html#doUploadFile
+testapis.doUpdateTestResult	testapis-module.html#doUpdateTestResult
