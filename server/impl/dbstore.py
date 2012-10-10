@@ -2,27 +2,12 @@
 
 from pymongo import Connection
 import gridfs
+import memcache
 import mimetypes
 import json
 import datetime,time
 import hashlib,uuid,base64
 from bson.objectid import ObjectId
-
-class snapshotNode(object):
-    """
-    Class snapBuffer maintain the frames of snapshot pngs to the test case
-    """
-    def __init__(self):
-        self._frames = []
-
-    def addFrame(self,rawdata):
-        self._frames.append(rawdata)
-
-    def clear(self):
-        self._frames = []
-
-    def getFrames(self):
-        return self._frames
 
 class dbStore(object):
     """
@@ -35,6 +20,7 @@ class dbStore(object):
         print 'init db store class!!!'
         self.db = Connection(server, port)['smartServer']
         self.fs = gridfs.GridFS(Connection(server, port)['smartGridFS'], collection='rawfiles')
+        self.mc = memcache.Client(['127.0.0.1:11211'],debug=0)
         self.imgBuffer = {}
 
     def getfile(self,fileId): 
@@ -168,11 +154,14 @@ class dbStore(object):
         """
         write a test case resut record in database
         """
-        self.imgBuffer[sid+'-'+tid] = snapshotNode()      
+        self.imgBuffer[sid+'-'+tid] = []
+        self.mc.set(sid+'id',tid)
+        self.mc.set(sid+'name',casename)
+        self.mc.set(sid+'status','start')
         caseresult = self.db['caseresult']
         caseresult.insert({'sid':sid, 'tid':tid, 'casename':casename, 'result':'running', 'starttime':starttime, 'endtime':starttime,'snapshots':[]})
         session = self.db['session']
-        session.update({'sid':sid},{'$set':{'curCase':tid},'$inc':{'result.total':1}}) 
+        session.update({'sid':sid},{'$inc':{'result.total':1}})
 
     def updateTestCaseResult(self, sid, tid, status):
         """
@@ -182,7 +171,8 @@ class dbStore(object):
         caseresult = self.db['caseresult']
         session = self.db['session']
         status = status.lower()
-        if status == 'pass' :
+        self.mc.set(sid+'status','result->'+status)
+        if status == 'pass':
             session.update({'sid':sid},{'$inc':{'result.pass':1}})
         elif status == 'fail':
             session.update({'sid':sid},{'$inc':{'result.fail':1}})               
@@ -204,46 +194,34 @@ class dbStore(object):
         """
         add snapshot png in image buffer
         """
-        binfile =  open('./'+sid,'wb')
-        binfile.write(snapfile)
+        if self.mc:
+            self.mc.set(sid+'snap', snapfile)
+
         if not (sid+'-'+tid) in self.imgBuffer:
-            self.imgBuffer[sid+'-'+tid] = snapshotNode()
-        idx = self.fs.put(snapfile)
-        self.imgBuffer[sid+'-'+tid].addFrame(str(idx))
- 
-        #session = self.db['session']
-        #session.update({'sid':sid},{'$set':{'curFrame':str(idx)}}) 
-        
-        snapshots = self.imgBuffer[sid+'-'+tid].getFrames() 
-        caseresult = self.db['caseresult']
-        caseresult.update({'sid':sid,'tid':tid},{'$set':{'snapshots':snapshots}})
+            self.imgBuffer[sid+'-'+tid] = []
+        try:
+            idx = self.fs.put(snapfile)
+            self.imgBuffer[sid+'-'+tid].append(str(idx))
+            snapshots = self.imgBuffer[sid+'-'+tid] 
+            caseresult = self.db['caseresult']
+            caseresult.update({'sid':sid,'tid':tid},{'$set':{'snapshots':snapshots}})
+        except
+            pass
 
     def readTestLiveSnaps(self,sid):
-        #session = self.db['session']
-        #ret = session.find({'sid':sid})
         result = []
-        #for d in ret:
-        #    if 'curFrame' in d:
-        #        fid = d['curFrame']
-        #        ff = self.getfile(fid)
-        #        result.append(ff)
-        binfile = open('./'+sid,'rb')
-        result.append(binfile.read())
-        binfile.close()
+        rdata = self.mc.get(sid+'snap')
+        result.append(rdata)
         return result
 
     def readTestLiveResults(self,sid):
-        session = self.db['session']
-        caseresult = self.db['caseresult']   
-        ret = session.find({'sid':sid})
         result = []
-        for d in ret:
-            if 'curCase' in d:
-                tid = d['curCase']
-                rr = caseresult.find({'tid':tid})
-                for x in rr:
-                    result.append('casename:%s, result:%s' % (x['casename'],x['result']))   
-        return result  
+        tid = self.mc.get(sid+'tid')
+        tname = self.mc.get(sid+'name')
+        tstatus = self.mc.get(sid+'status')
+        if not tid:
+            result.append('id:%s, casename:%s, status:%s' % (tid,tname,tstatus))   
+        return result
 
     def readTestHistorySnaps(self,sid, tid):
         caseresult = self.db['caseresult']
