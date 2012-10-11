@@ -1,0 +1,11 @@
+caseapis	caseapis-module.html
+caseapis.doUploadCasefile	caseapis-module.html#doUploadCasefile
+caseapis.app	caseapis-module.html#app
+caseapis.doRemovePlanCase	caseapis-module.html#doRemovePlanCase
+caseapis.doGetTestplanInfo	caseapis-module.html#doGetTestplanInfo
+caseapis.doGetCaseContent	caseapis-module.html#doGetCaseContent
+caseapis.doGetTestplans	caseapis-module.html#doGetTestplans
+caseapis.doAddPlanCase	caseapis-module.html#doAddPlanCase
+caseapis.doDeleteTestplan	caseapis-module.html#doDeleteTestplan
+caseapis.doCreateTestplan	caseapis-module.html#doCreateTestplan
+caseapis.doCreateCase	caseapis-module.html#doCreateCase
