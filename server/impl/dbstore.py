@@ -216,10 +216,10 @@ class dbStore(object):
 
     def readTestLiveResults(self,sid):
         result = []
-        tid = self.mc.get(sid+'tid')
+        tid = self.mc.get(sid+'id')
         tname = self.mc.get(sid+'name')
         tstatus = self.mc.get(sid+'status')
-        if not tid:
+        if not tid is None:
             result.append('id:%s, casename:%s, status:%s' % (tid,tname,tstatus))   
         return result
 
