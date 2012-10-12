@@ -4,8 +4,9 @@ from stability.util.log import Logger
 
 class ExpectResultDemo:
     '''Provides the access ability to the expectResult data store'''
-    def __init__(self,basedir=None):
+    def __init__(self,casename=None,basedir=None):
         self.workdir = basedir
+        self.caseName = casename
         pass
 
     def init(self, case):
@@ -22,19 +23,20 @@ class ExpectResultDemo:
             return None
 
 class ExpectResult:
-    def __init__(self,base_dir=None):
+    def __init__(self,path=None):
         self.cusor = -1
-        self.path = base_dir
+        self.resultPath = path
+
 
     def getCurrentPath(self):
         self.cusor = self.cusor + 1
         check_point_name = self.basename(str(self.cusor))['checkpoint']
-        check_point_path = os.path.join(self.path,check_point_name)
+        check_point_path = os.path.join(self.resultPath,check_point_name)
         return check_point_path
 
     def basename(self, name):
         names = {}
-        names['snapshot'] = '%s.snapshot.png' % name
-        names['checkpoint'] = '%s.checkpoint.png' % name
+        names['snapshot'] = '%s.wait.snapshot.png' % name
+        names['checkpoint'] = '%s.wait.checkpoint.png' % name
         names['ocr'] = '%s.ocr.txt' % name
         return names

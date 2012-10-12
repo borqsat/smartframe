@@ -1,8 +1,8 @@
-import sys,os,datetime,string,time
+import sys,os,datetime,string,time,getopt
 from stability import Application
 
 class CommandOptions(object):
-    def __init__(self, argv):
+    def __init__(self,argv):
         timestamp = time.strftime('%Y.%m.%d-%H.%M.%S',time.localtime(time.time()))
         self.data = {'recording':False,
                      'testing':False,
@@ -15,76 +15,46 @@ class CommandOptions(object):
                      'screenmonitor':False,
                      'downloadsnapshot':False,
                      'random':False}
-        if len(argv) > 1:
-            for arg in argv[1:]:
-                if arg == '--recording' or arg == '-r':
-                    self.data['recording'] = True
-                elif arg == '--testing' or arg == '-t':
-                    self.data['testing'] = True
-                elif arg == '--uploadresult' or arg == '-ur':
-                    self.data['uploadresult'] = True
-                elif arg == '--screenmonitor' or arg == '-sm':
-                    self.data['screenmonitor'] = True
-                elif arg == '--downloadnapshot' or arg == '-ds':
-                    self.data['downloadnapshot'] = True
-                elif arg == '--random' or arg == '-ra':
-                    self.data['random'] = True
-                                                            
-                elif string.find(arg, '--cycle=') == 0:
-                    value = arg[len('--cycle='):]
-                    self.data['cycle'] = int(value)
-                elif string.find(arg, '--duration=') == 0:
-                    value = arg[len('--duration='):]
-                    value = string.lower(value)
-                    begin=0
-                    days = hours = minutes = seconds = 0
-                    for i, v in enumerate(value):
-                        if v == 'd':
-                            days = int(value[begin:i])
-                            begin = i + 1
-                        elif v == 'h':
-                            hours = int(value[begin:i])
-                            begin = i + 1
-                        elif v == 'm':
-                            minutes = int(value[begin:i])
-                            begin = i + 1
-                        elif v == 's':
-                            seconds = int(value[begin:i])
-                            begin = i + 1
-                    if begin == 0:
-                        raise ValueError, 'Duration format error.'
-                    self.data['duration'] = datetime.timedelta(days=days,
-                                                               hours=hours,
-                                                               minutes=minutes,
-                                                               seconds=seconds)
-                elif string.find(arg, '--plan=') == 0:
-                    value = arg[len('--plan='):]
-                    if self.data['plan'] is None:
-                        self.data['plan'] = value
-                    else:
-                        raise ValueError, 'Invalid options...'
-                elif string.find(arg, '--testcase=') == 0:
-                    value = arg[len('--testcase='):]
-                    if self.data['testcase'] is None:
-                        self.data['testcase'] = value
-                    else:
-                        raise ValueError, 'Invalid options...'
-                else:
-                    raise ValueError, 'Invalid options...'
-    
-    def __getattribute__(self, name):
+        self.parse(argv)
+
+    def parse(self,argv):
         try:
-            v = object.__getattribute__(self, name)
-        except AttributeError:
-            d = self.data
-            if d.has_key(name):
-                v = d[name]
-            else:
-                raise
-        return v
-    
-    @classmethod
-    def showUsage(cls):
+            opts, args = getopt.getopt(argv[1:], 'hrtc', ['help','recording','testing','cycle=','plan=','uploadresult','screenmonitor','random'])
+        except getopt.GetoptError, err:
+        # print help information and exit:
+            print str(err) # will print something like "option -a not recognized"
+            self.showUsage()
+            sys.exit(2)
+        for opt, arg in opts:
+            print opt
+            if opt in ('-h', '--help'):
+                self.showUsage()
+            elif opt in ('-r', '--recording'):
+                self.data['recording'] = True
+            elif opt in ('-t', '--testing'):
+                self.data['testing'] = True
+            elif opt in ('-c','--cycle'):
+                self.data['cycle'] = arg
+                print arg
+            elif opt in ('--random'):
+                self.data['random'] = True
+            elif opt in ('--plan'):
+                self.data['plan'] = arg
+                print arg
+            elif opt in ('--uploadresult'):
+                self.data['uploadresult'] = True
+            elif opt in ('--screenmonitor'):
+                self.data['screenmonitor'] = True
+
+    def getProperties(self):
+        return self.data
+        #if self.data.has_key(name):
+        #    value = self.data[name]
+        ##else:
+        #    raise 'miss data name'
+        #return value
+
+    def showUsage(self):
         print 'Usage:'
         print 'monkeyrunner starttest.py [-r|--recording]'
         print '                         [-t|--testing]'
@@ -117,9 +87,10 @@ class CommandOptions(object):
         print '                       module.testcase1.method2=5'
         print '                       module.testcase2.method1=12'
 
+
 def main(**argkw):
     options = CommandOptions(sys.argv)
-    Application(options).run()
+    Application(options.getProperties()).run()
 
 if (__name__ == '__main__'):
     main()

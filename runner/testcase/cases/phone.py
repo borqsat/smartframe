@@ -13,22 +13,24 @@ WAIT_FOR_SCREEN_TIMEOUT=10
 WAIT_SHORT_TIME=1
 
 class PhoneTest(TestCaseBase):         
-    #get device
+
     def setUp(self):
         super(PhoneTest,self).setUp()
         self.runComponent = PACKAGE_NAME + '/' + ACTIVITY_NAME
 
     def testMOCall(self):
-        self.worker.startActivity(component=self.runComponent,flags=0x04000000)\
-        .sleep(3)\
-        .touch(PHONE_POINT_DAIL_TAB[0],PHONE_POINT_DAIL_TAB[1])\
-        .typeWord('10086')\
-        .sleep(2)\
-        .touch(292,960)\
-        .sleep(5)\
+        self.launch(component=self.runComponent,flags=0x04000000)\
+        .check()\
+        .check()\
+        .check()\
+
+    def testMOCall000(self):
+        self.launch(component=self.runComponent,flags=0x04000000)
+        self.waitForScreen(timeout=WAIT_FOR_SCREEN_TIMEOUT,rect=PHONE_RECT_CHECK_CALL)\
+        .waitForScreen(timeout=WAIT_FOR_SCREEN_TIMEOUT,rect=PHONE_RECT_CHECK_CALL)\
         .waitForScreen(timeout=WAIT_FOR_SCREEN_TIMEOUT,rect=PHONE_RECT_CHECK_CALL)
-        self.worker.touch(PHONE_POINT_END_CALL[0], PHONE_POINT_END_CALL[1])
+
 
     def tearDown(self):
-        self.worker.pressKey('back,back,back')
+        self.press('back,back,back')
         super(PhoneTest,self).tearDown()        

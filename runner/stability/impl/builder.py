@@ -9,29 +9,27 @@ class TestBuilder(object):
     __instance = None
     __mutex = threading.Lock()
     __buildOption = None
-    def __init__(self,options=None):
-        self.__buildOption = options
+    def __init__(self,properties=None):
+        self.__buildOption = properties
         self.__testLoader = TestLoader()
 
-    def getProperty(self,attr):
+    def getProperty(self,name):
         assert self.__buildOption
+        if self.__buildOption.has_key(name):
+            value = self.__buildOption[name]
+        else:
+            raise 'miss data name'
+        return value
 
-        return ''
-        
-    def setBuildOption(self,option):
-        '''Set an instance of CommandOption object which represent user commandline input'''
-        self.__buildOption = option
-
-    def getStartTime(self):
-        '''Return the test session start time'''
-        return self.__buildOption.starttime
+    #def getStartTime(self):
+    #    '''Return the test session start time'''
+    #    return self.__buildOption.starttime
         
     def getWorkspace(self):
         '''Return the test session's report workspace '''
         workspace = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),'report')
         if not os.path.exists(workspace):
-            os.makedirs(workspace)
-                         
+            os.makedirs(workspace)                   
         #report_folder_name = ('%s-%s'%('result',self.__buildOption.starttime))
         #report_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),'report',report_folder_name)
         #report_path = os.path.join(workspace,report_folder_name)
@@ -40,7 +38,7 @@ class TestBuilder(object):
         return workspace
 
     def getDeviceSerial(self):
-        '''Return the device serial number '''
+        '''Return the current device serial number '''
         return None
 
     def getLogger(self):
@@ -49,30 +47,30 @@ class TestBuilder(object):
         self.__logger = Logger.getLogger()
         return self.__logger
 
-    def getCycle(self):
-        '''Return the cycle count of test session'''
-        return self.__buildOption.cycle
+    #def getCycle(self):
+    #    '''Return the cycle count of test session'''
+    #    return self.__buildOption.cycle
 
-    def isRecording(self):
-        '''Return true if the session is recording and otherwise return false'''
-        return self.__buildOption.recording
+    #def isRecording(self):
+    #    '''Return true if the session is recording and otherwise return false'''
+    #    return self.__buildOption.recording
 
-    def isTesting(self):
-        '''Return true is the session is testing and otherwise return false'''
-        if self.__buildOption.testing:
-            return True
+    #def isTesting(self):
+    #    '''Return true is the session is testing and otherwise return false'''
+    #    if self.__buildOption.testing:
+    #        return True
 
-    def isScreenMonitor(self):
-        '''Return true if the session support screen monitor feature '''
-        return self.__buildOption.screenmonitor
+    #def isScreenMonitor(self):
+    #    '''Return true if the session support screen monitor feature '''
+    #    return self.__buildOption.screenmonitor
 
-    def isUploadResult(self):
-        '''Return true if the session support uploading result to server feature '''
-        return self.__buildOption.uploadresult
+    #def isUploadResult(self):
+    #    '''Return true if the session support uploading result to server feature '''
+    #    return self.__buildOption.uploadresult
 
-    def isLocalResult(self):
-        '''Return true if the session support to save test result in local'''
-        return False
+    #def isLocalResult(self):
+    #    '''Return true if the session support to save test result in local'''
+    #    return False
 
     @staticmethod
     def getBuilder(option=None):
@@ -89,10 +87,11 @@ class TestBuilder(object):
         return TestBuilder.__instance
 
     def getTestSuites(self):
-        return self.createTestSuites()
+        return self.__createTestSuites()
    
-    def createTestSuites(self):
-        return self.__testLoader.loadTestSuites(self.__buildOption.plan,self.__buildOption.recording,self.__buildOption.random)
+    def __createTestSuites(self):
+        #return self.__testLoader.loadTestSuites(self.getProperty('plan'),self.__buildOption.recording,self.__buildOption.random)
+        return self.__testLoader.loadTestSuites(self.getProperty('plan'),self.getProperty('recording'),self.getProperty('random'))
 
 class TestLoader(object):
     #testMethodPrefix = 'test' 
