@@ -115,6 +115,31 @@ def doCreateSession(sid):
             deviceinfo = {'product':'AT390', 'revision':'6628', 'width':480, 'height':800}
         return createTestSession(token, sid, planname, starttime, deviceid, deviceinfo)
 
+@app.route('/test/session/<sid>/delete',method='POST')
+def doDeleteSession(sid):
+    """
+    URL:/test/session/<sid>/delete
+    TYPE:http/POST
+
+    upload a test session to server.
+
+    @type data:JSON
+    @param data:{'token':(string)value}
+    @rtype: JSON
+    @return:ok-{'results':1}
+            error-{'errors':{'code':value,'msg':(string)info}}
+    """
+    content_type = request.headers.get('Content-Type')
+    if not (content_type):
+        return {'errors':{'code':500, 'msg':'Missing Content-Type'}}
+    else:
+        json = request.json
+        if not json is None:
+            token = json['token']  
+        else:
+            token = '1122334455667788'      
+        return deleteTestSession(token, sid)
+
 @app.route('/test/caseresult/<sid>/<tid>/create',method='POST')
 def doCreateTestResult(sid, tid):
     """

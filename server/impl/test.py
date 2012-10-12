@@ -4,6 +4,10 @@ def createTestSession(token,sid,planname,starttime, deviceid, deviceinfo):
     store.createTestSession(sid, planname, starttime, deviceid, deviceinfo)
     return {'results':1}
 
+def deleteTestSession(token,sid):
+    store.deleteTestSession(sid)
+    return {'results':1}
+
 def getTestSessionList(token):
     rdata = store.readTestSessionList()
     if not rdata is None :

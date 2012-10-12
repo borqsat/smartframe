@@ -77,6 +77,15 @@ class dbStore(object):
                        'deviceinfo':devinfo
                       });
 
+    def deleteTestSession(self,sid):
+        """
+        delete a test session from database
+        """
+        caseresult = self.db['caseresult']
+        caseresult.remove({'sid':sid});       
+        session = self.db['session']
+        session.remove({'sid':sid});
+
     def readTestSessionList(self):
         """
         read list of test session records in database
