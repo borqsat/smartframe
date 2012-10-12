@@ -57,12 +57,6 @@ class TestCheck:
         self.checker.check()
         return self
 
-    def _compare(self,f1,f2):
-        return self
-
-    def _contain(self,full,sub):
-        return self
-
 class Checker(object):
 
     def __init__(self,options=None,deviceImpl=None,outputResult=None,expResult=None):
