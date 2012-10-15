@@ -56,11 +56,15 @@ class dbStore(object):
             for d in ret:
                 uid = d['uid'] 
             tokens = self.db['token']
-            token = str(uuid.uuid1())
-            tokens.insert({'uid':uid,'token':token})
-            return {'token':token}
+            rdata = tokens.find({'uid':uid})
+            if not rdata is None:
+                token = rdata['token']
+            else:
+                token = str(uuid.uuid1())
+                tokens.insert({'uid':uid,'token':token})
+            return {'token':token,'uid':uid}
         else:
-            return {'code':1, 'msg':'user&password is not correct!'}
+            return {'code':1, 'msg':'user or password is incorrect!'}
 
     def createTestSession(self,sid, planname, starttime, deviceid, devinfo):
         """

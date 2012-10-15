@@ -41,6 +41,6 @@ def userAuth(appid,user,pswd):
     """
     rdata = store.createToken(appid,user,pswd)
     if not rdata['token'] is None:
-        return {'results':{'token':rdata['token']}}
+        return {'results':rdata}
     else:
-        return {'errors':{'code':1, 'msg':'Auth failed!'}}
+        return {'errors':rdata}

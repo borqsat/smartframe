@@ -63,20 +63,16 @@ def doAuth():
     @return: ok-{'results':{'token':(string)value}}
              error-{'errors':{'code':0,'msg':(string)info}} 
     """
-    content_type = request.headers.get('Content-Type')
-    if not (content_type):
-    #    return {'errors':{'code':500, 'msg':'Missing Content-Type'}}
-    #else:
-        json = request.json
-        if not json is None:
-            appid = json['appid']
-            username = json['username']
-            password = json['password']
-        else:
-            appid = '01'
-            username = 'borqsat'
-            password = 'c33367701511b4f6020ec61ded352059'           
-        return wrapResults(userAuth(appid,username,password))
+    json = request.json
+    if not json is None:
+        appid = json['appid']
+        username = json['username']
+        password = json['password']
+    else:
+        appid = '01'
+        username = 'borqsat'
+        password = 'c33367701511b4f6020ec61ded352059'           
+    return wrapResults(userAuth(appid,username,password))
 
 @appweb.route('/test/session',method='GET')
 def doGetSessionList():

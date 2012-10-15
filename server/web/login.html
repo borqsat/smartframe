@@ -13,7 +13,7 @@
 	<script type="text/javascript" src="static/js/jquery-1.7.2.min.js"></script>
 	<script type="text/javascript" src="static/js/jquery.cookie.js"></script>
 	<script type="text/javascript" src="static/js/md5.js"></script>
-        <script type="text/javascript" src="static/js/util.js"></script> 
+    <script type="text/javascript" src="static/js/util.js"></script> 
 	<script type="text/javascript">	
 		$(document).ready(function(){
 
@@ -26,21 +26,18 @@
 			$('#password').hide();
 	                document.getElementById("userId").value = "Input UserId";	
 	                document.getElementById("textpassword").value = "Input Password";
-                })
+        })
 	     						
-		function callback(data)
-		{
-                        ret = data["results"];
-			if (ret["error_msg"] !== undefined ) {
+		function callback(data) {
+            ret = data["results"];
+            if (ret !== undefined && ret["token"] !== undefined) {
+			    $.cookie('ticket', ret["token"], { expires: 7 });
+			    $.cookie('loginname', $('#userId').val(), { expires: 7 });
+                window.location = "index.html";
+			} else {
 				$('#password').css({"background":"#FFAFAF"},{"border":"1px solid #ccc"});
 				$('#spanPass').text("Incorrect password!").show();
 				expect = verify();
-			}
-			else {
-				$.cookie('user_id', ret["uid"],{ expires: 7 });
-				$.cookie('ticket', ret["token"],{ expires: 7 });
-				$.cookie('user_name', ret["username"],{ expires: 7 });
-                                window.location = "index.html";
 			}
 		}
 
@@ -69,13 +66,13 @@
 			invokeWebApi("/user/auth", {"appid":"01","username": $('#userId').val(), "password": md5password}, callback)
 		}
 
-		function quickuserIdRegCall(ret) {
-			if (ret["error_msg"] != undefined ) {
-				if(ret["error_msg"].indexOf("The login name is existing") >-1) alert("Incorrect userId!");
-				else alert(ret["error_msg"]);
-			}
-			else alert(resRegSuc[locale]);
-		}
+        function quickuserIdRegCall(data) {
+            var ret = data["results"];
+            if(ret["error"] != undefined ) {
+                 alert(ret["msg"]);
+            }
+            else alert("Register account successfully!");
+        }
 
 		function quickRegister() {
 			if (!check_userId($('#userId').val())) {
@@ -88,8 +85,8 @@
 			password = $('#password').val();
 			md5password = hex_md5(password);
 			invokeWebApi("/user/register", 
-                                  {"display_name":$('#userId').val(), "password": md5password, "login_userId":$('#userId').val()}, 
-                                  quickuserIdRegCall);
+                         {"username":$('#userId').val(), "password": md5password,"appid":"01"}, 
+                         quickuserIdRegCall);
 		}
 
 		function onKeyPressed(ev)
