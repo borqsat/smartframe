@@ -4,7 +4,7 @@ $(document).ready(function(){
     createSessionList();
 
     if($.cookie('loginname') !== undefined && $.cookie('loginname') !== null) {
-        $('#loginname').val($.cookie('loginname'));
+        $('#logname').html($.cookie('loginname'));
     }
 
 
