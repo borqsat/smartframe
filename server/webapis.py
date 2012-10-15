@@ -30,8 +30,8 @@ def doRegister():
     """
     content_type = request.headers.get('Content-Type')
     if not (content_type):
-        return {'errors':{'code':500, 'msg':'Missing Content-Type'}}
-    else:
+    #    return {'errors':{'code':500, 'msg':'Missing Content-Type'}}
+    #else:
         json = request.json
         if not json is None:
             appid = json['appid']
@@ -41,8 +41,8 @@ def doRegister():
         else:
             appid = '01'
             username = 'borqsat'
-            password = '654321'
-            userinfo = {'email':'smartrunner@borqs.com', 'contact':'+8613911312632'}
+            password = 'c33367701511b4f6020ec61ded352059'
+            userinfo = {'email':'borqsat@gmail.com', 'contact':'+8613911312632'}
         return userRegister(appid,username,password,userinfo)
 
 @appweb.route('/user/auth',method='GET')
@@ -65,8 +65,8 @@ def doAuth():
     """
     content_type = request.headers.get('Content-Type')
     if not (content_type):
-        return {'errors':{'code':500, 'msg':'Missing Content-Type'}}
-    else:
+    #    return {'errors':{'code':500, 'msg':'Missing Content-Type'}}
+    #else:
         json = request.json
         if not json is None:
             appid = json['appid']
@@ -75,7 +75,7 @@ def doAuth():
         else:
             appid = '01'
             username = 'borqsat'
-            password = '654321'           
+            password = 'c33367701511b4f6020ec61ded352059'           
         return userAuth(appid,username,password)
 
 @appweb.route('/test/session',method='GET')
