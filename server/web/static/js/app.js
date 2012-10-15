@@ -264,17 +264,17 @@ function createRunningSessionDiv(product_list,product_cycle_product,product_cycl
     var plist = product_list;
     var $cycle_panel = $("#run_cycle_panel");
     for(var i = 0; i < plist.length; i++) {
-        if(plist[i]=='undefined') continue;
+        if(plist[i] === 'undefined') continue;
 
         if($("#ongoing"+plist[i]).length <=0 ){
             var $product_div = $('<div>').attr('id','ongoing'+plist[i]);
-            var $product_label = "<span class=\"label label-info\">"+plist[i]+"</span><span align=right>";
+            //var $product_label = "<span class=\"label label-info\">"+plist[i]+"</span><span align=right>";
             var $product_table = $('<table>').attr('class','table table-bordered').attr('id','otable'+plist[i]);
             var $th = '<thead><tr><th>planname</th><th>revision</th><th>statrtime</th><th>runtime</th></tr></thead>';
             var $tbody = '<tbody></tbody>';
             $product_table.append($th);
             $product_table.append($tbody);
-            $product_div.append($product_label);
+            //$product_div.append($product_label);
             $product_div.append($product_table);
             $cycle_panel.append($product_div);
         }

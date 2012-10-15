@@ -65,9 +65,11 @@
         <div class="span12">
            <div class="span6">
                 <div id="run_cycle_panel" class="mtbfunit">
+                    <span class="label label-info">Running Session</span>
                 </div>
 
                 <div id="stop_cycle_panel" class="mtbfunit">
+                    <span class="label label-info">Finished Session</span>
                 </div>
            </div>
 
@@ -77,8 +79,13 @@
                     <div id="detail_table"></div>
                 </div>
                 <hr>
-                <div id="live_panel">    
-                    <input type="button" class="label label-info" value="testresult" onclick="showTestDiv()">
+                <div id="device_panel">
+                    <span class="label label-info">Device Info</span>
+                    <div id="device_table"></div>
+                </div>
+                <hr>
+                <div id="live_panel">
+                    <input type="button" class="label label-info" value="tracklog" onclick="showTestDiv()">
                     <input type="button" class="label label-info" value="snapshot" onclick="showSnapDiv()">
                     <div id="status_tab">
                        <textarea id="myTerminal" border="1px" style="height:400px;width:98%"></textarea>

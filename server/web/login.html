@@ -5,7 +5,7 @@
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8"> 
 	<title>Login SmartServer</title> 
 	<link rel="stylesheet" href="static/css/bootstrap.css">
-	<link rel="stylesheet" href="static/css/bootstrap-responsive.css">    
+	<link rel="stylesheet" href="static/css/bootstrap-responsive.css">
 	<link rel="stylesheet" href="static/css/smart-responsive.css">
 	<!--[if lte IE 8]>
 		<link href="style/IE.css" rel="stylesheet" type="text/css" />
@@ -28,18 +28,18 @@
 	                document.getElementById("textpassword").value = "Input Password";
                 })
 	     						
-		function call(ret)
+		function callback(data)
 		{
+                        ret = data["results"];
 			if (ret["error_msg"] !== undefined ) {
 				$('#password').css({"background":"#FFAFAF"},{"border":"1px solid #ccc"});
 				$('#spanPass').text("Incorrect password!").show();
 				expect = verify();
 			}
 			else {
-				$.cookie('user_id', ret["user_id"],{ expires: 7 });
-				$.cookie('ticket', ret["ticket"],{ expires: 7 });
-				$.cookie('display_name', ret["display_name"],{ expires: 7 });
-				$.cookie('login_name', ret["login_name"],{ expires: 7 });
+				$.cookie('user_id', ret["uid"],{ expires: 7 });
+				$.cookie('ticket', ret["token"],{ expires: 7 });
+				$.cookie('user_name', ret["username"],{ expires: 7 });
                                 window.location = "index.html";
 			}
 		}
@@ -66,7 +66,7 @@
 			var password = $('#password').val();
 			var md5password = hex_md5(password);
 			$.cookie('password', md5password,{ expires: 7 });
-			invokeWebApi("/user/auth", {"appid":"01","username": $('#userId').val(), "password": md5password}, call)
+			invokeWebApi("/user/auth", {"appid":"01","username": $('#userId').val(), "password": md5password}, callback)
 		}
 
 		function quickuserIdRegCall(ret) {
