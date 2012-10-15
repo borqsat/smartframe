@@ -49,10 +49,8 @@ class dbStore(object):
         write a user account record in database
         """
         users = self.db['user']
-        #m = hashlib.md5()
-        #m.update(password)
         ret = users.find({'appid':appid,'username':user,'password':password})
-        if not ret is None:
+        if (not ret is None) and (not ret is []):
             for d in ret:
                 uid = d['uid'] 
             tokens = self.db['token']
