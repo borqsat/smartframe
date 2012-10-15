@@ -40,13 +40,13 @@ def doRegister():
             password = json['password']
             userinfo = json['info']
         else:
-            appid = 'smartrunner'
-            username = 'tester'
+            appid = '01'
+            username = 'borqsat'
             password = '654321'
             userinfo = {'email':'smartrunner@borqs.com', 'contact':'+8613911312632'}
         return userRegister(appid,username,password,userinfo)
 
-@app.route('/user/auth',method='POST')
+@app.route('/user/auth',method='GET')
 def doAuth():
     """
     URL:/user/auth
@@ -74,8 +74,8 @@ def doAuth():
             username = json['username']
             password = json['password']
         else:
-            appid = 'smartrunner'
-            username = 'tester'
+            appid = '01'
+            username = 'borqsat'
             password = '654321'           
         return userAuth(appid,username,password)
 

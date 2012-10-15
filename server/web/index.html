@@ -7,12 +7,18 @@
     <meta name="author" content="">
     <!-- global jquery.js -->
     <script type="text/javascript" src="static/js/jquery-1.7.2.min.js"></script>
-    <script type="text/javascript" src="static/js/json2.js"></script>    
+    <script type="text/javascript" src="static/js/jquery.cookie.js"></script>
+    <script type="text/javascript" src="static/js/json2.js"></script>
+    <script type="text/javascript" src="static/js/util.js"></script> 
     <script type="text/javascript" src="static/js/app.js"></script>
     <script src="static/js/bootstrap.js"></script>
     <script src="static/js/bootstrap-tooltip.js"></script>
     <script src="static/js/bootstrap-popover.js"></script>
     <script src="static/js/bootstrap-tab.js"></script>
+    <script type="text/javascript">
+       if($.cookie('ticket') === undefined || $.cookie('ticket') === null)
+          window.location = "login.html"
+    </script>
     <script type="text/javascript">$(window).load(function(){$("#loading").hide();})</script>
     <!-- Le styles -->
     <link href="static/css/bootstrap.css" rel="stylesheet">
@@ -31,8 +37,7 @@
            <h3>snapshots</h3>
        </div>
        <div id='snapsDiv' class="modal-body">
-
-        </div>
+       </div>
     </div>
 
     <div class="navbar navbar-fixed-top">

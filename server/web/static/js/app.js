@@ -1,17 +1,9 @@
-
-var WebServerURL = 'http://192.168.7.212:8080';
-
-
 $(document).ready(function(){
     createSessionList();
 });
 
 function createSessionList(){
     invokeWebApi("/test/session", {}, createSessionTable);
-}
-
-function invokeWebApi(cmd, jdata, call){
-    $.getJSON(WebServerURL+cmd+"?callback=?", jdata, call);
 }
 
 function createCaseSnaps(sid, tid){
@@ -28,7 +20,6 @@ function createCaseSnaps(sid, tid){
                 }
     }); 
 }
-
 
 function createDetailTable(ids){
 
