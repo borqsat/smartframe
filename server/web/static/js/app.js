@@ -80,10 +80,10 @@ function showTestDiv() {
 function createSnapshotDiv(sid) {
     curSid = sid;
 
-    $("#status_tab").removeClass('active');
+    $("#trace_tab").removeClass('active');
     $("#snap_tab").addClass('active'); 
 
-    $("#status_div").hide()
+    $("#trace_div").hide()
     $("#snap_div").show()
 
     if(ws !== undefined) ws.close();
@@ -120,9 +120,10 @@ function createSnapshotDiv(sid) {
 
 function createCaseResultDiv(sid) {
     curSid = sid;
-    $("#status_tab").addClass('active');
+    $("#trace_tab").addClass('active');
     $("#snap_tab").removeClass('active');    
-    $("#status_div").show()
+    
+    $("#trace_div").show()
     $("#snap_div1").hide()
 
     if(ws !== undefined) ws.close();

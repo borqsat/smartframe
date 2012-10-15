@@ -94,11 +94,11 @@ def doGetSessionList():
     if not (content_type):
         #return {'errors':{'code':500, 'msg':'Missing Content-Type'}}
     #else:
-        json=request.json
+        json = request.json
         if not json is None:
-            token=json['token']
+            token = json['token']
         else:
-            token='1122334455667788'      
+            token = '1122334455667788'      
         return wrapResults(getTestSessionList(token))
 
 @appweb.route('/test/caseresult/<sid>',method='GET')

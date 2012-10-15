@@ -16,9 +16,9 @@
     <script src="static/js/bootstrap-popover.js"></script>
     <script src="static/js/bootstrap-tab.js"></script>
     <script type="text/javascript">
-       if($.cookie('ticket') === undefined || $.cookie('ticket') === null)
-          window.location = "login.html"
-          $(window).load(function(){$("#loading").hide();})
+        if($.cookie('ticket') === undefined || $.cookie('ticket') === null)
+            window.location = "login.html"
+        $(window).load(function(){$("#loading").hide();})
     </script>
     <link href="static/css/bootstrap.css" rel="stylesheet">
     <link href="static/css/bootstrap-responsive.css" rel="stylesheet">
@@ -51,7 +51,7 @@
                   <li class="active"><a href="#">result</a></li>
               </ul>
               <ul class="navbar-text pull-right">
-                  <li><a href="#" id="logname"></a></li>                  
+                  <li><a href="#" class="navbar-text" id="logname"></a></li>                  
               </ul>
           </div>
     </div>
@@ -86,7 +86,7 @@
                         <li id="trace_tab" class="active"><a href="javascript:showTestDiv();">tracklog</a></li>
                         <li id="snap_tab"><a href="javascript:showSnapDiv();">snapshot</a></li>
                     </ul>
-                    <div id="status_div">
+                    <div id="trace_div">
                        <textarea id="myTerminal" border="1px" style="height:400px;width:98%"></textarea>
                     </div>
                     <div id="snap_div" style="display:none">
