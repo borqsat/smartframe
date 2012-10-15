@@ -43,7 +43,7 @@ def doRegister():
             username = 'borqsat'
             password = 'c33367701511b4f6020ec61ded352059'
             userinfo = {'email':'borqsat@gmail.com', 'contact':'+8613911312632'}
-        return userRegister(appid,username,password,userinfo)
+        return wrapResults(userRegister(appid,username,password,userinfo))
 
 @appweb.route('/user/auth',method='GET')
 def doAuth():
@@ -76,7 +76,7 @@ def doAuth():
             appid = '01'
             username = 'borqsat'
             password = 'c33367701511b4f6020ec61ded352059'           
-        return userAuth(appid,username,password)
+        return wrapResults(userAuth(appid,username,password))
 
 @appweb.route('/test/session',method='GET')
 def doGetSessionList():
