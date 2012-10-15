@@ -81,7 +81,7 @@ function createSnapshotDiv(sid) {
     if(ws !== undefined) ws.close();
 
     //screen snap channel
-    ws = new WebSocket("/test/session/"+sid+"/screen");
+    ws = getWebsocket("/test/session/"+sid+"/screen");
     var c=document.getElementById("myCanvas");
     var cxt=c.getContext("2d");
 
