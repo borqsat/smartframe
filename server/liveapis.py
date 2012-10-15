@@ -18,7 +18,7 @@ def handle_screen_websocket(sid):
         abort(400, 'Expected WebSocket request.')
     else:
         wslist.append(wsock)
-        wsock.send('snapsize:{"width":"600px","height":"1024px"}')
+        wsock.send('snapsize:{"width":"300px","height":"512px"}')
 
     while True:
         try:

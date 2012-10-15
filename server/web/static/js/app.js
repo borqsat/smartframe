@@ -81,11 +81,10 @@ function createSnapshotDiv(sid) {
     if(ws !== undefined) ws.close();
 
     //screen snap channel
-    ws = new WebSocket("ws://192.168.7.212:8082/test/session/"+sid+"/screen");
+    ws = new WebSocket("/test/session/"+sid+"/screen");
     var c=document.getElementById("myCanvas");
     var cxt=c.getContext("2d");
 
-    //var imgdata=cxt.createImageData(480, 800);
     ws.onopen = function() {
         ws.send('sync:ok');
     };
@@ -113,16 +112,13 @@ function createSnapshotDiv(sid) {
 
 function createCaseResultDiv(sid) {
     curSid = sid;
-
     $("#status_tab").addClass('active');
     $("#snap_tab").removeClass('active');    
     $("#status_div").show()
     $("#snap_div1").hide()
 
     if(ws !== undefined) ws.close();
-    //screen snap channel
-    ws = new WebSocket("ws://192.168.7.212:8082/test/session/"+sid+"/terminal");
-
+    ws = getWebsocket("/test/session/"+sid+"/terminal");
     ws.onopen = function() {
         ws.send('sync:ok');
     };
