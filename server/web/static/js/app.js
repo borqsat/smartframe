@@ -71,8 +71,12 @@ function showTestDiv() {
 
 function createSnapshotDiv(sid) {
     curSid = sid;
-    $("#status_tab").hide()
-    $("#snap_tab").show()
+
+    $("#status_tab").removeClass('active');
+    $("#snap_tab").addClass('active'); 
+
+    $("#status_div").hide()
+    $("#snap_div").show()
 
     if(ws !== undefined) ws.close();
 
@@ -109,8 +113,11 @@ function createSnapshotDiv(sid) {
 
 function createCaseResultDiv(sid) {
     curSid = sid;
-    $("#status_tab").show()
-    $("#snap_tab").hide()
+
+    $("#status_tab").addClass('active');
+    $("#snap_tab").removeClass('active');    
+    $("#status_div").show()
+    $("#snap_div1").hide()
 
     if(ws !== undefined) ws.close();
     //screen snap channel
@@ -270,7 +277,7 @@ function createRunningSessionDiv(product_list,product_cycle_product,product_cycl
             var $product_div = $('<div>').attr('id','ongoing'+plist[i]);
             //var $product_label = "<span class=\"label label-info\">"+plist[i]+"</span><span align=right>";
             var $product_table = $('<table>').attr('class','table table-bordered').attr('id','otable'+plist[i]);
-            var $th = '<thead><tr><th>planname</th><th>revision</th><th>statrtime</th><th>runtime</th></tr></thead>';
+            var $th = '<thead><tr><th>product</th><th>planname</th><th>revision</th><th>statrtime</th><th>runtime</th></tr></thead>';
             var $tbody = '<tbody></tbody>';
             $product_table.append($th);
             $product_table.append($tbody);
@@ -290,7 +297,8 @@ function createRunningSessionDiv(product_list,product_cycle_product,product_cycl
 
             if($("#"+allId).length<=0){
                 $tr = "<tr>"+
-                      "<td><a href=\"javascript:createCaseResultDiv('"+key+"');javascript:createAllTestList('"+key+"')\">"+product_cycle_planname[key]+"</a></td>"+      
+                      "<td><a href=\"javascript:createCaseResultDiv('"+key+"');javascript:createAllTestList('"+key+"')\">"+value+"</a></td>"+      
+                      "<td>"+product_cycle_planname[key]+"</td>"+                        
                       "<td>"+product_cycle_revision[key]+"</td>"+                     
                       "<td>"+product_cycle_starttime[key]+"</td>"+
                       //"<td>"+"<a id="+allId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['total']+"</a></td>"+

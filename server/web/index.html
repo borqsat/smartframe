@@ -74,23 +74,25 @@
            </div>
 
            <div class="mtbfunit span5">
-                <div id="detail_panel">
-                    <span class="label label-info">Detail Result</span>
-                    <div id="detail_table"></div>
-                </div>
-                <hr>
                 <div id="device_panel">
                     <span class="label label-info">Device Info</span>
                     <div id="device_table"></div>
                 </div>
                 <hr>
+                <div id="detail_panel">
+                    <span class="label label-info">Cases Result</span>
+                    <div id="detail_table"></div>
+                </div>
+                <hr>
                 <div id="live_panel">
-                    <input type="button" class="label label-info" value="tracklog" onclick="showTestDiv()">
-                    <input type="button" class="label label-info" value="snapshot" onclick="showSnapDiv()">
-                    <div id="status_tab">
+                    <ul class="nav nav-tabs">
+                        <li id="trace_tab" class="active"><a href="javascript:showTestDiv();">tracklog</a></li>
+                        <li id="snap_tab"><a href="javascript:showSnapDiv();">snapshot</a></li>
+                    </ul>
+                    <div id="status_div">
                        <textarea id="myTerminal" border="1px" style="height:400px;width:98%"></textarea>
                     </div>
-                    <div id="snap_tab" style="display:none">
+                    <div id="snap_div" style="display:none">
                        <canvas id="myCanvas" border="1px"></canvas>
                     </div>
                 </div>                   
