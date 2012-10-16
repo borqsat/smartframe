@@ -4,6 +4,10 @@ def createTestSession(token,sid,planname,starttime, deviceid, deviceinfo):
     store.createTestSession(sid, planname, starttime, deviceid, deviceinfo)
     return {'results':1}
 
+def updateTestSession(token,sid,endtime):
+    store.updateTestSession(sid, endtime)
+    return {'results':1}
+
 def deleteTestSession(token,sid):
     store.deleteTestSession(sid)
     return {'results':1}

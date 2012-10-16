@@ -45,13 +45,41 @@ def doCreateSession(sid):
             deviceinfo = {'product':'AT390', 'revision':'6628', 'width':480, 'height':800}
         return createTestSession(token, sid, planname, starttime, deviceid, deviceinfo)
 
+@app.route('/test/session/<sid>/update',method='POST')
+def doUpdateSession(sid):
+    """
+    URL:/test/session/<sid>/update
+    TYPE:http/POST
+
+    upload a test session to server.
+
+    @type data:JSON
+    @param data:{'token':(string)value,
+                 'endtime':(string)timevalue}
+    @rtype: JSON
+    @return:ok-{'results':1}
+            error-{'errors':{'code':value,'msg':(string)info}}
+    """
+    content_type = request.headers.get('Content-Type')
+    if not (content_type):
+        return {'errors':{'code':500, 'msg':'Missing Content-Type'}}
+    else:
+        json = request.json
+        if not json is None:
+            token = json['token']
+            endtime = json['endtime']
+        else:
+            token = '1122334455667788'
+            endtime = 'N/A'
+        return updateTestSession(token, sid, endtime)
+
 @app.route('/test/session/<sid>/delete',method='POST')
 def doDeleteSession(sid):
     """
     URL:/test/session/<sid>/delete
     TYPE:http/POST
 
-    upload a test session to server.
+    delete a test session from server.
 
     @type data:JSON
     @param data:{'token':(string)value}
@@ -98,8 +126,8 @@ def doCreateTestResult(sid, tid):
             casename = json['casename']
             starttime = json['starttime']
         else:
-            token = '112233445566'
-            casename = 'MOCall.testcase'
+            token = '1122334455667788'
+            casename = 'N/A'
             starttime = time.strftime('%Y.%m.%d-%H.%M.%S', time.localtime(time.time()))
         return createCaseResult(token, sid, tid, casename, starttime)
 
@@ -131,7 +159,7 @@ def doUpdateTestResult(sid, tid):
             status = json['result']         
         else:
             token = '1122334455667788'
-            status = 'Pass'
+            status = 'N/A'
         return updateCaseResult(token, sid, tid, status)
 
 @app.route('/test/caseresult/<sid>/<tid>/fileupload',method='PUT')

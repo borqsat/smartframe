@@ -79,6 +79,12 @@ class dbStore(object):
                        'deviceid':deviceid,
                        'deviceinfo':devinfo
                       });
+    def updateTestSession(self,sid,endtime):
+        """
+        write a test session record in database
+        """
+        session = self.db['session']
+        session.update({'sid':sid},{'$set':{'endtime':endtime}});        
 
     def deleteTestSession(self,sid):
         """

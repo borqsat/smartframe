@@ -35,6 +35,7 @@ function createDetailTable(ids){
     var $tb = $('<table>').attr('id', ids).attr('class','table table-striped');
     var $th = '<thead>'+
               '<tr>'+
+              '<th align="left">id</th>'+
               '<th align="left">StartTime</th>'+
               '<th align="left">TestCase</th>'+
               '<th align="left">Result</th>'+
@@ -70,21 +71,25 @@ function showTestDetail(div_id){
 var curSid = "";
 var ws = undefined;
 function showSnapDiv() {
+    $("#trace_tab").removeClass('active');
+    $("#snap_tab").addClass('active'); 
+    $("#trace_div").hide()
+    $("#snap_div").show()
+
     if(curSid !== "") createSnapshotDiv(curSid);
 }
 
 function showTestDiv() {
+    $("#trace_tab").addClass('active');
+    $("#snap_tab").removeClass('active');    
+    $("#trace_div").show()
+    $("#snap_div1").hide()
+    
     if(curSid !== "") createCaseResultDiv(curSid);
 }
 
 function createSnapshotDiv(sid) {
     curSid = sid;
-
-    $("#trace_tab").removeClass('active');
-    $("#snap_tab").addClass('active'); 
-
-    $("#trace_div").hide()
-    $("#snap_div").show()
 
     if(ws !== undefined) ws.close();
 
@@ -120,11 +125,6 @@ function createSnapshotDiv(sid) {
 
 function createCaseResultDiv(sid) {
     curSid = sid;
-    $("#trace_tab").addClass('active');
-    $("#snap_tab").removeClass('active');    
-    
-    $("#trace_div").show()
-    $("#snap_div1").hide()
 
     if(ws !== undefined) ws.close();
     ws = getWebsocket("/test/session/"+sid+"/terminal");
@@ -151,12 +151,9 @@ function fillDetailTable(data, ids, tag){
 
     var detail_table = $("#"+ids+" > tbody");
 
-    if($("#"+ids).length>0){ //table exist?
-
+    if($("#"+ids).length > 0){ 
         $("#"+ids+ " tr:gt(0)").remove(); //delete table content
-
         for (var i in data.results.cases){
-
             var ctime,cname,cresult,ctraceinfo,ctid,csid, trId;
             ctid=data.results.cases[i]['tid'];
             csid=data.results.cases[i]['sid'];           
@@ -173,8 +170,8 @@ function fillDetailTable(data, ids, tag){
             trId="#"+ids+"_"+i;
 
             if(cresult=='fail'){
-
                 detail_table.append("<tr id=\""+trId+"\">"+
+                                        "<td>"+ctid+"</td>"+                  
                                         "<td>"+ctime+"</td>"+
                                         "<td>"+casename+"</td>"+
                                         "<td><font color=\"red\">"+cresult+"<font></td>"+
@@ -189,9 +186,10 @@ function fillDetailTable(data, ids, tag){
                                         "<td><a id=\"f_"+ctid+"_"+i+"\" data-toggle=\"modal\" href=\"#myModal\" onclick=\"createCaseSnaps('"+csid+"','"+ctid+"');\">snapshot</a></td>"+
                                         "</tr>");
 
-         }else if(cresult=='error') {
+            } else if(cresult=='error') {
 
-             detail_table.append("<tr id=\""+trId+"\">"+
+                detail_table.append("<tr id=\""+trId+"\">"+
+                                     "<td>"+ctid+"</td>"+
                                      "<td>"+ctime+"</td>"+
                                      "<td>"+casename+"</td>"+
                                      "<td><font color=\"red\">"+cresult+"<font></td>"+
@@ -204,27 +202,30 @@ function fillDetailTable(data, ids, tag){
                                      "<td></td>"+
                                      "</tr>");
 
-         }else if (cresult == 'running' || cresult == 'pass'){
-             if (cresult == 'running'){
-                detail_table.append("<tr id=\""+trId+"\">"+
-                                     "<td>"+ctime+"</td>"+
-                                     "<td>"+casename+"</td>"+
-                                     "<td> <img src=\"static/img/running1.gif\" alt=\"running\" /> </td>"+
-                                     "<td>"+ctraceinfo+"</td>"+
-                                     "<td> </td>"+
-                                     "<td> </td>"+
-                                     "</tr>");     
-             }else{    
-                 detail_table.append("<tr id=\""+trId+"\">"+
-                                     "<td>"+ctime+"</td>"+
-                                     "<td>"+casename+"</td>"+
-                                     "<td>"+cresult+"</td>"+
-                                     "<td>"+ctraceinfo+"</td>"+
-                                     "<td> </td>"+
-                                     "<td> </td>"+
-                                     "</tr>");
+           } else if (cresult == 'running' || cresult == 'pass'){
+                 if (cresult == 'running'){
+                    detail_table.append("<tr id=\""+trId+"\">"+
+                                        "<td>"+ctid+"</td>"+
+                                        "<td>"+ctime+"</td>"+
+                                        "<td>"+casename+"</td>"+
+                                        "<td> <img src=\"static/img/running1.gif\" alt=\"running\" /> </td>"+
+                                        "<td>"+ctraceinfo+"</td>"+
+                                        "<td> </td>"+
+                                        "<td> </td>"+
+                                        "</tr>");     
+                 } else {    
+                    detail_table.append("<tr id=\""+trId+"\">"+
+                                        "<td>"+ctid+"</td>"+
+                                        "<td>"+ctime+"</td>"+
+                                        "<td>"+casename+"</td>"+
+                                        "<td>"+cresult+"</td>"+
+                                        "<td>"+ctraceinfo+"</td>"+
+                                        "<td> </td>"+
+                                        "<td> </td>"+
+                                        "</tr>");
                  }    
-             } }
+            } 
+        }
     }
 }
 
@@ -260,11 +261,9 @@ function arrayUnique(data){
 function createAllTestList(key) {
 
       var allTableId = 'alltable_'+key.replace('cycle:','');
-
-      //get target cycle fail list
       invokeWebApi('/test/caseresult/'+key,
-                     {},
-                    function(data){
+                   {},
+                  function(data){
                         createDetailTable(allTableId);
                         fillDetailTable(data,allTableId,'all');
                   });
