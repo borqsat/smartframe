@@ -74,11 +74,12 @@ class dbStore(object):
                        'planname':planname,
                        'result':{'total':0,'pass':0,'fail':0,'error':0},
                        'starttime':starttime,
-                       'endtime': '', 
+                       'endtime': 'N/A', 
                        'runtime': 0,
                        'deviceid':deviceid,
                        'deviceinfo':devinfo
                       });
+
     def updateTestSession(self,sid,endtime):
         """
         write a test session record in database
@@ -126,6 +127,7 @@ class dbStore(object):
                 'casename':d['casename'],
                 'starttime':d['starttime'],
                 'endtime':d['endtime'],
+                'traceinfo':d['traceinfo'],
                 'result':d['result']} for d in rdata]
         result['count'] = len(lists)
         result['cases'] = lists
@@ -149,7 +151,9 @@ class dbStore(object):
             result = {'tid':d['tid'],
                     'casename':d['casename'],
                     'starttime':d['starttime'],
+                    'endtime':d['endtime'],
                     'result':d['result'],
+                    'traceinfo':d['traceinfo'],
                     'log':d['log'],
                     'snapshots':d['snapshots']}
         return result
@@ -177,11 +181,11 @@ class dbStore(object):
         self.mc.set(sid+'name',casename)
         self.mc.set(sid+'status','start')
         caseresult = self.db['caseresult']
-        caseresult.insert({'sid':sid, 'tid':tid, 'casename':casename, 'result':'running', 'starttime':starttime, 'endtime':starttime,'snapshots':[]})
+        caseresult.insert({'sid':sid, 'tid':tid, 'casename':casename, 'log':'N/A', 'traceinfo':'N/A','result':'running', 'starttime':starttime, 'endtime':'N/A','snapshots':[]})
         session = self.db['session']
         session.update({'sid':sid},{'$inc':{'result.total':1}})
 
-    def updateTestCaseResult(self, sid, tid, status):
+    def updateTestCaseResult(self, sid, tid, status, traceinfo, endtime):
         """
         update a test case resut record in database
         If case get failed, write snapshot png files in GridFS
@@ -197,7 +201,7 @@ class dbStore(object):
         else:
             session.update({'sid':sid},{'$inc':{'result.error':1}})
 
-        caseresult.update({'sid':sid,'tid':tid},{'$set':{'result':status}})
+        caseresult.update({'sid':sid,'tid':tid},{'$set':{'result':status,'traceinfo':traceinfo,'endtime':endtime}})
 
     def writeTestLog(self,sid, tid,logfile):
         """

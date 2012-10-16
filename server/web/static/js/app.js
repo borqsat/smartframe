@@ -84,7 +84,7 @@ function showTestDiv() {
     $("#snap_tab").removeClass('active');    
     $("#trace_div").show()
     $("#snap_div1").hide()
-    
+
     if(curSid !== "") createCaseResultDiv(curSid);
 }
 
@@ -366,7 +366,101 @@ function createRunningSessionDiv(product_list,product_cycle_product,product_cycl
        })
    }
 }
+//create html data content
+function createFinishedSessionDiv(product_list,product_cycle_product,product_cycle_planname,product_cycle_result,product_cycle_starttime,product_cycle_runtime,product_cycle_revision){
 
+    var plist = product_list;
+    var $cycle_panel = $("#stop_cycle_panel");
+    for(var i = 0; i < plist.length; i++) {
+        if(plist[i] === 'undefined') continue;
+
+        if($("#stoprun"+plist[i]).length <=0 ){
+            var $product_div = $('<div>').attr('id','stoprun'+plist[i]);
+            var $product_table = $('<table>').attr('class','table table-bordered').attr('id','otable'+plist[i]);
+            var $th = '<thead><tr><th>product</th><th>planname</th><th>revision</th><th>statrtime</th><th>all</th><th>pass</th><th>fail</th><th>error</th><th>runtime</th></tr></thead>';
+            var $tbody = '<tbody></tbody>';
+            $product_table.append($th);
+            $product_table.append($tbody);
+            $product_div.append($product_table);
+            $cycle_panel.append($product_div);
+        }
+
+        $.each(product_cycle_product, function(key, value){
+
+        if(value == plist[i]){
+            var ids = key;
+            var allId = "o_"+ids;
+            var failId = 'fail_'+ids;
+            var passId = 'pass_'+ids;
+            var errorId = 'error_'+ids;
+
+            if($("#"+allId).length<=0){
+                $tr = "<tr>"+
+                      "<td><a href=\"javascript:createCaseResultDiv('"+key+"');javascript:createAllTestList('"+key+"')\">"+value+"</a></td>"+      
+                      "<td>"+product_cycle_planname[key]+"</td>"+                        
+                      "<td>"+product_cycle_revision[key]+"</td>"+                     
+                      "<td>"+product_cycle_starttime[key]+"</td>"+
+                      "<td>"+"<a id="+allId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['total']+"</a></td>"+
+                      "<td>"+"<a id="+passId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['pass']+"</td>"+
+                      "<td>"+"<a id="+failId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['fail']+"</td>"+
+                      "<td>"+"<a id="+errorId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['error']+"</td>"+
+                      "<td>"+setRunTime(product_cycle_runtime[key])+"s</td>"+
+                      "</tr>";
+
+                $product_table.append($tr);
+
+
+                $("#"+allId).click(function(){
+                    var allTableId = 'alltable_'+key.replace('cycle:','');
+
+                    //get target cycle fail list
+                    invokeWebApi('/test/caseresult/'+key,
+                                  {},
+                                  function(data){
+                                      createDetailTable(allTableId);
+                                      fillDetailTable(data,allTableId,'all');
+                                });
+                });       
+
+                $("#"+failId).click(function(){
+                    var failTableId = 'failtable_'+key.replace('cycle:','');
+
+                    //get target cycle fail list
+                    invokeWebApi('/test/caseresult/'+key,
+                                {},
+                                function(data){
+                                    createDetailTable(failTableId);
+                                    fillDetailTable(data,failTableId,'fail');
+                                });
+
+                });
+               
+
+                $("#"+passId).click(function(){
+                    var passTableId = 'passtable_'+key.replace('cycle:','');
+                    
+                    invokeWebApi('/test/caseresult/'+key,
+                                  {},
+                                  function(data){
+                                    createDetailTable(passTableId);
+                                    fillDetailTable(data,passTableId,'pass');
+                                });
+                });
+               
+
+                $("#"+errorId).click(function(){
+                    var errorTableId = 'errortable_'+key.replace('cycle:','');
+                    invokeWebApi('/test/caseresult/'+key,
+                                  {},
+                                  function(data){
+                                      fillDetailTable(data,errorTableId,'error');
+                                });
+                });
+            }
+          }
+       })
+   }
+}
 
 function setRunTime(secs) {
     var minute = Math.floor((secs / 60) % 60);
@@ -410,20 +504,12 @@ function createSessionTable(data){
         var revision = item.deviceinfo['revision'];
         var starttime = item.starttime;
         var cycleresult = item.result;
-        var cycleimei = '0';
+        var cycleimei = 'N/A';
+        var cyclestarttime = item.starttime;
         var cycleruntime = item.runtime;
-        var cycleendtime = ''
+        var cycleendtime = item.endtime;
 
-        if (cycleendtime==''){
-            product_run_list[idx] = product;
-            product_run_cycle_product[cycleid] = product;
-            product_run_cycle_plan[cycleid] = planname;
-            product_run_cycle_starttime[cycleid] = starttime;
-            product_run_cycle_revision[cycleid] = revision;
-            product_run_cycle_result[cycleid] = cycleresult;
-            product_run_cycle_runtime[cycleid] = cycleruntime;
-            product_run_cycle_userid[cycleid] = cycleuserid;
-        } else {
+        if (cycleendtime !== '' && cycleendtime !== 'N/A'){
             product_stop_list[idx] = product;
             product_stop_cycle_product[cycleid] = product;
             product_stop_cycle_plan[cycleid] = planname;
@@ -435,6 +521,15 @@ function createSessionTable(data){
             product_stop_cycle_revision[cycleid] = revision;
             product_stop_cycle_imei[cycleid] = cycleimei;
             product_stop_cycle_cyclestarttime[cycleid] = cyclestarttime;
+        } else {
+            product_run_list[idx] = product;
+            product_run_cycle_product[cycleid] = product;
+            product_run_cycle_plan[cycleid] = planname;
+            product_run_cycle_starttime[cycleid] = starttime;
+            product_run_cycle_revision[cycleid] = revision;
+            product_run_cycle_result[cycleid] = cycleresult;
+            product_run_cycle_runtime[cycleid] = cycleruntime;
+            product_run_cycle_userid[cycleid] = cycleuserid;
         }
     });
 
@@ -444,4 +539,13 @@ function createSessionTable(data){
                             product_run_cycle_starttime,
                             product_run_cycle_runtime,
                             product_run_cycle_revision);
+
+    createFinishedSessionDiv(arrayUnique(product_stop_list),
+                            product_stop_cycle_product,
+                            product_stop_cycle_plan,    
+                            product_stop_cycle_result,                    
+                            product_stop_cycle_starttime,
+                            product_stop_cycle_runtime,
+                            product_stop_cycle_revision);
+
 }

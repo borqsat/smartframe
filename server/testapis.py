@@ -156,11 +156,15 @@ def doUpdateTestResult(sid, tid):
         json = request.json
         if not json is None:
             token = json['token'] 
-            status = json['result']         
+            status = json['result']
+            traceinfo = json['traceinfo']
+            endtime = json['time']
         else:
             token = '1122334455667788'
             status = 'N/A'
-        return updateCaseResult(token, sid, tid, status)
+            traceinfo = 'N/A'
+            endtime = 'N/A'
+        return updateCaseResult(token, sid, tid, status, traceinfo, endtime)
 
 @app.route('/test/caseresult/<sid>/<tid>/fileupload',method='PUT')
 def doUploadFile(sid, tid):

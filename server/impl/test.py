@@ -37,8 +37,8 @@ def getTestCaseInfo(token, sid, tid):
     else:
         return {'errors':{'code':404,'msg':'None reuslt.'}}
 
-def updateCaseResult(token,sid, tid,status):
-    store.updateTestCaseResult(sid, tid, status)
+def updateCaseResult(token,sid, tid,status,traceinfo, endtime):
+    store.updateTestCaseResult(sid, tid, status,traceinfo,endtime)
     return {'results':1}
 
 def uploadCaseResultFile(token, sid, tid, rawdata, ftype='png'):
