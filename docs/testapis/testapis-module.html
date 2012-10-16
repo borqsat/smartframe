@@ -78,44 +78,44 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="testapis-module.html#doRegister" class="summary-sig-name">doRegister</a>()</span><br />
-      URL:/user/register TYPE:http/POST</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="testapis-pysrc.html#doRegister">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">JSON</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a href="testapis-module.html#doAuth" class="summary-sig-name">doAuth</a>()</span><br />
-      URL:/user/auth TYPE:http/POST</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="testapis-pysrc.html#doAuth">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">JSON</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
           <td><span class="summary-sig"><a href="testapis-module.html#doCreateSession" class="summary-sig-name">doCreateSession</a>(<span class="summary-sig-arg">sid</span>)</span><br />
       URL:/test/session/&lt;sid&gt;/create TYPE:http/POST</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="testapis-pysrc.html#doCreateSession">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">JSON</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="testapis-module.html#doUpdateSession" class="summary-sig-name">doUpdateSession</a>(<span class="summary-sig-arg">sid</span>)</span><br />
+      URL:/test/session/&lt;sid&gt;/update TYPE:http/POST</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="testapis-pysrc.html#doUpdateSession">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">JSON</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="testapis-module.html#doDeleteSession" class="summary-sig-name">doDeleteSession</a>(<span class="summary-sig-arg">sid</span>)</span><br />
+      URL:/test/session/&lt;sid&gt;/delete TYPE:http/POST</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="testapis-pysrc.html#doDeleteSession">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -221,72 +221,6 @@
   </td>
 </tr>
 </table>
-<a name="doRegister"></a>
-<div>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr><td>
-  <table width="100%" cellpadding="0" cellspacing="0" border="0">
-  <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">doRegister</span>()</span>
-  </h3>
-  </td><td align="right" valign="top"
-    ><span class="codelink"><a href="testapis-pysrc.html#doRegister">source&nbsp;code</a></span>&nbsp;
-    </td>
-  </tr></table>
-  
-  <p>URL:/user/register TYPE:http/POST</p>
-  <p>register a new account to server-side</p>
-  <dl class="fields">
-    <dt>Parameters:</dt>
-    <dd><ul class="nomargin-top">
-        <li><strong class="pname"><code>appid</code></strong> (string) - the id of app/domain</li>
-        <li><strong class="pname"><code>user</code></strong> (string) - the userName of account</li>
-        <li><strong class="pname"><code>pswd</code></strong> (string) - the password of account</li>
-        <li><strong class="pname"><code>info</code></strong> (JSON) - the info of account</li>
-    </ul></dd>
-    <dt>Returns: JSON</dt>
-        <dd>ok-{'results':1} error-{'errors':{'code':0,'msg':(string)info}}</dd>
-    <dt>Decorators:</dt>
-    <dd><ul class="nomargin-top">
-        <li><code>@app.route('/user/register', method= 'POST')</code></li>
-    </ul></dd>
-  </dl>
-</td></tr></table>
-</div>
-<a name="doAuth"></a>
-<div>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr><td>
-  <table width="100%" cellpadding="0" cellspacing="0" border="0">
-  <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">doAuth</span>()</span>
-  </h3>
-  </td><td align="right" valign="top"
-    ><span class="codelink"><a href="testapis-pysrc.html#doAuth">source&nbsp;code</a></span>&nbsp;
-    </td>
-  </tr></table>
-  
-  <p>URL:/user/auth TYPE:http/POST</p>
-  <p>Get access token by username and password</p>
-  <dl class="fields">
-    <dt>Parameters:</dt>
-    <dd><ul class="nomargin-top">
-        <li><strong class="pname"><code>appid</code></strong> (string) - the id of app/domain</li>
-        <li><strong class="pname"><code>user</code></strong> (string) - the userName of account</li>
-        <li><strong class="pname"><code>pswd</code></strong> (string) - the password of account</li>
-    </ul></dd>
-    <dt>Returns: JSON</dt>
-        <dd>ok-{'results':{'token':(string)value}} 
-          error-{'errors':{'code':0,'msg':(string)info}}</dd>
-    <dt>Decorators:</dt>
-    <dd><ul class="nomargin-top">
-        <li><code>@app.route('/user/auth', method= 'POST')</code></li>
-    </ul></dd>
-  </dl>
-</td></tr></table>
-</div>
 <a name="doCreateSession"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
@@ -316,6 +250,68 @@
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
         <li><code>@app.route('/test/session/<sid>/create', method= 'POST')</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="doUpdateSession"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">doUpdateSession</span>(<span class="sig-arg">sid</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="testapis-pysrc.html#doUpdateSession">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>URL:/test/session/&lt;sid&gt;/update TYPE:http/POST</p>
+  <p>upload a test session to server.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>data</code></strong> (JSON) - {'token':(string)value, 'endtime':(string)timevalue}</li>
+    </ul></dd>
+    <dt>Returns: JSON</dt>
+        <dd>ok-{'results':1} 
+          error-{'errors':{'code':value,'msg':(string)info}}</dd>
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@app.route('/test/session/<sid>/update', method= 'POST')</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="doDeleteSession"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">doDeleteSession</span>(<span class="sig-arg">sid</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="testapis-pysrc.html#doDeleteSession">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>URL:/test/session/&lt;sid&gt;/delete TYPE:http/POST</p>
+  <p>delete a test session from server.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>data</code></strong> (JSON) - {'token':(string)value}</li>
+    </ul></dd>
+    <dt>Returns: JSON</dt>
+        <dd>ok-{'results':1} 
+          error-{'errors':{'code':value,'msg':(string)info}}</dd>
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@app.route('/test/session/<sid>/delete', method= 'POST')</code></li>
     </ul></dd>
   </dl>
 </td></tr></table>
@@ -453,7 +449,7 @@
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Tue Oct  9 11:39:06 2012
+    Generated by Epydoc 3.0.1 on Tue Oct 16 10:52:43 2012
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
