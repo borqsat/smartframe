@@ -10,6 +10,8 @@ function createSessionList(){
 }
 
 function createCaseSnaps(sid, tid){
+
+    $('#snaplists').html('');
     invokeWebApi('/test/caseresult/'+sid+'/'+tid+'/snapshot',
                 {},
                 function(data){
@@ -19,7 +21,7 @@ function createCaseSnaps(sid, tid){
                         ig.src = 'data:image/png;base64,' + d;
                         ig.width = '120px';
                         ig.height = '200px';
-                        $('#snapsDiv').append(ig);
+                        $('#snaplists').append(ig);
                 }
     }); 
 }
@@ -65,32 +67,26 @@ function showTestDetail(div_id){
 
 var curSid = "";
 var ws = undefined;
-function showSnapDiv() {
-    $("#trace_tab").removeClass('active');
-    $("#snap_tab").addClass('active'); 
-    $("#trace_div").hide()
-    $("#snap_div").show()
 
-    if(curSid !== "") createSnapshotDiv(curSid);
+function showSnapDiv(sid) {
+    $("#history_div").hide();
+    $("#snap_div").show();
+    createSnapshotDiv(sid);
 }
 
-function showTestDiv() {
-    $("#trace_tab").addClass('active');
-    $("#snap_tab").removeClass('active');    
-    $("#trace_div").show()
-    $("#snap_div1").hide()
-
-    if(curSid !== "") createCaseResultDiv(curSid);
+function showHistoryDiv(sid, tid) { 
+    $("#history_div").show();
+    $("#snap_div").hide();
+    createCaseSnaps(sid, tid);
 }
 
 function createSnapshotDiv(sid) {
-    curSid = sid;
 
     if(ws !== undefined) ws.close();
 
     //screen snap channel
     ws = getWebsocket("/test/session/"+sid+"/screen");
-    var c=document.getElementById("myCanvas");
+    var c=document.getElementById("snapCanvas");
     var cxt=c.getContext("2d");
 
     ws.onopen = function() {
@@ -118,7 +114,7 @@ function createSnapshotDiv(sid) {
     }
 }
 
-function createCaseResultDiv(sid) {
+/*function createCaseResultDiv(sid) {
     curSid = sid;
 
     if(ws !== undefined) ws.close();
@@ -140,7 +136,7 @@ function createCaseResultDiv(sid) {
         $("#myTerminal").append(data+"\r\n");
     }
 }
-
+*/
 
 function fillDetailTable(data, ids, tag){
 
@@ -179,7 +175,8 @@ function fillDetailTable(data, ids, tag){
                                         "<pre><h5>"+ctraceinfo+"</h5></pre></div>"+
                                         "</td>"+
                                         "<td><a href=\""+WebServerURL+"/test/caseresult/"+csid+"/"+ctid+"/log\">log</a> </td>"+
-                                        "<td><a id=\"f_"+ctid+"_"+i+"\" data-toggle=\"modal\" href=\"#myModal\" onclick=\"createCaseSnaps('"+csid+"','"+ctid+"');\">snapshot</a></td>"+
+                                        //"<td><a id=\"f_"+ctid+"_"+i+"\" data-toggle=\"modal\" href=\"#myModal\" onclick=\"createCaseSnaps('"+csid+"','"+ctid+"');\">snapshot</a></td>"+
+                                        "<td><a id=\"f_"+ctid+"_"+i+"\" href=\"javascript:showHistoryDiv('"+csid+"','"+ctid+"');\">snapshot</a></td>"+
                                         "</tr>");
 
             } else if(cresult=='error') {
@@ -309,7 +306,7 @@ function createRunningSessionDiv(product_list,product_cycle_product,product_cycl
    }
 }
 //create html data content
-function createFinishedSessionDiv(product_list,product_cycle_product,product_cycle_planname,product_cycle_result,product_cycle_starttime,product_cycle_runtime,product_cycle_revision){
+function createFinishedSessionDiv(product_list,product_cycle_product,product_cycle_planname,product_cycle_result,product_cycle_starttime,product_cycle_endtime,product_cycle_revision){
 
     var plist = product_list;
     var $cycle_panel = $("#stop_cycle_panel");
@@ -319,7 +316,7 @@ function createFinishedSessionDiv(product_list,product_cycle_product,product_cyc
         if($("#stoprun"+plist[i]).length <=0 ){
             var $product_div = $('<div>').attr('id','stoprun'+plist[i]);
             var $product_table = $('<table>').attr('class','table table-bordered').attr('id','otable'+plist[i]);
-            var $th = '<thead><tr><th>product</th><th>build</th><th>planname</th><th>statrtime</th><th>all</th><th>pass</th><th>fail</th><th>error</th><th>runtime</th></tr></thead>';
+            var $th = '<thead><tr><th>product</th><th>build</th><th>planname</th><th>statrtime</th><th>all</th><th>pass</th><th>fail</th><th>error</th><th>endtime</th></tr></thead>';
             var $tbody = '<tbody></tbody>';
             $product_table.append($th);
             $product_table.append($tbody);
@@ -343,10 +340,10 @@ function createFinishedSessionDiv(product_list,product_cycle_product,product_cyc
                       "<td>"+product_cycle_planname[key]+"</td>"+                               
                       "<td>"+product_cycle_starttime[key]+"</td>"+
                       "<td>"+"<a id="+allId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['total']+"</a></td>"+
-                      "<td>"+"<a id="+passId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['pass']+"</td>"+
-                      "<td>"+"<a id="+failId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['fail']+"</td>"+
-                      "<td>"+"<a id="+errorId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['error']+"</td>"+
-                      "<td>"+setRunTime(product_cycle_runtime[key])+"s</td>"+
+                      "<td>"+"<a id="+passId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['pass']+"</a></td>"+
+                      "<td>"+"<a id="+failId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['fail']+"</a></td>"+
+                      "<td>"+"<a id="+errorId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['error']+"</a></td>"+
+                      "<td>"+product_cycle_endtime[key]+"</td>"+
                       "</tr>";
 
                 $product_table.append($tr);
@@ -487,7 +484,7 @@ function createSessionTable(data){
                             product_stop_cycle_plan,    
                             product_stop_cycle_result,                    
                             product_stop_cycle_starttime,
-                            product_stop_cycle_runtime,
+                            product_stop_cycle_endtime,
                             product_stop_cycle_revision);
 
 }

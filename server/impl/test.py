@@ -61,9 +61,9 @@ def getTestCaseLog(token, sid, tid):
 def getTestCaseSnaps(token, sid, tid):
     imgBuffer = store.readTestHistorySnaps(sid, tid)
     if not imgBuffer is None:
-        return imgBuffer
+        return {'results':imgBuffer}
     else:
-        return []
+        return {'results':{'snaps':[]}}
 
 def getTestSessionSnaps(token, sid):
     imgBuffer = store.readTestLiveSnaps(sid)

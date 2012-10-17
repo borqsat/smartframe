@@ -58,15 +58,20 @@
                 </div>
 
                 <div class="mtbfunit" id="live_panel">
-                    <ul class="nav nav-tabs">
+                    <!--ul class="nav nav-tabs">
                         <li id="trace_tab" class="active"><a href="javascript:showTestDiv();">tracklog</a></li>
                         <li id="snap_tab"><a href="javascript:showSnapDiv();">snapshot</a></li>
                     </ul>
                     <div id="trace_div">
                        <textarea id="myTerminal" border="1px" style="height:400px;width:98%"></textarea>
-                    </div>
+                    </div-->
+                    <span class="label label-info">Snaps</span>
+                    <div id="history_div">
+                       <div id="snaplists"></div>
+                    </div>   
+
                     <div id="snap_div" style="display:none">
-                       <canvas id="myCanvas" border="1px"></canvas>
+                       <canvas id="snapCanvas" border="1px"></canvas>
                     </div>
                 </div>                   
         </div>
@@ -96,7 +101,6 @@
         $(function(){
             var sid = getRequestParam(window.location.href,'sid');
             createAllTestList(sid);
-            //createCaseResultDiv(sid);
         });
     </script>
 </html>

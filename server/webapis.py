@@ -213,11 +213,10 @@ def doGetCaseResultSnapshots(sid, tid):
     #else:
         json=request.json
         if not json is None:
-            token=json['token']     
+            token=json['token']
         else:
             token='1122334455667788'
-        results = getTestCaseSnaps(token,sid,tid)
-        return {'results':results}
+        return wrapResults(getTestCaseSnaps(token,sid,tid))
 
 ###################Utilities####################
 def wrapResults(results):
