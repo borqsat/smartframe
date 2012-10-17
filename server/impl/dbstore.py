@@ -119,9 +119,19 @@ class dbStore(object):
         """
         read list of test session records in database
         """
+        session = self.db['session']
+        rdata = session.find({'sid':sid})
+        for d in rdata:
+            result = {'sid':d['sid'],
+                      'planname':d['planname'],
+                      'result':d['result'],
+                      'starttime':d['starttime'],
+                      'endtime':d['endtime'],
+                      'runtime':d['runtime'],
+                      'deviceid':d['deviceid'],
+                      'deviceinfo':d['deviceinfo']}
         caseresult = self.db['caseresult']
         rdata = caseresult.find({'sid':sid})
-        result = {}
         lists = [{'tid':d['tid'],
                 'sid':d['sid'],
                 'casename':d['casename'],

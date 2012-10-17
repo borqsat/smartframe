@@ -17,11 +17,11 @@ function createCaseSnaps(sid, tid){
                 function(data){
                     if(data.results === undefined) return;
                     for(var d in data.results.snaps) {
-                        var ig = new Image();
-                        ig.src = 'data:image/png;base64,' + d;
-                        ig.width = '120px';
-                        ig.height = '200px';
-                        $('#snaplists').append(ig);
+                        var $ig = new Image();
+                        $ig.src = 'data:image/png;base64,' + data.results.snaps[d];
+                        $('#snaplists').append($ig);
+                        $ig.setAttribute("width","150px");
+                        $ig.setAttribute("height","256px");
                 }
     }); 
 }
