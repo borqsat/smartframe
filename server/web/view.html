@@ -44,16 +44,34 @@
  </div>
  <div class="container-fluid">
     <div class="row-fluid">
-        <div class="span12">
-           <div id="run_cycle_panel" class="mtbfunit">
-                    <span class="label label-info">Running Session</span>
+           <div class="mtbfunit span6">
+                <div id="detail_panel">
+                    <span class="label label-info">Cases Result</span>
+                    <div id="detail_table"></div>
+                </div>
            </div>
 
-          <div id="stop_cycle_panel" class="mtbfunit">
-                  <span class="label label-info">Finished Session</span>
-            </div>
-    </div>
-    <hr>
+           <div class="span5">
+                <div class="mtbfunit" id="device_panel">
+                    <span class="label label-info">Device Info</span>
+                    <div id="device_table"></div>
+                </div>
+
+                <div class="mtbfunit" id="live_panel">
+                    <ul class="nav nav-tabs">
+                        <li id="trace_tab" class="active"><a href="javascript:showTestDiv();">tracklog</a></li>
+                        <li id="snap_tab"><a href="javascript:showSnapDiv();">snapshot</a></li>
+                    </ul>
+                    <div id="trace_div">
+                       <textarea id="myTerminal" border="1px" style="height:400px;width:98%"></textarea>
+                    </div>
+                    <div id="snap_div" style="display:none">
+                       <canvas id="myCanvas" border="1px"></canvas>
+                    </div>
+                </div>                   
+        </div>
+  </div>
+      <hr>
     <footer>
         <p class="pull-right"><a href="#">Back to top</a></p>
         <p class="pull-left"><a href="#" title="blabla" data-content="asasa">2012</a></p>
@@ -71,12 +89,14 @@
     <script src="static/js/bootstrap-popover.js"></script>
     <script src="static/js/bootstrap-tab.js"></script>
     <script type="text/javascript">
-        if($.cookie('ticket') === undefined || $.cookie('ticket') === null)
-            window.location = "login.html"
-        $(window).load(function(){$("#loading").hide();})
+        if($.cookie('ticket') === undefined || $.cookie('ticket') === null) window.location = "login.html"
+        $(window).load(function(){
+            $("#loading").hide();
+        });
         $(function(){
-           createSessionList();
+            var sid = getRequestParam(window.location.href,'sid');
+            createAllTestList(sid);
+            //createCaseResultDiv(sid);
         });
     </script>
-
 </html>

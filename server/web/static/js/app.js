@@ -1,13 +1,8 @@
 
-$(document).ready(function(){
-
-    createSessionList();
-
+$(function(){
     if($.cookie('loginname') !== undefined && $.cookie('loginname') !== null) {
         $('#logname').html($.cookie('loginname'));
     }
-
-
 });
 
 function createSessionList(){
@@ -41,7 +36,7 @@ function createDetailTable(ids){
               '<th align="left">Result</th>'+
               '<th align="left">Traceinfo</th>'+
               '<th align="left">Log</th>'+
-              '<th align="left">Snapshot</th>'+
+              '<th align="left">snaps</th>'+
               '</tr>'+
               '</thead>';
     var $tbody = '<tbody></tbody>';
@@ -155,12 +150,13 @@ function fillDetailTable(data, ids, tag){
         $("#"+ids+ " tr:gt(0)").remove(); //delete table content
         for (var i in data.results.cases){
             var ctime,cname,cresult,ctraceinfo,ctid,csid, trId;
-            ctid=data.results.cases[i]['tid'];
-            csid=data.results.cases[i]['sid'];           
-            ctime=data.results.cases[i]['starttime'];
-            cname=data.results.cases[i]['casename'];
-            cresult=data.results.cases[i]['result'];
-            ctraceinfo = 'N/A';
+            var citem = data.results.cases[i];
+            ctid = citem['tid'];
+            csid = citem['sid'];
+            ctime = citem['starttime'];
+            cname = citem['casename'];
+            cresult = citem['result'];
+            ctraceinfo = citem['traceinfo'];
 
             if(tag !== 'all' && tag !== cresult) continue;
             if(cresult=='') cresult='running';
@@ -182,7 +178,7 @@ function fillDetailTable(data, ids, tag){
                                         "</div>" +
                                         "<pre><h5>"+ctraceinfo+"</h5></pre></div>"+
                                         "</td>"+
-                                        "<td><a href=\"http://192.168.7.212:8080/test/caseresult/"+csid+"/"+ctid+"/log\">log</a> </td>"+
+                                        "<td><a href=\""+WebServerURL+"/test/caseresult/"+csid+"/"+ctid+"/log\">log</a> </td>"+
                                         "<td><a id=\"f_"+ctid+"_"+i+"\" data-toggle=\"modal\" href=\"#myModal\" onclick=\"createCaseSnaps('"+csid+"','"+ctid+"');\">snapshot</a></td>"+
                                         "</tr>");
 
@@ -198,7 +194,7 @@ function fillDetailTable(data, ids, tag){
                                      "<div style=\"text-align: right; color:red;cursor:pointer\">"+
                                      "<a onfocus=\"this.blur();\" onclick=\"document.getElementById('div_"+ids+"_"+i+"').style.display ='none' \"> [x] </a>"+"</div>"+
                                      "<pre><h5>"+ctraceinfo+"</h5></pre> </div>"+"</td>"+
-                                     "<td><a href=\"http://192.168.7.212:8080/test/caseresult/"+csid+"/"+ctid+"/log\">log</a> </td>"+
+                                     "<td><a href=\""+WebServerURL+"/test/caseresult/"+csid+"/"+ctid+"/log\">log</a> </td>"+
                                      "<td></td>"+
                                      "</tr>");
 
@@ -281,11 +277,10 @@ function createRunningSessionDiv(product_list,product_cycle_product,product_cycl
             var $product_div = $('<div>').attr('id','ongoing'+plist[i]);
             //var $product_label = "<span class=\"label label-info\">"+plist[i]+"</span><span align=right>";
             var $product_table = $('<table>').attr('class','table table-bordered').attr('id','otable'+plist[i]);
-            var $th = '<thead><tr><th>product</th><th>planname</th><th>revision</th><th>statrtime</th><th>runtime</th></tr></thead>';
+            var $th = '<thead><tr><th>product</th><th>build</th><th>planname</th><th>statrtime</th></tr></thead>';
             var $tbody = '<tbody></tbody>';
             $product_table.append($th);
             $product_table.append($tbody);
-            //$product_div.append($product_label);
             $product_div.append($product_table);
             $cycle_panel.append($product_div);
         }
@@ -301,66 +296,13 @@ function createRunningSessionDiv(product_list,product_cycle_product,product_cycl
 
             if($("#"+allId).length<=0){
                 $tr = "<tr>"+
-                      "<td><a href=\"javascript:createCaseResultDiv('"+key+"');javascript:createAllTestList('"+key+"')\">"+value+"</a></td>"+      
+                      "<td><a href=\"view.html?sid="+key+"\" target=\"_blank\">"+value+"</a></td>"+      
+                      "<td>"+product_cycle_revision[key]+"</td>"+  
                       "<td>"+product_cycle_planname[key]+"</td>"+                        
-                      "<td>"+product_cycle_revision[key]+"</td>"+                     
                       "<td>"+product_cycle_starttime[key]+"</td>"+
-                      //"<td>"+"<a id="+allId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['total']+"</a></td>"+
-                      //"<td>"+"<a id="+passId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['pass']+"</td>"+
-                      //"<td>"+"<a id="+failId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['fail']+"</td>"+
-                      //"<td>"+"<a id="+errorId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['error']+"</td>"+
-                      "<td>"+setRunTime(product_cycle_runtime[key])+"s</td>"+
                       "</tr>";
 
                 $product_table.append($tr);
-
-
-                /*jQuery("#"+allId).click(function(){
-                    var allTableId = 'alltable_'+key.replace('cycle:','');
-
-                    //get target cycle fail list
-                    invokeWebApi('/test/caseresult/'+key,
-                                  {},
-                                  function(data){
-                                      createDetailTable(allTableId);
-                                      fillDetailTable(data,allTableId,'all');
-                                });
-                });       
-
-                jQuery("#"+failId).click(function(){
-                    var failTableId = 'failtable_'+key.replace('cycle:','');
-
-                    //get target cycle fail list
-                    invokeWebApi('/test/caseresult/'+key,
-                                {},
-                                function(data){
-                                    createDetailTable(failTableId);
-                                    fillDetailTable(data,failTableId,'fail');
-                                });
-
-                });
-               
-
-                jQuery("#"+passId).click(function(){
-                    var passTableId = 'passtable_'+key.replace('cycle:','');
-                    
-                    invokeWebApi('/test/caseresult/'+key,
-                                  {},
-                                  function(data){
-                                    createDetailTable(passTableId);
-                                    fillDetailTable(data,passTableId,'pass');
-                                });
-                });
-               
-
-                jQuery("#"+errorId).click(function(){
-                    var errorTableId = 'errortable_'+key.replace('cycle:','');
-                    invokeWebApi('/test/caseresult/'+key,
-                                  {},
-                                  function(data){
-                                      fillDetailTable(data,errorTableId,'error');
-                                });
-                });*/
             }
           }
        })
@@ -377,7 +319,7 @@ function createFinishedSessionDiv(product_list,product_cycle_product,product_cyc
         if($("#stoprun"+plist[i]).length <=0 ){
             var $product_div = $('<div>').attr('id','stoprun'+plist[i]);
             var $product_table = $('<table>').attr('class','table table-bordered').attr('id','otable'+plist[i]);
-            var $th = '<thead><tr><th>product</th><th>planname</th><th>revision</th><th>statrtime</th><th>all</th><th>pass</th><th>fail</th><th>error</th><th>runtime</th></tr></thead>';
+            var $th = '<thead><tr><th>product</th><th>build</th><th>planname</th><th>statrtime</th><th>all</th><th>pass</th><th>fail</th><th>error</th><th>runtime</th></tr></thead>';
             var $tbody = '<tbody></tbody>';
             $product_table.append($th);
             $product_table.append($tbody);
@@ -396,9 +338,9 @@ function createFinishedSessionDiv(product_list,product_cycle_product,product_cyc
 
             if($("#"+allId).length<=0){
                 $tr = "<tr>"+
-                      "<td><a href=\"javascript:createCaseResultDiv('"+key+"');javascript:createAllTestList('"+key+"')\">"+value+"</a></td>"+      
-                      "<td>"+product_cycle_planname[key]+"</td>"+                        
-                      "<td>"+product_cycle_revision[key]+"</td>"+                     
+                      "<td><a href=\"view.html?sid="+key+"\" target=\"_blank\">"+value+"</a></td>"+      
+                      "<td>"+product_cycle_revision[key]+"</td>"+
+                      "<td>"+product_cycle_planname[key]+"</td>"+                               
                       "<td>"+product_cycle_starttime[key]+"</td>"+
                       "<td>"+"<a id="+allId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['total']+"</a></td>"+
                       "<td>"+"<a id="+passId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['pass']+"</td>"+
@@ -446,13 +388,13 @@ function createFinishedSessionDiv(product_list,product_cycle_product,product_cyc
                                     fillDetailTable(data,passTableId,'pass');
                                 });
                 });
-               
 
                 $("#"+errorId).click(function(){
                     var errorTableId = 'errortable_'+key.replace('cycle:','');
                     invokeWebApi('/test/caseresult/'+key,
                                   {},
                                   function(data){
+                                      createDetailTable(errorTableId);
                                       fillDetailTable(data,errorTableId,'error');
                                 });
                 });
