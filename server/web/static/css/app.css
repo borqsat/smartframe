@@ -126,3 +126,41 @@ a.popup_link:hover {
   font-size: 8pt;
   width: 550px;
 }
+
+a.prev, a.next {
+    display: block;
+    float: left;
+    width: 30px;
+    height: 143px;
+    text-decoration: none;
+    background: url("../img/imageNavLeft.gif") left 60px no-repeat;
+}
+
+a.next {
+    background: url("../img/imageNavRight.gif") right 60px no-repeat;
+}
+
+a.next:hover {
+    background-image: url("../img/imageNavRightHover.gif");
+}
+
+a.prev:hover {
+    background-image: url("../img/imageNavLeftHover.gif");
+}    
+            
+a:hover, a:active {
+    border: none;
+    outline: none;
+}  
+
+.carousel ul {
+    margin: 0;
+}
+
+.carousel li img, 
+.carousel li p {
+    background-color: #fff;
+    width: 150px;
+    height: 118px;
+    margin: 10px;
+}

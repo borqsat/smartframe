@@ -43,27 +43,20 @@
                 </div>
            </div>
 
-           <div class="span5">
-                <div class="mtbfunit" id="device_panel">
+           <div class="span5 mtbfunit">
                     <span class="label label-info">Device Info</span>
                     <div id="device_div"></div>
                     <hr>
-                    <!--ul class="nav nav-tabs">
-                        <li id="trace_tab" class="active"><a href="javascript:showTestDiv();">tracklog</a></li>
-                        <li id="snap_tab"><a href="javascript:showSnapDiv();">snapshot</a></li>
-                    </ul>
-                    <div id="trace_div">
-                       <textarea id="myTerminal" border="1px" style="height:400px;width:98%"></textarea>
-                    </div-->
                     <span class="label label-info">Snaps</span>
+                    <br>
                     <div id="history_div">
-                       <div id="snaplists"></div>
-                    </div>   
-             
-                    <div id="snap_div" style="display:none">
-                       <canvas id="snapCanvas" border="1px"></canvas>
+                        <button href="#" class="prev btn"><<</button>
+                        <button href="#" class="next btn">>></button>
+                        <div id="imgs_div"></div>
                     </div>
-                </div>                   
+                    <div id="snap_div" style="display:none">
+                        <canvas id="snapCanvas" border="1px"></canvas>
+                    </div>                  
         </div>
   </div>
       <hr>
@@ -77,6 +70,7 @@
     <!-- global jquery.js -->
     <script type="text/javascript" src="static/js/jquery-1.7.2.min.js"></script>
     <script type="text/javascript" src="static/js/jquery.cookie.js"></script>
+    <script type="text/javascript" src="static/js/jcarousellite_1.0.1.min.js"></script>    
     <script type="text/javascript" src="static/js/json2.js"></script>
     <script type="text/javascript" src="static/js/util.js"></script> 
     <script type="text/javascript" src="static/js/app.js"></script>

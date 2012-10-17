@@ -11,19 +11,27 @@ function createSessionList(){
 
 function createCaseSnaps(sid, tid){
 
-    $('#snaplists').html('');
+    $('#imgs_div').html('');
     invokeWebApi('/test/caseresult/'+sid+'/'+tid+'/snapshot',
                 {},
                 function(data){
                     if(data.results === undefined) return;
+                    var $snaplist = $('<ul>');
+                    $("#imgs_div").append($snaplist);
                     for(var d in data.results.snaps) {
+                        var $snapli = $('<li>');
                         var $ig = new Image();
                         $ig.src = 'data:image/png;base64,' + data.results.snaps[d];
-                        $('#snaplists').append($ig);
+                        $snapli.append($ig);
+                        $snaplist.append($snapli);
                         $ig.setAttribute("width","150px");
                         $ig.setAttribute("height","256px");
-                }
-    }); 
+                    }
+                    $("#imgs_div").jCarouselLite({
+                        btnNext: ".next",
+                        btnPrev: ".prev"
+                    });
+                }); 
 }
 
 function createDetailTable(ids){
