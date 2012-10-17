@@ -89,15 +89,15 @@
                          quickuserIdRegCall);
 		}
 
-		function onKeyPressed(ev)
-		{
-			//do login if press enter key
-			if (ev.keyCode == 13) login();
-		}
-		function onuserIdfocus(){
-			var value = $('#userId').val();
-			if(value=="Input UserId")
-				document.getElementById("userId").value = "";	
+        function onKeyPressed(ev)
+        {
+            if (ev.keyCode == 13) login();
+        }
+
+        function onuserIdfocus(){
+            var value = $('#userId').val();
+            if(value=="Input UserId")
+                document.getElementById("userId").value = "";	
 		}
 
 		function onuserIdblur(){

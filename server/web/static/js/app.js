@@ -252,15 +252,120 @@ function arrayUnique(data){
 
 
 function createAllTestList(key) {
-
       var allTableId = 'alltable_'+key.replace('cycle:','');
       invokeWebApi('/test/caseresult/'+key,
                    {},
                   function(data){
+                        createDeviceInfo(data);
+                        createCaseSummary(data);
                         createDetailTable(allTableId);
                         fillDetailTable(data,allTableId,'all');
                   });
  }
+
+function createDeviceInfo(data) {
+    data = data['results'];
+    var key = data['sid'];
+    var allId = "o_"+key;
+    var failId = 'fail_'+key;
+    var passId = 'pass_'+key;
+    var errorId = 'error_'+key;
+
+    var $dev_table = $('<table>').attr('class','table table-bordered').attr('id','dtable'+key);
+    var $th = '<thead><tr><th>product</th><th>build</th><th>width</th><th>height</th></tr></thead>';
+    var $tbody = '<tbody></tbody>';
+    $('#device_div').append($dev_table);
+    $dev_table.append($th);
+    $dev_table.append($tbody);
+
+    $tr = "<tr>"+     
+          "<td>"+data['deviceinfo']['product']+"</td>"+    
+          "<td>"+data['deviceinfo']['revision']+"</td>"+
+          "<td>"+data['deviceinfo']['width']+"</td>"+
+          "<td>"+data['deviceinfo']['height']+"</td>"+          
+          "</tr>";
+
+    $dev_table.append($tr);
+}
+
+
+function createCaseSummary(data) {
+
+    data = data['results'];
+    var key = data['sid'];
+    var allId = "o_"+key;
+    var failId = 'fail_'+key;
+    var passId = 'pass_'+key;
+    var errorId = 'error_'+key;
+
+    var $summary_table = $('<table>').attr('class','table table-bordered').attr('id','stable'+key);
+    var $th = '<thead><tr><th>planname</th><th>statrtime</th><th>runtime</th><th>all</th><th>pass</th><th>fail</th><th>error</th></tr></thead>';
+    var $tbody = '<tbody></tbody>';
+    $('#summary_div').append($summary_table);
+    $summary_table.append($th);
+    $summary_table.append($tbody);
+
+    $tr = "<tr>"+     
+          "<td>"+data['planname']+"</td>"+    
+          "<td>"+data['starttime']+"</td>"+
+          "<td>"+data['runtime']+"</td>"+
+          "<td>"+"<a id="+allId+" href=\"javascript:void(0);\">"+data['result']['total']+"</a></td>"+
+          "<td>"+"<a id="+passId+" href=\"javascript:void(0);\">"+data['result']['pass']+"</a></td>"+
+          "<td>"+"<a id="+failId+" href=\"javascript:void(0);\">"+data['result']['fail']+"</a></td>"+
+          "<td>"+"<a id="+errorId+" href=\"javascript:void(0);\">"+data['result']['error']+"</a></td>"+
+          "</tr>";
+
+    $summary_table.append($tr);
+
+                $("#"+allId).click(function(){
+                    var allTableId = 'alltable_'+key.replace('cycle:','');
+
+                    //get target cycle fail list
+                    invokeWebApi('/test/caseresult/'+key,
+                                  {},
+                                  function(data){
+                                      createDetailTable(allTableId);
+                                      fillDetailTable(data,allTableId,'all');
+                                });
+                });       
+
+                $("#"+failId).click(function(){
+                    var failTableId = 'failtable_'+key.replace('cycle:','');
+
+                    //get target cycle fail list
+                    invokeWebApi('/test/caseresult/'+key,
+                                {},
+                                function(data){
+                                    createDetailTable(failTableId);
+                                    fillDetailTable(data,failTableId,'fail');
+                                });
+
+                });
+               
+
+                $("#"+passId).click(function(){
+                    var passTableId = 'passtable_'+key.replace('cycle:','');
+                    
+                    invokeWebApi('/test/caseresult/'+key,
+                                  {},
+                                  function(data){
+                                    createDetailTable(passTableId);
+                                    fillDetailTable(data,passTableId,'pass');
+                                });
+                });
+
+                $("#"+errorId).click(function(){
+                    var errorTableId = 'errortable_'+key.replace('cycle:','');
+                    invokeWebApi('/test/caseresult/'+key,
+                                  {},
+                                  function(data){
+                                      createDetailTable(errorTableId);
+                                      fillDetailTable(data,errorTableId,'error');
+                                });
+                });
+ }
+
+
 
 //create html data content
 function createRunningSessionDiv(product_list,product_cycle_product,product_cycle_planname,product_cycle_starttime,product_cycle_runtime,product_cycle_revision){
@@ -269,7 +374,6 @@ function createRunningSessionDiv(product_list,product_cycle_product,product_cycl
     var $cycle_panel = $("#run_cycle_panel");
     for(var i = 0; i < plist.length; i++) {
         if(plist[i] === 'undefined') continue;
-
         if($("#ongoing"+plist[i]).length <=0 ){
             var $product_div = $('<div>').attr('id','ongoing'+plist[i]);
             //var $product_label = "<span class=\"label label-info\">"+plist[i]+"</span><span align=right>";
@@ -339,62 +443,13 @@ function createFinishedSessionDiv(product_list,product_cycle_product,product_cyc
                       "<td>"+product_cycle_revision[key]+"</td>"+
                       "<td>"+product_cycle_planname[key]+"</td>"+                               
                       "<td>"+product_cycle_starttime[key]+"</td>"+
-                      "<td>"+"<a id="+allId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['total']+"</a></td>"+
-                      "<td>"+"<a id="+passId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['pass']+"</a></td>"+
-                      "<td>"+"<a id="+failId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['fail']+"</a></td>"+
-                      "<td>"+"<a id="+errorId+" href=\"javascript:void(0);\">"+product_cycle_result[key]['error']+"</a></td>"+
+                      "<td>"+product_cycle_result[key]['total']+"</td>"+
+                      "<td>"+product_cycle_result[key]['pass']+"</td>"+
+                      "<td>"+product_cycle_result[key]['fail']+"</td>"+
+                      "<td>"+product_cycle_result[key]['error']+"</td>"+
                       "<td>"+product_cycle_endtime[key]+"</td>"+
                       "</tr>";
-
                 $product_table.append($tr);
-
-
-                $("#"+allId).click(function(){
-                    var allTableId = 'alltable_'+key.replace('cycle:','');
-
-                    //get target cycle fail list
-                    invokeWebApi('/test/caseresult/'+key,
-                                  {},
-                                  function(data){
-                                      createDetailTable(allTableId);
-                                      fillDetailTable(data,allTableId,'all');
-                                });
-                });       
-
-                $("#"+failId).click(function(){
-                    var failTableId = 'failtable_'+key.replace('cycle:','');
-
-                    //get target cycle fail list
-                    invokeWebApi('/test/caseresult/'+key,
-                                {},
-                                function(data){
-                                    createDetailTable(failTableId);
-                                    fillDetailTable(data,failTableId,'fail');
-                                });
-
-                });
-               
-
-                $("#"+passId).click(function(){
-                    var passTableId = 'passtable_'+key.replace('cycle:','');
-                    
-                    invokeWebApi('/test/caseresult/'+key,
-                                  {},
-                                  function(data){
-                                    createDetailTable(passTableId);
-                                    fillDetailTable(data,passTableId,'pass');
-                                });
-                });
-
-                $("#"+errorId).click(function(){
-                    var errorTableId = 'errortable_'+key.replace('cycle:','');
-                    invokeWebApi('/test/caseresult/'+key,
-                                  {},
-                                  function(data){
-                                      createDetailTable(errorTableId);
-                                      fillDetailTable(data,errorTableId,'error');
-                                });
-                });
             }
           }
        })

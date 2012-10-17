@@ -9,6 +9,12 @@ function getWebsocket(subcmd){
     return new WebSocket(SocketURL+subcmd);
 }
 
+function logout(){
+     $.cookie('ticket', '', { expires: -1 });
+     $.cookie('loginname', '', { expires: -1 });
+     window.location = "login.html"
+}
+
 function getRequestParam(src,name){
     var params=src;
     var paramList=[];
