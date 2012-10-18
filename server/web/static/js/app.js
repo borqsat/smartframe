@@ -11,13 +11,21 @@ function createSessionList(){
 
 function createCaseSnaps(sid, tid){
 
-    $('#imgs_list').html('');
-    $(".carouse").delegate();  
+
+    $(".carouse").delegate(); 
+    var $snaplist = $('#imgs_list'); 
+    $snaplist.html('');   
     invokeWebApi('/test/caseresult/'+sid+'/'+tid+'/snapshot',
                 {},
                 function(data){
-                    if(data.results === undefined) return;
-                    var $snaplist = $('#imgs_list');
+                    if(data.results === undefined) {
+                        $snaplist.html('None');
+                        return;
+                    }
+                    if(data.results.snaps.length === 0) {
+                        $snaplist.html('None');
+                        return;
+                    }
                     for(var d in data.results.snaps) {
                         var $snapli = $('<li>');
                         var $ig = new Image();
@@ -31,7 +39,7 @@ function createCaseSnaps(sid, tid){
                         btnNext: ".next",
                         btnPrev: ".prev",
                         visible: 1,
-                        auto:2000
+                        auto:3000
                     });
                 }); 
 }
