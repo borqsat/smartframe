@@ -22,12 +22,12 @@ function createCaseSnaps(sid, tid){
                         var $snapli = $('<li>');
                         var $ig = new Image();
                         $ig.src = 'data:image/png;base64,' + data.results.snaps[d];
-                        $snapli.append($ig);
                         $snaplist.append($snapli);
+                        $snapli.append($ig);
                         $ig.setAttribute("width","150px");
                         $ig.setAttribute("height","256px");
                     }
-                    $("#imgs_div").jCarouselLite({
+                    $(".carouse").jCarouselLite({
                         btnNext: ".next",
                         btnPrev: ".prev"
                     });
@@ -264,10 +264,17 @@ function createAllTestList(key) {
       invokeWebApi('/test/caseresult/'+key,
                    {},
                   function(data){
-                        createDeviceInfo(data);
-                        createCaseSummary(data);
-                        createDetailTable(allTableId);
-                        fillDetailTable(data,allTableId,'all');
+                      createDeviceInfo(data);
+                      if(data['results'] !== undefined && data['results']['endtime'] !== 'N/A') {
+                         createHistoryCaseSummary(data);
+                         createDetailTable(allTableId);
+                         fillDetailTable(data,allTableId,'all');                        
+                      } else {
+                         createLiveCaseSummary(data);
+                         createDetailTable(allTableId);
+                         fillDetailTable(data,allTableId,'all');                          
+                      }
+
                   });
  }
 
@@ -296,8 +303,28 @@ function createDeviceInfo(data) {
     $dev_table.append($tr);
 }
 
+function createLiveCaseSummary(data) {
+    data = data['results'];
+    var key = data['sid'];
+    var allId = "o_"+key;
 
-function createCaseSummary(data) {
+    var $summary_table = $('<table>').attr('class','table table-bordered').attr('id','stable'+key);
+    var $th = '<thead><tr><th>planname</th><th>statrtime</th><th>runtime</th></tr></thead>';
+    var $tbody = '<tbody></tbody>';
+    $('#summary_div').append($summary_table);
+    $summary_table.append($th);
+    $summary_table.append($tbody);
+
+    $tr = "<tr>"+     
+          "<td>"+data['planname']+"</td>"+    
+          "<td>"+data['starttime']+"</td>"+
+          "<td>"+"<a id="+allId+" href=\"javascript:showSnapDiv(\'"+key+"\');\">livesnaps</a></td>"+
+          "</tr>";
+
+    $summary_table.append($tr); 
+}
+
+function createHistoryCaseSummary(data) {
 
     data = data['results'];
     var key = data['sid'];
@@ -325,53 +352,52 @@ function createCaseSummary(data) {
 
     $summary_table.append($tr);
 
-                $("#"+allId).click(function(){
-                    var allTableId = 'alltable_'+key.replace('cycle:','');
+    $("#"+allId).click(function(){
+        var allTableId = 'alltable_'+key.replace('cycle:','');
+
+        //get target cycle fail list
+        invokeWebApi('/test/caseresult/'+key,
+                    {},
+                     function(data){
+                        createDetailTable(allTableId);
+                        fillDetailTable(data,allTableId,'all');
+                    });
+    });       
+
+    $("#"+failId).click(function(){
+        var failTableId = 'failtable_'+key.replace('cycle:','');
 
                     //get target cycle fail list
-                    invokeWebApi('/test/caseresult/'+key,
-                                  {},
-                                  function(data){
-                                      createDetailTable(allTableId);
-                                      fillDetailTable(data,allTableId,'all');
-                                });
-                });       
+        invokeWebApi('/test/caseresult/'+key,
+                      {},
+                      function(data){
+                          createDetailTable(failTableId);
+                          fillDetailTable(data,failTableId,'fail');
+                    });
 
-                $("#"+failId).click(function(){
-                    var failTableId = 'failtable_'+key.replace('cycle:','');
+    });
 
-                    //get target cycle fail list
-                    invokeWebApi('/test/caseresult/'+key,
-                                {},
-                                function(data){
-                                    createDetailTable(failTableId);
-                                    fillDetailTable(data,failTableId,'fail');
-                                });
-
-                });
-               
-
-                $("#"+passId).click(function(){
-                    var passTableId = 'passtable_'+key.replace('cycle:','');
+    $("#"+passId).click(function(){
+          var passTableId = 'passtable_'+key.replace('cycle:','');
                     
-                    invokeWebApi('/test/caseresult/'+key,
-                                  {},
-                                  function(data){
-                                    createDetailTable(passTableId);
-                                    fillDetailTable(data,passTableId,'pass');
-                                });
-                });
+          invokeWebApi('/test/caseresult/'+key,
+                        {},
+                        function(data){
+                            createDetailTable(passTableId);
+                            fillDetailTable(data,passTableId,'pass');
+                      });
+    });
 
-                $("#"+errorId).click(function(){
-                    var errorTableId = 'errortable_'+key.replace('cycle:','');
-                    invokeWebApi('/test/caseresult/'+key,
-                                  {},
-                                  function(data){
-                                      createDetailTable(errorTableId);
-                                      fillDetailTable(data,errorTableId,'error');
-                                });
-                });
- }
+    $("#"+errorId).click(function(){
+          var errorTableId = 'errortable_'+key.replace('cycle:','');
+          invokeWebApi('/test/caseresult/'+key,
+                        {},
+                        function(data){
+                            createDetailTable(errorTableId);
+                            fillDetailTable(data,errorTableId,'error');
+                      });
+    });
+}
 
 
 
@@ -386,7 +412,7 @@ function createRunningSessionDiv(product_list,product_cycle_product,product_cycl
             var $product_div = $('<div>').attr('id','ongoing'+plist[i]);
             //var $product_label = "<span class=\"label label-info\">"+plist[i]+"</span><span align=right>";
             var $product_table = $('<table>').attr('class','table table-bordered').attr('id','otable'+plist[i]);
-            var $th = '<thead><tr><th>product</th><th>build</th><th>planname</th><th>statrtime</th></tr></thead>';
+            var $th = '<thead><tr><th width=\'50px\'>product</th><th width=\'250px\'>build</th><th width=\'50px\'>planname</th><th>statrtime</th></tr></thead>';
             var $tbody = '<tbody></tbody>';
             $product_table.append($th);
             $product_table.append($tbody);
@@ -428,7 +454,7 @@ function createFinishedSessionDiv(product_list,product_cycle_product,product_cyc
         if($("#stoprun"+plist[i]).length <=0 ){
             var $product_div = $('<div>').attr('id','stoprun'+plist[i]);
             var $product_table = $('<table>').attr('class','table table-bordered').attr('id','otable'+plist[i]);
-            var $th = '<thead><tr><th>product</th><th>build</th><th>planname</th><th>statrtime</th><th>all</th><th>pass</th><th>fail</th><th>error</th><th>endtime</th></tr></thead>';
+            var $th = '<thead><tr><th width=\'50px\'>product</th><th width=\'250px\'>build</th><th width=\'50px\'>planname</th><th>statrtime</th><th>all</th><th>pass</th><th>fail</th><th>error</th><th>endtime</th></tr></thead>';
             var $tbody = '<tbody></tbody>';
             $product_table.append($th);
             $product_table.append($tbody);
