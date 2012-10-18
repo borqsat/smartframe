@@ -27,7 +27,7 @@ function createCaseSnaps(sid, tid){
                         return;
                     }
                     for(var d in data.results.snaps) {
-                        var $snapli = $('<li>');
+                        var $snapli = $('<li>').attr('class','thumbnail');
                         var $ig = new Image();
                         $ig.src = 'data:image/png;base64,' + data.results.snaps[d];
                         $snaplist.append($snapli);
