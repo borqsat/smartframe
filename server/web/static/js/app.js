@@ -11,25 +11,27 @@ function createSessionList(){
 
 function createCaseSnaps(sid, tid){
 
-    $('#imgs_div').html('');
+    $('#imgs_list').html('');
+    $(".carouse").delegate();  
     invokeWebApi('/test/caseresult/'+sid+'/'+tid+'/snapshot',
                 {},
                 function(data){
                     if(data.results === undefined) return;
-                    var $snaplist = $('<ul>');
-                    $("#imgs_div").append($snaplist);
+                    var $snaplist = $('#imgs_list');
                     for(var d in data.results.snaps) {
                         var $snapli = $('<li>');
                         var $ig = new Image();
                         $ig.src = 'data:image/png;base64,' + data.results.snaps[d];
                         $snaplist.append($snapli);
                         $snapli.append($ig);
-                        $ig.setAttribute("width","150px");
-                        $ig.setAttribute("height","256px");
+                        $ig.setAttribute("width","300px");
+                        $ig.setAttribute("height","512px");
                     }
                     $(".carouse").jCarouselLite({
                         btnNext: ".next",
-                        btnPrev: ".prev"
+                        btnPrev: ".prev",
+                        visible: 1,
+                        auto:2000
                     });
                 }); 
 }
