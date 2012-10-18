@@ -116,18 +116,19 @@ a.popup_link:hover {
 .popup_window {
   display: none;
   position: absolute;
-  left: 600px;
-  top: 100px;
+  left: 300px;
+  top: 200px;
   /*border: solid #627173 1px; */
+  z-index: 3;
   padding: 10px;
-  background-color: #f89406;
+  background-color: #eeeeee;
   font-family: "Lucida Console", "Courier New", Courier, monospace;
   text-align: left;
   font-size: 8pt;
   width: 550px;
 }
 
-a.prev, a.next {
+/*a.prev, a.next {
     display: block;
     float: left;
     width: 30px;
@@ -152,7 +153,7 @@ a:hover, a:active {
     border: none;
     outline: none;
 }  
-
+*/
 .carousel ul {
     margin: 0;
 }

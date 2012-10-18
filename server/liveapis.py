@@ -22,13 +22,13 @@ def handle_screen_websocket(sid):
 
     while True:
         try:
-            print 'list of ws: %s' % (len(wslist))            
+            #print 'list of ws: %s' % (len(wslist))            
             snaplive = getTestSessionSnaps(token, sid)
             lenf = len(snaplive)
             msgdata = 'nop'
             if lenf > 0:
                 msgdata = 'snapshot:' + base64.encodestring(snaplive[lenf-1])
-            gevent.sleep(0.1)
+            gevent.sleep(0.3)
             for i in wslist:    
                 try:
                     i.send(msgdata)

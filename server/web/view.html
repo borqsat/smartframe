@@ -31,15 +31,24 @@
     </div>
 
  <div class="container-fluid">
-    <div id="img" style="position:absolute;z-index: 1;"></div>
+    <div id="img" style="position:absolute;z-index: 3;"></div>
     <div class="row-fluid">
-           <div class="mtbfunit span6">
+           <div class="span6 mtbfunit">
                 <div id="detail_panel">
-                    <span class="label label-info">Session Info</span>
-                    <div id="summary_div"></div>
+                    <div id="summary_div">
+                        <span class="label label-info">Session Info</span>
+                    </div>
                     <hr>
-                    <span class="label label-info">Cases List</span>                    
-                    <div id="detail_table"></div>
+
+                    <div id="runc_div" style="display:none">
+                        <span class="label label-info">Case Running</span>
+                        <div id="rtcases_div"></div>               
+                    </div>
+
+                    <div id="okc_div">
+                        <span class="label label-info">Case Finished</span>
+                        <div id="cases_div"></div>               
+                    </div>
                 </div>
            </div>
 

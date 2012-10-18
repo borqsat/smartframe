@@ -36,7 +36,7 @@ function createCaseSnaps(sid, tid){
 
 function createDetailTable(ids){
 
-    var $div_detail = $("#detail_table");
+    var $div_detail = $("#cases_div");
     var $tb = $('<table>').attr('id', ids).attr('class','table table-striped');
     var $th = '<thead>'+
               '<tr>'+
@@ -162,13 +162,13 @@ function fillDetailTable(data, ids, tag){
             cresult = citem['result'];
             ctraceinfo = citem['traceinfo'];
 
-            if(tag !== 'all' && tag !== cresult) continue;
             if(cresult=='') cresult='running';
             if(cname=='') cname='missed';
             if(ctime=='') ctime='missed';
+
+            if(tag !== 'all' && tag !== cresult) continue;
             casename = cname;
             trId="#"+ids+"_"+i;
-
             if(cresult=='fail'){
                 detail_table.append("<tr id=\""+trId+"\">"+
                                         "<td>"+ctid+"</td>"+                  
@@ -257,8 +257,6 @@ function arrayUnique(data){
     return data;  
 }  
 
-
-
 function createAllTestList(key) {
       var allTableId = 'alltable_'+key.replace('cycle:','');
       invokeWebApi('/test/caseresult/'+key,
@@ -268,7 +266,7 @@ function createAllTestList(key) {
                       if(data['results'] !== undefined && data['results']['endtime'] !== 'N/A') {
                          createHistoryCaseSummary(data);
                          createDetailTable(allTableId);
-                         fillDetailTable(data,allTableId,'all');                        
+                         fillDetailTable(data,allTableId,'all');                       
                       } else {
                          createLiveCaseSummary(data);
                          createDetailTable(allTableId);
