@@ -35,17 +35,12 @@
     <div class="row-fluid">
         <div class="span12">
            <div class="mtbfunit" id="maintab">
-               <ul class="nav nav-tab">
-                  <li><a>Running Session</a></li>
-                  <li><a>Stop Session</a></li>
+               <ul class="nav nav-tabs">
+                  <li id="tabrun" class="active"><a href="javascript:viewRun();">Running Session</a></li>
+                  <li id="tabstop"><a href="javascript:viewStop();">Stop Session</a></li>
                </ul>
-               <div id="stop_cycle_panel" >
-                  <span class="label label-info">Finished Session</span><br/>
-               </div>
-               <hr>
-               <div id="run_cycle_panel" >
-                    <span class="label label-info">Running Session</span><br/>
-               </div>
+               <div id="run_cycle_panel" ></div>
+               <div id="stop_cycle_panel" style="display:none"></div>
             </div>
         </div>
         <hr>

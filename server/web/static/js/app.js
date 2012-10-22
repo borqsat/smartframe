@@ -9,9 +9,24 @@ function createSessionList(){
     invokeWebApi("/test/session", {}, createSessionTable);
 }
 
+function viewRun(){
+    $('#tabrun').addClass('active');
+    $('#tabstop').removeClass('active');
+
+    $('#run_cycle_panel').show();
+    $('#stop_cycle_panel').hide();    
+}
+
+function viewStop(){
+    $('#tabrun').removeClass('active');
+    $('#tabstop').addClass('active');
+
+    $('#run_cycle_panel').hide();
+    $('#stop_cycle_panel').show();    
+}
+
+
 function createCaseSnaps(sid, tid){
-
-
     $(".carouse").delegate(); 
     var $snaplist = $('#imgs_list'); 
     $snaplist.html('');   
@@ -64,8 +79,6 @@ function createDetailTable(ids){
     $tb.append($tbody);
     $div_detail.html($tb);
 }
-
-
 
 //for fail and error popup link
 function showTestDetail(div_id){
