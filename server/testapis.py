@@ -201,4 +201,4 @@ def doUploadFile(sid, tid):
         return uploadCaseResultFile(token, sid, tid, rawdata, ftype)
 
 if __name__ == '__main__':
-    WSGIServer(("", 8081), app, handler_class=WebSocketHandler).serve_forever()
+    WSGIServer(("", 8081), app).serve_forever()

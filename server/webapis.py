@@ -285,4 +285,4 @@ def handle_console_websocket(sid):
             break
 
 if __name__ == '__main__':
-    WSGIServer(("", 8080), appweb, handler_class=WebSocketHandler).serve_forever()
+    WSGIServer(("", 8080), appweb).serve_forever()

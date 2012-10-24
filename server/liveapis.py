@@ -21,8 +21,7 @@ def handle_screen_websocket(sid):
         wsock.send('snapsize:{"width":"300px","height":"512px"}')
 
     while True:
-        try:
-            #print 'list of ws: %s' % (len(wslist))            
+        try:           
             snaplive = getTestSessionSnaps(token, sid)
             lenf = len(snaplive)
             msgdata = 'nop'
