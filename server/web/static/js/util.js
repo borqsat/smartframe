@@ -60,6 +60,7 @@ var invokeWebApi = function(apiUrl,dataj,render) {
     options['url'] = WebServerURL + apiUrl;	
     options['async'] = true;
     options['type'] = 'GET';
+    options['data'] = dataj;
     options['dataType'] = 'jsonp';
     options['timeout'] = 15000;
 	options['success'] = funok;
