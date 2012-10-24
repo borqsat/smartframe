@@ -50,6 +50,7 @@ class dbStore(object):
         """
         users = self.db['user']
         token = None
+        uid = None
         tokens = self.db['token']
         ret = users.find({'appid':appid,'username':user,'password':password})
         if not ret is None:
