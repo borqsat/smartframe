@@ -40,7 +40,7 @@ def userAuth(appid,user,pswd):
              error-{'errors':{'code':0,'msg':(string)info}} 
     """
     rdata = store.createToken(appid,user,pswd)
-    if not rdata['token'] is None:
+    if 'token' in rdata:
         return {'results':rdata}
     else:
         return {'errors':rdata}
