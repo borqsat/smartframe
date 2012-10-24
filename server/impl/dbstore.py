@@ -49,18 +49,20 @@ class dbStore(object):
         write a user account record in database
         """
         users = self.db['user']
+        token = None
+        tokens = self.db['token']
         ret = users.find({'appid':appid,'username':user,'password':password})
         if not ret is None:
             for d in ret:
                 uid = d['uid'] 
-            tokens = self.db['token']
             rdata = tokens.find({'uid':uid})
             if not rdata is None:
-                for d in rdata:
-                    token = d['token']
+                token = rdata[0]['token']
             else:
                 token = str(uuid.uuid1())
                 tokens.insert({'uid':uid,'token':token})
+
+        if not token is None:
             return {'token':token,'uid':uid}
         else:
             return {'code':1, 'msg':'user or password is incorrect!'}
