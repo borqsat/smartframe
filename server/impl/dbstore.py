@@ -57,7 +57,8 @@ class dbStore(object):
                 uid = d['uid'] 
             rdata = tokens.find({'uid':uid})
             if not rdata is None:
-                token = rdata[0]['token']
+                for d in rdata:
+                    token = d['token']
             else:
                 token = str(uuid.uuid1())
                 tokens.insert({'uid':uid,'token':token})
