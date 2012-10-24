@@ -8,7 +8,7 @@ from impl.auth import *
 import json, base64, time, threading
 
 appweb = Bottle()
-wslist = [] 
+wslist = {} 
 @appweb.route('/test/session/<sid>/screen')
 def handle_screen_websocket(sid):
     print 'handle snapshot request...'
@@ -17,22 +17,26 @@ def handle_screen_websocket(sid):
     if not wsock:
         abort(400, 'Expected WebSocket request.')
     else:
-        wslist.append(wsock)
+        if not sid in wslist:
+            wslist[sid] = []
+        wslist[sid].append(wsock)
         wsock.send('snapsize:{"width":"300px","height":"512px"}')
 
     while True:
-        try:           
+        if len(wslist[sid]) = 0:
+            break
+        try:
             snaplive = getTestSessionSnaps(token, sid)
             lenf = len(snaplive)
             msgdata = 'nop'
             if lenf > 0:
                 msgdata = 'snapshot:' + base64.encodestring(snaplive[lenf-1])
             gevent.sleep(0.3)
-            for i in wslist:    
+            for i in wslist[sid]:
                 try:
                     i.send(msgdata)
                 except:
-                    wslist.remove(i)
+                    wslist[sid].remove(i)
         except WebSocketError:
             break
 

@@ -113,8 +113,10 @@ function showHistoryDiv(sid, tid) {
 
 function createSnapshotDiv(sid) {
 
-    if(ws !== undefined) ws.close();
-
+    if(ws !== undefined) {
+      alert('close socket');
+      ws.close();
+    }
     //screen snap channel
     ws = getWebsocket("/test/session/"+sid+"/screen");
     var c=document.getElementById("snapCanvas");
