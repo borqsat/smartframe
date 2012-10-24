@@ -50,20 +50,20 @@ class dbStore(object):
         """
         users = self.db['user']
         ret = users.find({'appid':appid,'username':user,'password':password})
-        token = None
-        uid = None
+        self.token = None
+        self.uid = None
         if not ret is None:
             for d in ret:
-                uid = d['uid']
+                self.uid = d['uid']
             tokens = self.db['token']
-            rdata = tokens.find({'uid':uid})
+            rdata = tokens.find({'uid':self.uid})
             if not rdata is None:
                 for t in rdata:
-                    token = t['token']
+                    self.token = t['token']
             else:
-                token = str(uuid.uuid1())
-                tokens.insert({'uid':uid,'token':token})
-            return {'token':token,'uid':uid}
+                self.token = str(uuid.uuid1())
+                tokens.insert({'uid':self.uid,'token':self.token})
+            return {'token':self.token,'uid':self.uid}
         else:
             return {'code':1, 'msg':'user or password is incorrect!'}
 
