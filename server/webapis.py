@@ -1,3 +1,4 @@
+from gevent import monkey; monkey.patch_all()
 from bottle import request, response, Bottle, abort
 from gevent.pywsgi import WSGIServer
 from geventwebsocket import WebSocketHandler, WebSocketError
@@ -285,4 +286,5 @@ def handle_console_websocket(sid):
             break
 
 if __name__ == '__main__':
+    print 'WebServer Serving on 8080...'
     WSGIServer(("", 8080), appweb).serve_forever()

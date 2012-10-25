@@ -1,3 +1,4 @@
+from gevent import monkey; monkey.patch_all()
 from bottle import request, response, Bottle, abort
 import gevent
 from gevent.pywsgi import WSGIServer
@@ -64,4 +65,5 @@ def handle_console_websocket(sid):
             break
 
 if __name__ == '__main__':
+    print 'LiveStream Serving on 8082...'
     WSGIServer(("", 8082), appweb, handler_class=WebSocketHandler).serve_forever()

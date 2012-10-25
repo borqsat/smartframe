@@ -1,6 +1,6 @@
-from bottle import request, Bottle, abort
+from gevent import monkey; monkey.patch_all()
+from bottle import request,response, Bottle, abort
 from gevent.pywsgi import WSGIServer
-from geventwebsocket import WebSocketHandler, WebSocketError
 from impl.test import *
 from impl.device import *
 from impl.auth import *
@@ -43,7 +43,6 @@ def doCreateSession(sid):
             starttime = time.strftime('%Y.%m.%d-%H.%M.%S', time.localtime(time.time()))
             deviceid = '0123456789ABCDEF'
             deviceinfo = {'product':'AT390', 'revision':'6628', 'width':480, 'height':800}
-        response.set_header('Connection','keep-alive')
         return createTestSession(token, sid, planname, starttime, deviceid, deviceinfo)
 
 @app.route('/test/session/<sid>/update',method='POST')
@@ -72,7 +71,6 @@ def doUpdateSession(sid):
         else:
             token = '1122334455667788'
             endtime = 'N/A'
-        response.set_header('Connection','keep-alive')
         return updateTestSession(token, sid, endtime)
 
 @app.route('/test/session/<sid>/delete',method='POST')
@@ -98,7 +96,6 @@ def doDeleteSession(sid):
             token = json['token']  
         else:
             token = '1122334455667788'
-        response.set_header('Connection','keep-alive')     
         return deleteTestSession(token, sid)
 
 @app.route('/test/caseresult/<sid>/<tid>/create',method='POST')
@@ -132,7 +129,6 @@ def doCreateTestResult(sid, tid):
             token = '1122334455667788'
             casename = 'N/A'
             starttime = time.strftime('%Y.%m.%d-%H.%M.%S', time.localtime(time.time()))
-        response.set_header('Connection','keep-alive')
         return createCaseResult(token, sid, tid, casename, starttime)
 
 @app.route('/test/caseresult/<sid>/<tid>/update',method='POST')
@@ -168,7 +164,6 @@ def doUpdateTestResult(sid, tid):
             status = 'N/A'
             traceinfo = 'N/A'
             endtime = 'N/A'
-        response.set_header('Connection','keep-alive')
         return updateCaseResult(token, sid, tid, status, traceinfo, endtime)
 
 @app.route('/test/caseresult/<sid>/<tid>/fileupload',method='PUT')
@@ -203,8 +198,8 @@ def doUploadFile(sid, tid):
         else:
             ftype = 'zip'
         rawdata = request.body.read()
-        response.set_header('Connection','keep-alive')
         return uploadCaseResultFile(token, sid, tid, rawdata, ftype)
 
 if __name__ == '__main__':
+    print 'TestServer Serving on 8081...'
     WSGIServer(("", 8081), app).serve_forever()
