@@ -6,7 +6,7 @@ from geventwebsocket import WebSocketHandler, WebSocketError
 from impl.test import *
 from impl.device import *
 from impl.auth import *
-import json, base64, time, threading
+import json, base64, time
 
 appweb = Bottle()
 wslist = {} 
@@ -21,14 +21,19 @@ def handle_screen_websocket(sid):
         if not sid in wslist:
             wslist[sid] = []
         wslist[sid].append(wsock)
-        wsock.send('snapsize:{"width":"300px","height":"512px"}')
+        ret = getTestSessionInfo(sid)
+        if not ret is None:
+            deviceinfo = ret['results']['deviceinfo']
+            wsock.send('snapsize:'+json.dumps(deviceinfo))
+        else:
+            abort(404, 'Request device is invalid.')
 
     while True:
         if len(wslist[sid]) == 0:
             break
         try:
-            snaplive = getTestSessionSnaps(token, sid)
-            lenf = len(snaplive)
+            snaps = getTestSessionSnaps(token, sid)
+            lenf = len(snaps)
             msgdata = 'nop'
             if lenf > 0:
                 msgdata = 'snapshot:' + base64.encodestring(snaplive[lenf-1])

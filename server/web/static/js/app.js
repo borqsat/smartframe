@@ -45,11 +45,15 @@ function createCaseSnaps(sid, tid){
                         var $snapli = $('<li>').attr('class','thumbnail');
                         var $ig = new Image();
                         $ig.src = 'data:image/png;base64,' + data.results.snaps[d];
-                        $snaplist.append($snapli);
-                        $snapli.append($ig);
                         $ig.setAttribute("width","300px");
                         $ig.setAttribute("height","512px");
+                        $snaplist.append($snapli);
+                        $snapli.append($ig);
                     }
+                    $("#history_div").jCarouselLite({
+                        btnNext: ".next",
+                        btnPrev: ".prev",
+                    }); 
                 }); 
 }
 
@@ -125,8 +129,8 @@ function createSnapshotDiv(sid) {
         if (data.indexOf('snapsize:') >= 0 ) {
             data = data.substr('snapsize:'.length);
             data = JSON.parse(data);
-            c.setAttribute('width',data['width']);
-            c.setAttribute('height',data['height']);      
+            c.setAttribute('width', parseInt(data['width'])/2 + 'px');
+            c.setAttribute('height', parseInt(data['height'])/2 + 'px');      
         } else if (data.indexOf('snapshot:') >= 0 ) {
             data = data.substr('snapshot:'.length);
             doRenderImg(data);
@@ -140,30 +144,6 @@ function createSnapshotDiv(sid) {
         cxt.drawImage(img,0,0,300,512);
     }
 }
-
-/*function createCaseResultDiv(sid) {
-    curSid = sid;
-
-    if(ws !== undefined) ws.close();
-    ws = getWebsocket("/test/session/"+sid+"/terminal");
-    ws.onopen = function() {
-        ws.send('sync:ok');
-    };
-
-    ws.onmessage = function (evt) {
-        var data = evt.data;
-        if (data.indexOf('caseupdate:') >= 0 ) {  
-            data = data.substr('caseupdate:'.length);
-            doRender(data);
-        } 
-        ws.send('sync:ok');
-    };
-
-    function doRender(data) {
-        $("#myTerminal").append(data+"\r\n");
-    }
-}
-*/
 
 function fillDetailTable(data, ids, tag){
 
@@ -202,7 +182,6 @@ function fillDetailTable(data, ids, tag){
                                         "<pre><h5>"+ctraceinfo+"</h5></pre></div>"+
                                         "</td>"+
                                         "<td><a href=\""+WebServerURL+"/test/caseresult/"+csid+"/"+ctid+"/log\">log</a> </td>"+
-                                        //"<td><a id=\"f_"+ctid+"_"+i+"\" data-toggle=\"modal\" href=\"#myModal\" onclick=\"createCaseSnaps('"+csid+"','"+ctid+"');\">snapshot</a></td>"+
                                         "<td><a id=\"f_"+ctid+"_"+i+"\" href=\"javascript:showHistoryDiv('"+csid+"','"+ctid+"');\">snapshot</a></td>"+
                                         "</tr>");
 
@@ -219,7 +198,7 @@ function fillDetailTable(data, ids, tag){
                                      "<a onfocus=\"this.blur();\" onclick=\"document.getElementById('div_"+ids+"_"+i+"').style.display ='none' \"> [x] </a>"+"</div>"+
                                      "<pre><h5>"+ctraceinfo+"</h5></pre> </div>"+"</td>"+
                                      "<td><a href=\""+WebServerURL+"/test/caseresult/"+csid+"/"+ctid+"/log\">log</a> </td>"+
-                                     "<td></td>"+
+                                     "<td><a id=\"f_"+ctid+"_"+i+"\" href=\"javascript:showHistoryDiv('"+csid+"','"+ctid+"');\">snapshot</a></td>"+
                                      "</tr>");
 
            } else if (cresult == 'running' || cresult == 'pass'){
