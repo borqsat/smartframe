@@ -6,6 +6,7 @@
     <link href="static/css/bootstrap.css" rel="stylesheet">
     <link href="static/css/bootstrap-responsive.css" rel="stylesheet">
     <link href="static/css/jquery-ui-1.8.16.custom.css" rel="stylesheet">
+    <link href="static/fancybox/jquery.fancybox-1.3.4.css" rel="stylesheet">    
     <link href="static/css/app.css" rel="stylesheet">
   </head>
   
@@ -34,11 +35,12 @@
            <div class="span6 mtbfunit">
                 <div id="detail_panel">
                     <div id="summary_div">
-                        <span class="label label-info">Session Info</span>
+                        <span class="label label-info">Session Summary</span>
                     </div>
-                    <hr>
-                    <span class="label label-info">Device Info</span>
-                    <div id="device_div"></div>
+                    
+                    <div id="device_div">
+                        <span class="label label-info">Device Properties</span>
+                    </div>
                 </div>
            </div>
 
@@ -56,11 +58,7 @@
                     <span class="label label-info">Snaps</span>
                     <br>
                     <div id="history_div">
-                        <button href="#" class="prev btn"><<</button>
-                        <button href="#" class="next btn">>></button>
-                        <div id="imgs_div" class="carouse">
                           <ul id="imgs_list">None</ul>
-                        </div>
                     </div>
                     <div id="snap_div" style="display:none">
                         <canvas id="snapCanvas" border="1px"></canvas>
@@ -77,15 +75,17 @@
 </body>
     <!-- global jquery.js -->
     <script type="text/javascript" src="static/js/jquery-1.7.2.min.js"></script>
-    <script type="text/javascript" src="static/js/jquery.cookie.js"></script>
-    <script type="text/javascript" src="static/js/jcarousellite_1.0.1.min.js"></script>    
+    <script type="text/javascript" src="static/js/jquery.cookie.js"></script>   
     <script type="text/javascript" src="static/js/json2.js"></script>
-    <script type="text/javascript" src="static/js/util.js"></script> 
+    <script type="text/javascript" src="static/js/bootstrap.js"></script>
+    <script type="text/javascript" src="static/js/bootstrap-tooltip.js"></script>
+    <script type="text/javascript" src="static/js/bootstrap-popover.js"></script>
+    <script type="text/javascript" src="static/js/bootstrap-tab.js"></script>
+    <script type="text/javascript" src="static/fancybox/jquery.mousewheel-3.0.4.pack.js"></script>
+    <script type="text/javascript" src="static/fancybox/jquery.fancybox-1.3.4.pack.js"></script>
+    <script type="text/javascript" src="static/js/util.js"></script>
     <script type="text/javascript" src="static/js/app.js"></script>
-    <script src="static/js/bootstrap.js"></script>
-    <script src="static/js/bootstrap-tooltip.js"></script>
-    <script src="static/js/bootstrap-popover.js"></script>
-    <script src="static/js/bootstrap-tab.js"></script>
+
     <script type="text/javascript">
         if($.cookie('ticket') === undefined || $.cookie('ticket') === null) window.location = "login.html"
         $(window).load(function(){

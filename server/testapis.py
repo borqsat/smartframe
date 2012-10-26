@@ -187,18 +187,25 @@ def doUploadFile(sid, tid):
             error-{'errors':{'code':value,'msg':(string)info}}
     """
     content_type = request.headers.get('Content-Type')
+    external_type = request.headers.get('External-Type')
     token = request.headers.get('token')
     if not (content_type):
         return {'errors':{'code':500, 'msg':'Missing Content-Type'}}
     elif not (token):
-        return {'errors':{'code':500, 'msg':'Missing token'}}        
+        return {'errors':{'code':500, 'msg':'Missing token'}}
     else:
         if content_type == 'image/png':
             ftype = 'png'
         else:
             ftype = 'zip'
+
+        if external_type == 'check':
+            ctype = 'check'
+        else:
+            ctype = ''
+
         rawdata = request.body.read()
-        return uploadCaseResultFile(token, sid, tid, rawdata, ftype)
+        return uploadCaseResultFile(token, sid, tid, rawdata, ftype, ctype)
 
 if __name__ == '__main__':
     print 'TestServer Serving on 8081...'

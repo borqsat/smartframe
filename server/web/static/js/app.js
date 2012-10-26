@@ -50,12 +50,6 @@ function createCaseSnaps(sid, tid){
                         $ig.setAttribute("width","300px");
                         $ig.setAttribute("height","512px");
                     }
-                    $(".carouse").jCarouselLite({
-                        btnNext: ".next",
-                        btnPrev: ".prev",
-                        visible: 1,
-                        auto:3000
-                    });
                 }); 
 }
 
