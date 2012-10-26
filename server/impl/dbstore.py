@@ -195,7 +195,7 @@ class dbStore(object):
         self.mc.set(sid+'name',casename)
         self.mc.set(sid+'status','start')
         caseresult = self.db['caseresult']
-        caseresult.insert({'sid':sid, 'tid':tid, 'casename':casename, 'log':'N/A', 'traceinfo':'N/A','result':'running', 'starttime':starttime, 'endtime':'N/A','snapshots':[]})
+        caseresult.insert({'sid':sid, 'tid':tid, 'casename':casename, 'log':'N/A', 'traceinfo':'N/A','result':'running', 'starttime':starttime, 'endtime':'N/A','snapshots':[], 'checksnap':''})
         session = self.db['session']
         session.update({'sid':sid},{'$inc':{'result.total':1}})
 
@@ -272,7 +272,10 @@ class dbStore(object):
         checksnap = ''
         for d in ret:
             snapids = d['snapshots']
-            checkid = d['checksnap']
+            if not 'checksnap' in d:
+                checkid = ''
+            else:
+                checkid = d['checksnap']
 
         for fid in snapids:
             fs = self.getfile(fid)
