@@ -20,9 +20,9 @@ def handle_screen_websocket(sid):
     else:
         if not sid in wslist:
             wslist[sid] = []
-        wslist[sid].append(wsock)
-        ret = getTestSessionInfo(sid)
+        ret = getTestSessionInfo(token, sid)
         if not ret is None:
+            wslist[sid].append(wsock)
             deviceinfo = ret['results']['deviceinfo']
             wsock.send('snapsize:'+json.dumps(deviceinfo))
         else:
