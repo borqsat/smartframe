@@ -36,7 +36,7 @@ def handle_screen_websocket(sid):
             lenf = len(snaps)
             msgdata = 'nop'
             if lenf > 0:
-                msgdata = 'snapshot:' + base64.encodestring(snaplive[lenf-1])
+                msgdata = 'snapshot:' + base64.encodestring(snaps[lenf-1])
             gevent.sleep(0.3)
             for i in wslist[sid]:
                 try:
