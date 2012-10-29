@@ -29,11 +29,11 @@ def doRegister():
     @return: ok-{'results':1}
              error-{'errors':{'code':0,'msg':(string)info}} 
     """
-    json = request.json
-    appid = json['appid']
-    username = json['username']
-    password = json['password']
-    userinfo = json['info']
+    jsond = request.json
+    appid = jsond['appid']
+    username = jsond['username']
+    password = jsond['password']
+    userinfo = jsond['info']
     return wrapResults(userRegister(appid,username,password,userinfo))
 
 @appweb.route('/user/auth',method='GET')
@@ -54,10 +54,10 @@ def doAuth():
     @return: ok-{'results':{'token':(string)value}}
              error-{'errors':{'code':0,'msg':(string)info}} 
     """
-    json = request.json
-    appid = json['appid']
-    username = json['username']
-    password = json['password']
+    jsond = request.json
+    appid = jsond['appid']
+    username = jsond['username']
+    password = jsond['password']
     return wrapResults(userAuth(appid,username,password))
 
 @appweb.route('/test/session',method='GET')
@@ -76,9 +76,9 @@ def doGetSessionList():
     @return:ok-{'results':{'sid':(string)value,'planname':(string)value,'starttime':(string)value,'endtime':(string)value,'deviceinfo':(JSON){},'cases':(arrary of JSON)}}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    json = request.json
-    if not json is None:
-        token = json['token']
+    jsond = request.json
+    if not jsond is None:
+        token = jsond['token']
     else:
         token = '1122334455667788'
     return wrapResults(getTestSessionList(token))
@@ -99,9 +99,9 @@ def doGetSessionInfo(sid):
     @return:ok-{'results':{'sid':(string)value, 'planname':(string)value,'starttime':(string)value,'endtime':(string)value,'deviceinfo':(JSON),'cases':(arrary of JSON)}}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    json=request.json
-    if not json is None:
-        token=json['token']
+    jsond = request.json
+    if not jsond is None:
+        token=jsond['token']
     else:
         token='1122334455667788'       
     return wrapResults(getTestSessionInfo(token, sid))
@@ -124,11 +124,11 @@ def doGetCaseResultInfo(sid, tid):
     @return:ok-{'results':{'sid':(string)value,'tid':(string)value,'casename':(string)value,'starttime':(string)value,'endtime':(string)value,'result':(string)value ['Pass'/'Fail'/'Error'],'log':(GridFsId)value,'snapshots':(arrary of GridFsId)}}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    json=request.json
-    if not json is None:
-        token=json['token']     
+    jsond = request.json
+    if not jsond is None:
+        token = jsond['token']     
     else:
-        token='1122334455667788'
+        token = '1122334455667788'
     return wrapResults(getTestCaseInfo(token, sid, tid))
 
 @appweb.route('/test/caseresult/<sid>/<tid>/log',method='GET')
@@ -149,9 +149,9 @@ def doGetCaseResultLog(sid, tid):
     @return:ok-{'results':{'sid':(string)value,'tid':(string)value,'casename':(string)value,'starttime':(string)value,'endtime':(string)value,'result':(string)value ['Pass'/'Fail'/'Error'],'log':(GridFsId)value,'snapshots':(arrary of GridFsId)}}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    json=request.json
-    if not json is None:
-        token=json['token']     
+    jsond = request.json
+    if not jsond is None:
+        token=jsond['token']     
     else:
         token='1122334455667788'
     record_id = sid+'_'+tid
@@ -177,9 +177,9 @@ def doGetCaseResultSnapshots(sid, tid):
     @return:ok-{'results':{'sid':(string)value,'tid':(string)value,'casename':(string)value,'starttime':(string)value,'endtime':(string)value,'result':(string)value ['Pass'/'Fail'/'Error'],'log':(GridFsId)value,'snapshots':(arrary of GridFsId)}}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    json=request.json
-    if not json is None:
-        token=json['token']
+    jsond = request.json
+    if not jsond is None:
+        token=jsond['token']
     else:
         token='1122334455667788'
     return wrapResults(getTestCaseSnaps(token,sid,tid))
