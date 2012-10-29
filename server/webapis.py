@@ -29,22 +29,12 @@ def doRegister():
     @return: ok-{'results':1}
              error-{'errors':{'code':0,'msg':(string)info}} 
     """
-    content_type = request.headers.get('Content-Type')
-    if not (content_type):
-    #    return {'errors':{'code':500, 'msg':'Missing Content-Type'}}
-    #else:
-        json = request.json
-        if not json is None:
-            appid = json['appid']
-            username = json['username']
-            password = json['password']
-            userinfo = json['info']
-        else:
-            appid = '01'
-            username = 'borqsat'
-            password = 'c33367701511b4f6020ec61ded352059'
-            userinfo = {'email':'borqsat@gmail.com', 'contact':'+8613911312632'}
-        return wrapResults(userRegister(appid,username,password,userinfo))
+    jsond = request.json
+    appid = jsond['appid']
+    username = jsond['username']
+    password = jsond['password']
+    userinfo = jsond['info']
+    return wrapResults(userRegister(appid,username,password,userinfo))
 
 @appweb.route('/user/auth',method='GET')
 def doAuth():
@@ -64,15 +54,10 @@ def doAuth():
     @return: ok-{'results':{'token':(string)value}}
              error-{'errors':{'code':0,'msg':(string)info}} 
     """
-    json = request.json
-    if not json is None:
-        appid = json['appid']
-        username = json['username']
-        password = json['password']
-    else:
-        appid = '01'
-        username = 'borqsat'
-        password = 'c33367701511b4f6020ec61ded352059'           
+    jsond = request.params
+    appid = jsond['appid']
+    username = jsond['username']
+    password = jsond['password']
     return wrapResults(userAuth(appid,username,password))
 
 @appweb.route('/test/session',method='GET')
@@ -91,16 +76,12 @@ def doGetSessionList():
     @return:ok-{'results':{'sid':(string)value,'planname':(string)value,'starttime':(string)value,'endtime':(string)value,'deviceinfo':(JSON){},'cases':(arrary of JSON)}}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    content_type=request.headers.get('Content-Type')
-    if not (content_type):
-        #return {'errors':{'code':500, 'msg':'Missing Content-Type'}}
-    #else:
-        json = request.json
-        if not json is None:
-            token = json['token']
-        else:
-            token = '1122334455667788'      
-        return wrapResults(getTestSessionList(token))
+    jsond = request.params
+    if not jsond is None:
+        token = jsond['token']
+    else:
+        token = '1122334455667788'
+    return wrapResults(getTestSessionList(token))
 
 @appweb.route('/test/caseresult/<sid>',method='GET')
 def doGetSessionInfo(sid):
@@ -118,16 +99,12 @@ def doGetSessionInfo(sid):
     @return:ok-{'results':{'sid':(string)value, 'planname':(string)value,'starttime':(string)value,'endtime':(string)value,'deviceinfo':(JSON),'cases':(arrary of JSON)}}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    content_type=request.headers.get('Content-Type')
-    if not (content_type):
-        #return {'errors':{'code':500, 'msg':'Missing Content-Type'}}
-    #else:
-        json=request.json
-        if not json is None:
-            token=json['token']
-        else:
-            token='1122334455667788'       
-        return wrapResults(getTestSessionInfo(token, sid))
+    jsond = request.params
+    if not jsond is None:
+        token=jsond['token']
+    else:
+        token='1122334455667788'       
+    return wrapResults(getTestSessionInfo(token, sid))
 
 @appweb.route('/test/caseresult/<sid>/<tid>',method='GET')
 def doGetCaseResultInfo(sid, tid):
@@ -147,16 +124,12 @@ def doGetCaseResultInfo(sid, tid):
     @return:ok-{'results':{'sid':(string)value,'tid':(string)value,'casename':(string)value,'starttime':(string)value,'endtime':(string)value,'result':(string)value ['Pass'/'Fail'/'Error'],'log':(GridFsId)value,'snapshots':(arrary of GridFsId)}}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    content_type=request.headers.get('Content-Type')
-    if not (content_type):
-        #return {'errors':{'code':500, 'msg':'Missing Content-Type'}}
-    #else:
-        json=request.json
-        if not json is None:
-            token=json['token']     
-        else:
-            token='1122334455667788'
-        return wrapResults(getTestCaseInfo(token, sid, tid))
+    jsond = request.params
+    if not jsond is None:
+        token = jsond['token']     
+    else:
+        token = '1122334455667788'
+    return wrapResults(getTestCaseInfo(token, sid, tid))
 
 @appweb.route('/test/caseresult/<sid>/<tid>/log',method='GET')
 def doGetCaseResultLog(sid, tid):
@@ -176,19 +149,15 @@ def doGetCaseResultLog(sid, tid):
     @return:ok-{'results':{'sid':(string)value,'tid':(string)value,'casename':(string)value,'starttime':(string)value,'endtime':(string)value,'result':(string)value ['Pass'/'Fail'/'Error'],'log':(GridFsId)value,'snapshots':(arrary of GridFsId)}}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    content_type=request.headers.get('Content-Type')
-    if not (content_type):
-        #return {'errors':{'code':500, 'msg':'Missing Content-Type'}}
-    #else:
-        json=request.json
-        if not json is None:
-            token=json['token']     
-        else:
-            token='1122334455667788'
-        record_id = sid+'_'+tid
-        response.set_header('Content-Type','application/x-download')
-        response.set_header('Content-Disposition','attachment; filename=log_'+record_id+'.zip',True)
-        return getTestCaseLog(token, sid, tid)
+    jsond = request.params
+    if not jsond is None:
+        token=jsond['token']     
+    else:
+        token='1122334455667788'
+    record_id = sid+'_'+tid
+    response.set_header('Content-Type','application/x-download')
+    response.set_header('Content-Disposition','attachment; filename=log_'+record_id+'.zip',True)
+    return getTestCaseLog(token, sid, tid)
 
 @appweb.route('/test/caseresult/<sid>/<tid>/snapshot',method='GET')
 def doGetCaseResultSnapshots(sid, tid):
@@ -208,16 +177,12 @@ def doGetCaseResultSnapshots(sid, tid):
     @return:ok-{'results':{'sid':(string)value,'tid':(string)value,'casename':(string)value,'starttime':(string)value,'endtime':(string)value,'result':(string)value ['Pass'/'Fail'/'Error'],'log':(GridFsId)value,'snapshots':(arrary of GridFsId)}}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    content_type=request.headers.get('Content-Type')
-    if not (content_type):
-        #return {'errors':{'code':500, 'msg':'Missing Content-Type'}}
-    #else:
-        json=request.json
-        if not json is None:
-            token=json['token']
-        else:
-            token='1122334455667788'
-        return wrapResults(getTestCaseSnaps(token,sid,tid))
+    jsond = request.params
+    if not jsond is None:
+        token=jsond['token']
+    else:
+        token='1122334455667788'
+    return wrapResults(getTestCaseSnaps(token,sid,tid))
 
 ###################Utilities####################
 def wrapResults(results):
@@ -225,7 +190,7 @@ def wrapResults(results):
     if len(callback) > 0:
         return '%s(%s);'%(callback, json.dumps(results))
     else:
-        return {'results':results}
+        return results
 
 def getCallback():
     callback = ''
