@@ -49,7 +49,7 @@ class dbStore(object):
         """
         users = self.db['user']
         print 'u-p-a %s %s %s' % (user,password,appid)
-        ret = users.find({'appid':appid,'username':user,'password':password})
+        ret = users.find({'username':user,'password':password})
         uid = ''
         token = ''
         for d in ret:
@@ -62,13 +62,13 @@ class dbStore(object):
             if token == '':
                 token = str(uuid.uuid1())
                 tokens.insert({'uid':uid,'token':token})
-        
+
         print 'token %s' % token
 
-        if token != '':
-            return {'token':token,'uid':uid}
+        if token == '':
+            return {'code':1, 'msg':'user or password is incorrect!'}              
         else:
-            return {'code':1, 'msg':'user or password is incorrect!'}
+            return {'token':token,'uid':uid}
 
     def createTestSession(self, sid, uid, planname, starttime, deviceid, devinfo):
         """
