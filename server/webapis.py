@@ -29,7 +29,7 @@ def doRegister():
     @return: ok-{'results':1}
              error-{'errors':{'code':0,'msg':(string)info}} 
     """
-    json = request.jsonp
+    json = request.json
     appid = json['appid']
     username = json['username']
     password = json['password']
@@ -54,7 +54,7 @@ def doAuth():
     @return: ok-{'results':{'token':(string)value}}
              error-{'errors':{'code':0,'msg':(string)info}} 
     """
-    json = request.jsonp
+    json = request.json
     appid = json['appid']
     username = json['username']
     password = json['password']
@@ -76,7 +76,7 @@ def doGetSessionList():
     @return:ok-{'results':{'sid':(string)value,'planname':(string)value,'starttime':(string)value,'endtime':(string)value,'deviceinfo':(JSON){},'cases':(arrary of JSON)}}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    json = request.jsonp
+    json = request.json
     if not json is None:
         token = json['token']
     else:
@@ -99,7 +99,7 @@ def doGetSessionInfo(sid):
     @return:ok-{'results':{'sid':(string)value, 'planname':(string)value,'starttime':(string)value,'endtime':(string)value,'deviceinfo':(JSON),'cases':(arrary of JSON)}}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    json=request.jsonp
+    json=request.json
     if not json is None:
         token=json['token']
     else:
@@ -124,7 +124,7 @@ def doGetCaseResultInfo(sid, tid):
     @return:ok-{'results':{'sid':(string)value,'tid':(string)value,'casename':(string)value,'starttime':(string)value,'endtime':(string)value,'result':(string)value ['Pass'/'Fail'/'Error'],'log':(GridFsId)value,'snapshots':(arrary of GridFsId)}}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    json=request.jsonp
+    json=request.json
     if not json is None:
         token=json['token']     
     else:
@@ -149,7 +149,7 @@ def doGetCaseResultLog(sid, tid):
     @return:ok-{'results':{'sid':(string)value,'tid':(string)value,'casename':(string)value,'starttime':(string)value,'endtime':(string)value,'result':(string)value ['Pass'/'Fail'/'Error'],'log':(GridFsId)value,'snapshots':(arrary of GridFsId)}}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    json=request.jsonp
+    json=request.json
     if not json is None:
         token=json['token']     
     else:
@@ -177,7 +177,7 @@ def doGetCaseResultSnapshots(sid, tid):
     @return:ok-{'results':{'sid':(string)value,'tid':(string)value,'casename':(string)value,'starttime':(string)value,'endtime':(string)value,'result':(string)value ['Pass'/'Fail'/'Error'],'log':(GridFsId)value,'snapshots':(arrary of GridFsId)}}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    json=request.jsonp
+    json=request.json
     if not json is None:
         token=json['token']
     else:
