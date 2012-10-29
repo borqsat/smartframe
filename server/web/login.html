@@ -33,7 +33,7 @@
             if (ret !== undefined && ret["token"] !== undefined) {
 			    $.cookie('ticket', ret["token"], { expires: 7 });
 			    $.cookie('loginname', $('#userId').val(), { expires: 7 });
-                window.location = "index.html";
+                //window.location = "index.html";
 			} else {
 				$('#password').css({"background":"#FFAFAF"},{"border":"1px solid #ccc"});
 				$('#spanPass').text("Incorrect password!").show();

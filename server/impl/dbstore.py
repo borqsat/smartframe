@@ -66,12 +66,13 @@ class dbStore(object):
         else:
             return {'code':1, 'msg':'user or password is incorrect!'}
 
-    def createTestSession(self,sid, planname, starttime, deviceid, devinfo):
+    def createTestSession(self, sid, uid, planname, starttime, deviceid, devinfo):
         """
         write a test session record in database
         """
         session = self.db['session']
         session.insert({'sid':sid,
+                       'uid':uid, 
                        'planname':planname,
                        'result':{'total':0,'pass':0,'fail':0,'error':0},
                        'starttime':starttime,
@@ -284,7 +285,8 @@ class dbStore(object):
         
         if checkid != '':
             fs = self.getfile(checkid)
-            checksnap = base64.encodestring(fs.read())         
+            if not fs is None:
+                checksnap = base64.encodestring(fs.read())         
 
         return {'snaps':snaps, 'checksnap':checksnap}
 
