@@ -3,8 +3,6 @@
 from pymongo import Connection
 import gridfs
 import memcache
-import json
-import Image
 import hashlib,uuid,base64
 from bson.objectid import ObjectId
 
@@ -43,35 +41,53 @@ class dbStore(object):
         uid = str(uuid.uuid1())
         users.insert({'uid':uid,'appid':appid,'username':user,'password':m.hexdigest(),'info':info});
 
+    def validToken(self, token):
+        uid = ''
+        username = ''
+        tokens = self.db['token']
+        rdata = tokens.find({'token':token})
+        for t in rdata:
+            uid = t['uid']
+        
+        if uid != '':
+            users = self.db['user']
+            rdata = users.find({'uid':uid})
+            for t in rdata:
+                username = t['username']
+            return {'uid':uid, 'username':username}  
+        else:
+            return {'code':2, 'msg':'Invalid token!'} 
+
     def createToken(self,appid,user,password):
         """
         write a user account record in database
         """
         users = self.db['user']
         ret = users.find({'appid':appid,'username':user,'password':password})
-        if not ret is None:
-            token = ''
-            uid = ''
-            for d in ret:
-                uid = d['uid']
+        uid = ''
+        token = ''
+        for d in ret:
+            uid = d['uid']
             tokens = self.db['token']
             rdata = tokens.find({'uid':uid})
-            if not rdata is None:
-                for t in rdata:
-                    token = t['token']
-            else:
+            for t in rdata:
+                token = t['token']
+            if token == '':
                 token = str(uuid.uuid1())
-                tokens.insert({'uid':uid,'token':token})
-            return {'token':token,'uid':uid}
-        else:
-            return {'code':1, 'msg':'user or password is incorrect!'}
+                tokens.insert({'uid':uid,'token':token,'expires':'2000'})
 
-    def createTestSession(self,sid, planname, starttime, deviceid, devinfo):
+        if token == '':
+            return {'code':1, 'msg':'user or password is incorrect!'}              
+        else:
+            return {'token':token,'uid':uid}
+
+    def createTestSession(self, sid, uid, planname, starttime, deviceid, devinfo):
         """
         write a test session record in database
         """
         session = self.db['session']
         session.insert({'sid':sid,
+                       'uid':uid, 
                        'planname':planname,
                        'result':{'total':0,'pass':0,'fail':0,'error':0},
                        'starttime':starttime,
@@ -97,13 +113,15 @@ class dbStore(object):
         session = self.db['session']
         session.remove({'sid':sid});
 
-    def readTestSessionList(self):
+    def readTestSessionList(self, uid):
         """
         read list of test session records in database
         """
         session = self.db['session']
-        rdata = session.find()
+        rdata = session.find({'uid':uid})
+        result = {}
         lists = [{'sid':d['sid'],
+                'uid':d['uid'],
                 'planname':d['planname'],
                 'result':d['result'],
                 'starttime':d['starttime'],
@@ -111,17 +129,16 @@ class dbStore(object):
                 'runtime':d['runtime'],
                 'deviceid':d['deviceid'],
                 'deviceinfo':d['deviceinfo']} for d in rdata]
-        result = {}
         result['count'] = len(lists)
         result['sessions'] = lists
         return result
 
-    def readTestSessionInfo(self,sid):
+    def readTestSessionInfo(self,sid,uid):
         """
         read list of test session records in database
         """
         session = self.db['session']
-        rdata = session.find({'sid':sid})
+        rdata = session.find({'sid':sid, 'uid':uid})
         for d in rdata:
             result = {'sid':d['sid'],
                       'planname':d['planname'],
@@ -284,7 +301,8 @@ class dbStore(object):
         
         if checkid != '':
             fs = self.getfile(checkid)
-            checksnap = base64.encodestring(fs.read())         
+            if not fs is None:
+                checksnap = base64.encodestring(fs.read())         
 
         return {'snaps':snaps, 'checksnap':checksnap}
 

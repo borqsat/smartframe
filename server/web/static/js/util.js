@@ -42,7 +42,10 @@ var invokeWebApi = function(apiUrl,dataj,render) {
 
     var funok=function(data) {
         if(data['results'] === undefined) {
-           alert("Server Internal error!");
+           if(data['errors'] !== undefined)
+              alert(data['errors']['msg']);
+           else
+              alert("Web server Internal error!");
            ajaxend();
         } else {
            render(data);
@@ -50,11 +53,12 @@ var invokeWebApi = function(apiUrl,dataj,render) {
         }
     };
 	
-	var funerror=function() {
+    var funerror=function() {
         alert("Server Internal error!");
         ajaxend();
     };
 
+    dataj['token'] = $.cookie('ticket');
     options['beforeSend'] = ajaxstart;
     options['url'] = WebServerURL + apiUrl;	
     options['async'] = true;
