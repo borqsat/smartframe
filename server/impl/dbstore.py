@@ -3,8 +3,6 @@
 from pymongo import Connection
 import gridfs
 import memcache
-import json
-import Image
 import hashlib,uuid,base64
 from bson.objectid import ObjectId
 
@@ -65,22 +63,18 @@ class dbStore(object):
         write a user account record in database
         """
         users = self.db['user']
-        print 'u-p-a %s %s %s' % (user,password,appid)
-        ret = users.find({'username':user,'password':password})
+        ret = users.find({'appid':appid,'username':user,'password':password})
         uid = ''
         token = ''
         for d in ret:
             uid = d['uid']
-            print 'uid %s' % uid
             tokens = self.db['token']
             rdata = tokens.find({'uid':uid})
             for t in rdata:
                 token = t['token']
             if token == '':
                 token = str(uuid.uuid1())
-                tokens.insert({'uid':uid,'token':token})
-
-        print 'token %s' % token
+                tokens.insert({'uid':uid,'token':token,'expires':'2000'})
 
         if token == '':
             return {'code':1, 'msg':'user or password is incorrect!'}              
