@@ -43,6 +43,23 @@ class dbStore(object):
         uid = str(uuid.uuid1())
         users.insert({'uid':uid,'appid':appid,'username':user,'password':m.hexdigest(),'info':info});
 
+    def validToken(self, token):
+        uid = ''
+        username = ''
+        tokens = self.db['token']
+        rdata = tokens.find({'token':token})
+        for t in rdata:
+            uid = t['uid']
+        
+        if uid != '':
+            users = self.db['user']
+            rdata = users.find({'uid':uid})
+            for t in rdata:
+                username = t['username']
+            return {'uid':uid, 'username':username}  
+        else:
+            return {'code':2, 'msg':'Invalid token!'} 
+
     def createToken(self,appid,user,password):
         """
         write a user account record in database

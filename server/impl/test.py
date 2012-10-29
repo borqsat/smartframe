@@ -1,7 +1,11 @@
 from dbstore import store
 
 def createTestSession(token,sid,planname,starttime, deviceid, deviceinfo):
-    uid = '001'
+    ret = store.validToken(token)
+    if ret.has_key('uid'):
+        uid = ret['uid']
+    else:
+        uid = '001'
     store.createTestSession(sid, uid, planname, starttime, deviceid, deviceinfo)
     return {'results':1}
 
@@ -14,7 +18,11 @@ def deleteTestSession(token,sid):
     return {'results':1}
 
 def getTestSessionList(token):
-    uid = '001'
+    ret = store.validToken(token)
+    if ret.has_key('uid'):
+        uid = ret['uid']
+    else:
+        uid = '001'
     rdata = store.readTestSessionList(uid)
     if not rdata is None :
         return {'results':rdata}
@@ -22,7 +30,11 @@ def getTestSessionList(token):
         return {'errors':{'code':404,'msg':'None reuslt.'}}
 
 def getTestSessionInfo(token, sid):
-    uid = '001'
+    ret = store.validToken(token)
+    if ret.has_key('uid'):
+        uid = ret['uid']
+    else:
+        uid = '001'
     rdata = store.readTestSessionInfo(sid, uid)
     if not rdata is None :
         return {'results':rdata}
