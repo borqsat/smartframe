@@ -1,4 +1,6 @@
 
+var _appglobal = function () {};
+
 $(function(){
     if($.cookie('loginname') !== undefined && $.cookie('loginname') !== null) {
         $('#logname').html($.cookie('loginname'));
@@ -27,9 +29,14 @@ function viewStop(){
 
 
 function createCaseSnaps(sid, tid){
-    $(".carouse").delegate(); 
-    var $snaplist = $('#imgs_list'); 
-    $snaplist.html('');   
+
+    $('#history_div').dialog({height: 640,
+                              width:360,
+                              resizable:false,
+                              modal: true});
+
+    var $snaplist = $('#img_list'); 
+    $snaplist.html('');
     invokeWebApi('/test/caseresult/'+sid+'/'+tid+'/snapshot',
                 {},
                 function(data){
@@ -42,19 +49,21 @@ function createCaseSnaps(sid, tid){
                         return;
                     }
                     for(var d in data.results.snaps) {
-                        var $snapli = $('<li>').attr('class','thumbnail');
+                        var $snapli = $('<li>');
                         var $ig = new Image();
                         $ig.src = 'data:image/png;base64,' + data.results.snaps[d];
-                        $ig.setAttribute("width","300px");
-                        $ig.setAttribute("height","512px");
+                        $ig.setAttribute("width",parseInt(_appglobal.deviceinfo['width'])/2+"px");
+                        $ig.setAttribute("height",parseInt(_appglobal.deviceinfo['height'])/2+"px");
+                        $ig.setAttribute('class','thumbnail');
                         $snaplist.append($snapli);
                         $snapli.append($ig);
                     }
                     $("#history_div").jCarouselLite({
                         btnNext: ".next",
                         btnPrev: ".prev",
-                    }); 
-                }); 
+                        visible: 1
+                    });
+                });
 }
 
 function createDetailTable(ids){
@@ -111,10 +120,17 @@ function showHistoryDiv(sid, tid) {
 
 function createSnapshotDiv(sid) {
 
+    $('#snap_div').dialog({height: 700,
+                          width: 320,
+                          resizable:false,
+                          modal: true});
+                 
+
     if(ws !== undefined) {
       alert('close socket');
       ws.close();
     }
+
     //screen snap channel
     ws = getWebsocket("/test/session/"+sid+"/screen");
     var c=document.getElementById("snapCanvas");
@@ -226,6 +242,8 @@ function fillDetailTable(data, ids, tag){
             } 
         }
     }
+
+    TablePage('#'+ids,30, 5);
 }
 
 
@@ -275,7 +293,10 @@ function createAllTestList(key) {
  }
 
 function createDeviceInfo(data) {
-    data = data['results'];
+
+    data = data['results']['deviceinfo'];
+    _appglobal.deviceinfo = data;
+    
     var key = data['sid'];
     var allId = "o_"+key;
     var failId = 'fail_'+key;
@@ -290,10 +311,10 @@ function createDeviceInfo(data) {
     $dev_table.append($tbody);
 
     $tr = "<tr>"+     
-          "<td>"+data['deviceinfo']['product']+"</td>"+    
-          "<td>"+data['deviceinfo']['revision']+"</td>"+
-          "<td>"+data['deviceinfo']['width']+"</td>"+
-          "<td>"+data['deviceinfo']['height']+"</td>"+          
+          "<td>"+data['product']+"</td>"+    
+          "<td>"+data['revision']+"</td>"+
+          "<td>"+data['width']+"</td>"+
+          "<td>"+data['height']+"</td>"+          
           "</tr>";
 
     $dev_table.append($tr);

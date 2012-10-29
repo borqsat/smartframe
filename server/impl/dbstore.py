@@ -279,7 +279,8 @@ class dbStore(object):
 
         for fid in snapids:
             fs = self.getfile(fid)
-            snaps.append(base64.encodestring(fs.read()))
+            if not fs is None:
+                snaps.append(base64.encodestring(fs.read()))
         
         if checkid != '':
             fs = self.getfile(checkid)
