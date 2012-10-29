@@ -55,6 +55,7 @@ var invokeWebApi = function(apiUrl,dataj,render) {
         ajaxend();
     };
 
+    dataj['token'] = $.cookie('ticket');
     options['beforeSend'] = ajaxstart;
     options['url'] = WebServerURL + apiUrl;	
     options['async'] = true;

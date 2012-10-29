@@ -54,6 +54,7 @@ class dbStore(object):
             uid = ''
             for d in ret:
                 uid = d['uid']
+            print 'uid %s' % uid
             tokens = self.db['token']
             rdata = tokens.find({'uid':uid})
             if not rdata is None:
@@ -61,7 +62,8 @@ class dbStore(object):
                     token = t['token']
             else:
                 token = str(uuid.uuid1())
-                tokens.insert({'uid':uid,'token':token})
+            print 'token %s' % token    
+            tokens.insert({'uid':uid,'token':token})
             return {'token':token,'uid':uid}
         else:
             return {'code':1, 'msg':'user or password is incorrect!'}
@@ -98,13 +100,15 @@ class dbStore(object):
         session = self.db['session']
         session.remove({'sid':sid});
 
-    def readTestSessionList(self):
+    def readTestSessionList(self, uid):
         """
         read list of test session records in database
         """
         session = self.db['session']
-        rdata = session.find()
+        rdata = session.find({'uid':uid})
+        result = {}
         lists = [{'sid':d['sid'],
+                'uid':d['uid'],
                 'planname':d['planname'],
                 'result':d['result'],
                 'starttime':d['starttime'],
@@ -112,17 +116,16 @@ class dbStore(object):
                 'runtime':d['runtime'],
                 'deviceid':d['deviceid'],
                 'deviceinfo':d['deviceinfo']} for d in rdata]
-        result = {}
         result['count'] = len(lists)
         result['sessions'] = lists
         return result
 
-    def readTestSessionInfo(self,sid):
+    def readTestSessionInfo(self,sid,uid):
         """
         read list of test session records in database
         """
         session = self.db['session']
-        rdata = session.find({'sid':sid})
+        rdata = session.find({'sid':sid, 'uid':uid})
         for d in rdata:
             result = {'sid':d['sid'],
                       'planname':d['planname'],
