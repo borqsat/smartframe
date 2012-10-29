@@ -53,7 +53,7 @@ var invokeWebApi = function(apiUrl,dataj,render) {
         }
     };
 	
-	var funerror=function() {
+    var funerror=function() {
         alert("Server Internal error!");
         ajaxend();
     };
@@ -64,7 +64,7 @@ var invokeWebApi = function(apiUrl,dataj,render) {
     options['async'] = true;
     options['type'] = 'GET';
     options['data'] = dataj;
-    options['dataType'] = 'jsonp';
+    options['dataType'] = 'json';
     options['timeout'] = 15000;
 	options['success'] = funok;
 	options['error'] = funerror;
