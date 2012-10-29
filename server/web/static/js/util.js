@@ -1,6 +1,5 @@
 var WebServerURL = 'http://192.168.7.212:8080';
 var SocketURL = "ws://192.168.7.212:8082";
-
 //function invokeWebApi(cmd, jdata, call){
 //    $.getJSON(WebServerURL+cmd+"?callback=?", jdata, call);
 //}
@@ -60,6 +59,7 @@ var invokeWebApi = function(apiUrl,dataj,render) {
     options['url'] = WebServerURL + apiUrl;	
     options['async'] = true;
     options['type'] = 'GET';
+    options['data'] = dataj;
     options['dataType'] = 'jsonp';
     options['timeout'] = 15000;
 	options['success'] = funok;

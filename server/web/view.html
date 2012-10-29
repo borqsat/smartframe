@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8">
     <title>smartServer</title>
-    <meta name="description" content="">
-    <meta name="author" content="">
     <link href="static/css/bootstrap.css" rel="stylesheet">
     <link href="static/css/bootstrap-responsive.css" rel="stylesheet">
-    <link href="static/css/jquery-ui-1.8.16.custom.css" rel="stylesheet">
+    <!--link href="static/css/jquery-ui-1.8.16.custom.css" rel="stylesheet"-->
+    <link href="static/css/jquery-ui.css" rel="stylesheet"> 
+    <link href="static/css/tablepage.css" rel="stylesheet">    
     <link href="static/css/app.css" rel="stylesheet">
   </head>
   
@@ -36,38 +36,41 @@
            <div class="span6 mtbfunit">
                 <div id="detail_panel">
                     <div id="summary_div">
-                        <span class="label label-info">Session Info</span>
+                        <span class="label label-info">Session Summary</span>
                     </div>
-                    <hr>
-
-                    <div id="runc_div" style="display:none">
-                        <span class="label label-info">Case Running</span>
-                        <div id="rtcases_div"></div>               
-                    </div>
-
-                    <div id="okc_div">
-                        <span class="label label-info">Case Finished</span>
-                        <div id="cases_div"></div>               
+                    
+                    <div id="device_div">
+                        <span class="label label-info">Device Properties</span>
                     </div>
                 </div>
            </div>
 
            <div class="span5 mtbfunit">
-                    <span class="label label-info">Device Info</span>
-                    <div id="device_div"></div>
-                    <hr>
-                    <span class="label label-info">Snaps</span>
-                    <br>
-                    <div id="history_div">
-                        <button href="#" class="prev btn"><<</button>
-                        <button href="#" class="next btn">>></button>
-                        <div id="imgs_div" class="carouse">
-                          <ul id="imgs_list">None</ul>
-                        </div>
+                <div id="runc_div" style="display:none">
+                    <span class="label label-info">Case Running</span>
+                    <div id="rtcases_div"></div>               
+                </div>
+                <div id="okc_div">
+                    <span class="label label-info">Case Details</span>
+                    <div id="cases_div"></div>               
+                </div>
+
+                <div id="history_div" style="display:none">
+                    <div>
+                      <span class="label label-info">Case Snaps</span>
                     </div>
-                    <div id="snap_div" style="display:none">
-                        <canvas id="snapCanvas" border="1px"></canvas>
-                    </div>                  
+                    <button class="prev"><<</button>
+                    <div>
+                        <ul id="img_list">None</ul>
+                    </div>
+                    <button class="next">>></button>
+                </div>
+                <div id="snap_div" style="display:none">
+                    <div>
+                      <span class="label label-info">Real-time Snap</span>
+                    </div>
+                    <canvas id="snapCanvas" border="1px"></canvas>
+                </div>                  
         </div>
   </div>
       <hr>
@@ -80,15 +83,18 @@
 </body>
     <!-- global jquery.js -->
     <script type="text/javascript" src="static/js/jquery-1.7.2.min.js"></script>
-    <script type="text/javascript" src="static/js/jquery.cookie.js"></script>
-    <script type="text/javascript" src="static/js/jcarousellite_1.0.1.min.js"></script>    
+    <script type="text/javascript" src="static/js/jquery.cookie.js"></script>   
+    <script type="text/javascript" src="static/js/jquery-ui.js"></script>      
     <script type="text/javascript" src="static/js/json2.js"></script>
-    <script type="text/javascript" src="static/js/util.js"></script> 
+    <script type="text/javascript" src="static/js/bootstrap.js"></script>
+    <script type="text/javascript" src="static/js/bootstrap-tooltip.js"></script>
+    <script type="text/javascript" src="static/js/bootstrap-popover.js"></script>
+    <script type="text/javascript" src="static/js/bootstrap-tab.js"></script>
+    <script type="text/javascript" src="static/js/jcarousellite_1.0.1.min.js"></script>
+    <script type="text/javascript" src="static/js/util.js"></script>
+    <script type="text/javascript" src="static/js/tablepage.js"></script>    
     <script type="text/javascript" src="static/js/app.js"></script>
-    <script src="static/js/bootstrap.js"></script>
-    <script src="static/js/bootstrap-tooltip.js"></script>
-    <script src="static/js/bootstrap-popover.js"></script>
-    <script src="static/js/bootstrap-tab.js"></script>
+
     <script type="text/javascript">
         if($.cookie('ticket') === undefined || $.cookie('ticket') === null) window.location = "login.html"
         $(window).load(function(){

@@ -1,6 +1,6 @@
-from bottle import request, Bottle, abort
+from gevent import monkey; monkey.patch_all()
+from bottle import request,response, Bottle, abort
 from gevent.pywsgi import WSGIServer
-from geventwebsocket import WebSocketHandler, WebSocketError
 from impl.test import *
 from impl.device import *
 from impl.auth import *
@@ -95,7 +95,7 @@ def doDeleteSession(sid):
         if not json is None:
             token = json['token']  
         else:
-            token = '1122334455667788'      
+            token = '1122334455667788'
         return deleteTestSession(token, sid)
 
 @app.route('/test/caseresult/<sid>/<tid>/create',method='POST')
@@ -187,18 +187,26 @@ def doUploadFile(sid, tid):
             error-{'errors':{'code':value,'msg':(string)info}}
     """
     content_type = request.headers.get('Content-Type')
+    external_type = request.headers.get('External-Type')
     token = request.headers.get('token')
     if not (content_type):
         return {'errors':{'code':500, 'msg':'Missing Content-Type'}}
     elif not (token):
-        return {'errors':{'code':500, 'msg':'Missing token'}}        
+        return {'errors':{'code':500, 'msg':'Missing token'}}
     else:
         if content_type == 'image/png':
             ftype = 'png'
         else:
             ftype = 'zip'
+
+        if external_type == 'check':
+            ctype = 'check'
+        else:
+            ctype = ''
+
         rawdata = request.body.read()
-        return uploadCaseResultFile(token, sid, tid, rawdata, ftype)
+        return uploadCaseResultFile(token, sid, tid, rawdata, ftype, ctype)
 
 if __name__ == '__main__':
-    WSGIServer(("", 8081), app, handler_class=WebSocketHandler).serve_forever()
+    print 'TestServer Serving on 8081...'
+    WSGIServer(("", 8081), app).serve_forever()

@@ -34,14 +34,13 @@
     <div id="img" style="position:absolute;z-index: 3;"></div>
     <div class="row-fluid">
         <div class="span12">
-           <div class="mtbfunit">
-               <div id="stop_cycle_panel" >
-                  <span class="label label-info">Finished Session</span><br/>
-               </div>
-               <hr>
-               <div id="run_cycle_panel" >
-                    <span class="label label-info">Running Session</span><br/>
-               </div>
+           <div class="mtbfunit" id="maintab">
+               <ul class="nav nav-tabs">
+                  <li id="tabrun" class="active"><a href="javascript:viewRun();">Running Session</a></li>
+                  <li id="tabstop"><a href="javascript:viewStop();">Stop Session</a></li>
+               </ul>
+               <div id="run_cycle_panel" ></div>
+               <div id="stop_cycle_panel" style="display:none"></div>
             </div>
         </div>
         <hr>
@@ -68,7 +67,8 @@
             window.location = "login.html"
         $(window).load(function(){$("#loading").hide();})
         $(function(){
-           createSessionList();
+            $('#maintab').tab('show');
+            createSessionList();
         });
     </script>
 
