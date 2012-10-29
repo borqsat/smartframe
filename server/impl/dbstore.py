@@ -48,6 +48,7 @@ class dbStore(object):
         write a user account record in database
         """
         users = self.db['user']
+        print 'u-p-a %s %s %s' % (user,password,appid)
         ret = users.find({'appid':appid,'username':user,'password':password})
         uid = ''
         token = ''
