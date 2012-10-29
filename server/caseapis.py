@@ -157,4 +157,4 @@ def doUploadCasefile(cid):
     """
 
 if __name__ == '__main__':
-    WSGIServer(("", 8084), app, handler_class=WebSocketHandler).serve_forever()
+    WSGIServer(("", 8084), app).serve_forever()

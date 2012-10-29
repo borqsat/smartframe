@@ -1,0 +1,16 @@
+ .page a{
+  text-decoration:none;
+}
+  .page a span{
+  padding:4px 16px 4px 16px;
+  border:1px solid #AAAAEE;
+  color: #1155BB;
+  font-size:12px;
+  font-weight:bold;
+  font-family: 'helvetica neue', arial, sans-serif;
+}
+
+.page a span:hover,.click_page{
+  background:#2266BB;
+  color:#ffffff;
+ }

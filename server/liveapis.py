@@ -1,3 +1,4 @@
+from gevent import monkey; monkey.patch_all()
 from bottle import request, response, Bottle, abort
 import gevent
 from gevent.pywsgi import WSGIServer
@@ -5,10 +6,10 @@ from geventwebsocket import WebSocketHandler, WebSocketError
 from impl.test import *
 from impl.device import *
 from impl.auth import *
-import json, base64, time, threading
+import json, base64, time
 
 appweb = Bottle()
-wslist = [] 
+wslist = {} 
 @appweb.route('/test/session/<sid>/screen')
 def handle_screen_websocket(sid):
     print 'handle snapshot request...'
@@ -17,23 +18,31 @@ def handle_screen_websocket(sid):
     if not wsock:
         abort(400, 'Expected WebSocket request.')
     else:
-        wslist.append(wsock)
-        wsock.send('snapsize:{"width":"300px","height":"512px"}')
+        if not sid in wslist:
+            wslist[sid] = []
+        ret = getTestSessionInfo(token, sid)
+        if not ret is None:
+            wslist[sid].append(wsock)
+            deviceinfo = ret['results']['deviceinfo']
+            wsock.send('snapsize:'+json.dumps(deviceinfo))
+        else:
+            abort(404, 'Request device is invalid.')
 
     while True:
+        if len(wslist[sid]) == 0:
+            break
         try:
-            #print 'list of ws: %s' % (len(wslist))            
-            snaplive = getTestSessionSnaps(token, sid)
-            lenf = len(snaplive)
+            snaps = getTestSessionSnaps(token, sid)
+            lenf = len(snaps)
             msgdata = 'nop'
             if lenf > 0:
-                msgdata = 'snapshot:' + base64.encodestring(snaplive[lenf-1])
+                msgdata = 'snapshot:' + base64.encodestring(snaps[lenf-1])
             gevent.sleep(0.3)
-            for i in wslist:    
+            for i in wslist[sid]:
                 try:
                     i.send(msgdata)
                 except:
-                    wslist.remove(i)
+                    wslist[sid].remove(i)
         except WebSocketError:
             break
 
@@ -61,4 +70,5 @@ def handle_console_websocket(sid):
             break
 
 if __name__ == '__main__':
+    print 'LiveStream Serving on 8082...'
     WSGIServer(("", 8082), appweb, handler_class=WebSocketHandler).serve_forever()

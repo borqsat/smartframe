@@ -41,9 +41,9 @@ def updateCaseResult(token,sid, tid,status,traceinfo, endtime):
     store.updateTestCaseResult(sid, tid, status,traceinfo,endtime)
     return {'results':1}
 
-def uploadCaseResultFile(token, sid, tid, rawdata, ftype='png'):
+def uploadCaseResultFile(token, sid, tid, rawdata, ftype='png', ctype=''):
     if ftype == 'png':
-        store.writeTestSnapshot(sid, tid, rawdata)
+        store.writeTestSnapshot(sid, tid, rawdata, ctype)
         return {'results':1}
     elif ftype == 'zip':
         store.writeTestLog(sid, tid, rawdata)
@@ -59,11 +59,11 @@ def getTestCaseLog(token, sid, tid):
         return {'errors':{'code':404,'msg':'None reuslt.'}}
 
 def getTestCaseSnaps(token, sid, tid):
-    imgBuffer = store.readTestHistorySnaps(sid, tid)
-    if not imgBuffer is None:
-        return {'results':imgBuffer}
+    rdata = store.readTestHistorySnaps(sid, tid)
+    if not rdata is None:
+        return {'results':rdata}
     else:
-        return {'results':{'snaps':[]}}
+        return {'errors':{'code':404,'msg':'None reuslt.'}}
 
 def getTestSessionSnaps(token, sid):
     imgBuffer = store.readTestLiveSnaps(sid)

@@ -1,4 +1,6 @@
 
+var _appglobal = function () {};
+
 $(function(){
     if($.cookie('loginname') !== undefined && $.cookie('loginname') !== null) {
         $('#logname').html($.cookie('loginname'));
@@ -9,12 +11,32 @@ function createSessionList(){
     invokeWebApi("/test/session", {}, createSessionTable);
 }
 
+function viewRun(){
+    $('#tabrun').addClass('active');
+    $('#tabstop').removeClass('active');
+
+    $('#run_cycle_panel').show();
+    $('#stop_cycle_panel').hide();    
+}
+
+function viewStop(){
+    $('#tabrun').removeClass('active');
+    $('#tabstop').addClass('active');
+
+    $('#run_cycle_panel').hide();
+    $('#stop_cycle_panel').show();    
+}
+
+
 function createCaseSnaps(sid, tid){
 
+    $('#history_div').dialog({height: 640,
+                              width:360,
+                              resizable:false,
+                              modal: true});
 
-    $(".carouse").delegate(); 
-    var $snaplist = $('#imgs_list'); 
-    $snaplist.html('');   
+    var $snaplist = $('#img_list'); 
+    $snaplist.html('');
     invokeWebApi('/test/caseresult/'+sid+'/'+tid+'/snapshot',
                 {},
                 function(data){
@@ -27,21 +49,21 @@ function createCaseSnaps(sid, tid){
                         return;
                     }
                     for(var d in data.results.snaps) {
-                        var $snapli = $('<li>').attr('class','thumbnail');
+                        var $snapli = $('<li>');
                         var $ig = new Image();
                         $ig.src = 'data:image/png;base64,' + data.results.snaps[d];
+                        $ig.setAttribute("width",parseInt(_appglobal.deviceinfo['width'])/2+"px");
+                        $ig.setAttribute("height",parseInt(_appglobal.deviceinfo['height'])/2+"px");
+                        $ig.setAttribute('class','thumbnail');
                         $snaplist.append($snapli);
                         $snapli.append($ig);
-                        $ig.setAttribute("width","300px");
-                        $ig.setAttribute("height","512px");
                     }
-                    $(".carouse").jCarouselLite({
+                    $("#history_div").jCarouselLite({
                         btnNext: ".next",
                         btnPrev: ".prev",
-                        visible: 1,
-                        auto:3000
+                        visible: 1
                     });
-                }); 
+                });
 }
 
 function createDetailTable(ids){
@@ -64,8 +86,6 @@ function createDetailTable(ids){
     $tb.append($tbody);
     $div_detail.html($tb);
 }
-
-
 
 //for fail and error popup link
 function showTestDetail(div_id){
@@ -100,7 +120,16 @@ function showHistoryDiv(sid, tid) {
 
 function createSnapshotDiv(sid) {
 
-    if(ws !== undefined) ws.close();
+    $('#snap_div').dialog({height: 700,
+                          width: 320,
+                          resizable:false,
+                          modal: true});
+                 
+
+    if(ws !== undefined) {
+      alert('close socket');
+      ws.close();
+    }
 
     //screen snap channel
     ws = getWebsocket("/test/session/"+sid+"/screen");
@@ -116,8 +145,8 @@ function createSnapshotDiv(sid) {
         if (data.indexOf('snapsize:') >= 0 ) {
             data = data.substr('snapsize:'.length);
             data = JSON.parse(data);
-            c.setAttribute('width',data['width']);
-            c.setAttribute('height',data['height']);      
+            c.setAttribute('width', parseInt(data['width'])/2 + 'px');
+            c.setAttribute('height', parseInt(data['height'])/2 + 'px');      
         } else if (data.indexOf('snapshot:') >= 0 ) {
             data = data.substr('snapshot:'.length);
             doRenderImg(data);
@@ -131,30 +160,6 @@ function createSnapshotDiv(sid) {
         cxt.drawImage(img,0,0,300,512);
     }
 }
-
-/*function createCaseResultDiv(sid) {
-    curSid = sid;
-
-    if(ws !== undefined) ws.close();
-    ws = getWebsocket("/test/session/"+sid+"/terminal");
-    ws.onopen = function() {
-        ws.send('sync:ok');
-    };
-
-    ws.onmessage = function (evt) {
-        var data = evt.data;
-        if (data.indexOf('caseupdate:') >= 0 ) {  
-            data = data.substr('caseupdate:'.length);
-            doRender(data);
-        } 
-        ws.send('sync:ok');
-    };
-
-    function doRender(data) {
-        $("#myTerminal").append(data+"\r\n");
-    }
-}
-*/
 
 function fillDetailTable(data, ids, tag){
 
@@ -193,7 +198,6 @@ function fillDetailTable(data, ids, tag){
                                         "<pre><h5>"+ctraceinfo+"</h5></pre></div>"+
                                         "</td>"+
                                         "<td><a href=\""+WebServerURL+"/test/caseresult/"+csid+"/"+ctid+"/log\">log</a> </td>"+
-                                        //"<td><a id=\"f_"+ctid+"_"+i+"\" data-toggle=\"modal\" href=\"#myModal\" onclick=\"createCaseSnaps('"+csid+"','"+ctid+"');\">snapshot</a></td>"+
                                         "<td><a id=\"f_"+ctid+"_"+i+"\" href=\"javascript:showHistoryDiv('"+csid+"','"+ctid+"');\">snapshot</a></td>"+
                                         "</tr>");
 
@@ -210,7 +214,7 @@ function fillDetailTable(data, ids, tag){
                                      "<a onfocus=\"this.blur();\" onclick=\"document.getElementById('div_"+ids+"_"+i+"').style.display ='none' \"> [x] </a>"+"</div>"+
                                      "<pre><h5>"+ctraceinfo+"</h5></pre> </div>"+"</td>"+
                                      "<td><a href=\""+WebServerURL+"/test/caseresult/"+csid+"/"+ctid+"/log\">log</a> </td>"+
-                                     "<td></td>"+
+                                     "<td><a id=\"f_"+ctid+"_"+i+"\" href=\"javascript:showHistoryDiv('"+csid+"','"+ctid+"');\">snapshot</a></td>"+
                                      "</tr>");
 
            } else if (cresult == 'running' || cresult == 'pass'){
@@ -238,6 +242,8 @@ function fillDetailTable(data, ids, tag){
             } 
         }
     }
+
+    TablePage('#'+ids,30, 5);
 }
 
 
@@ -287,7 +293,10 @@ function createAllTestList(key) {
  }
 
 function createDeviceInfo(data) {
-    data = data['results'];
+
+    data = data['results']['deviceinfo'];
+    _appglobal.deviceinfo = data;
+    
     var key = data['sid'];
     var allId = "o_"+key;
     var failId = 'fail_'+key;
@@ -302,10 +311,10 @@ function createDeviceInfo(data) {
     $dev_table.append($tbody);
 
     $tr = "<tr>"+     
-          "<td>"+data['deviceinfo']['product']+"</td>"+    
-          "<td>"+data['deviceinfo']['revision']+"</td>"+
-          "<td>"+data['deviceinfo']['width']+"</td>"+
-          "<td>"+data['deviceinfo']['height']+"</td>"+          
+          "<td>"+data['product']+"</td>"+    
+          "<td>"+data['revision']+"</td>"+
+          "<td>"+data['width']+"</td>"+
+          "<td>"+data['height']+"</td>"+          
           "</tr>";
 
     $dev_table.append($tr);

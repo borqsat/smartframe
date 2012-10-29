@@ -3,9 +3,8 @@
 from pymongo import Connection
 import gridfs
 import memcache
-import mimetypes
 import json
-import datetime,time
+import Image
 import hashlib,uuid,base64
 from bson.objectid import ObjectId
 
@@ -21,7 +20,7 @@ class dbStore(object):
         self.db = Connection(server, port)['smartServer']
         self.fs = gridfs.GridFS(Connection(server, port)['smartGridFS'], collection='rawfiles')
         self.mc = memcache.Client(['127.0.0.1:11211'],debug=0)
-        self.imgBuffer = {}
+        self.snapqueue = {}
 
     def getfile(self,fileId): 
         '''
@@ -51,13 +50,15 @@ class dbStore(object):
         users = self.db['user']
         ret = users.find({'appid':appid,'username':user,'password':password})
         if not ret is None:
+            token = ''
+            uid = ''
             for d in ret:
-                uid = d['uid'] 
+                uid = d['uid']
             tokens = self.db['token']
             rdata = tokens.find({'uid':uid})
             if not rdata is None:
-                for d in rdata:
-                    token = d['token']
+                for t in rdata:
+                    token = t['token']
             else:
                 token = str(uuid.uuid1())
                 tokens.insert({'uid':uid,'token':token})
@@ -157,6 +158,8 @@ class dbStore(object):
                 d['log'] = ''
             if not 'snapshots' in d:
                 d['snapshots'] = []
+            if not 'checksnap' in d:
+                d['checksnap'] = ''
 
             result = {'tid':d['tid'],
                     'casename':d['casename'],
@@ -165,7 +168,8 @@ class dbStore(object):
                     'result':d['result'],
                     'traceinfo':d['traceinfo'],
                     'log':d['log'],
-                    'snapshots':d['snapshots']}
+                    'snapshots':d['snapshots'],
+                    'checksnap':d['checksnap']}
         return result
 
     def getCaseLog(self, sid, tid):
@@ -186,12 +190,12 @@ class dbStore(object):
         """
         write a test case resut record in database
         """
-        self.imgBuffer[sid+'-'+tid] = []
+        self.snapquene[sid+'-'+tid] = []
         self.mc.set(sid+'id',tid)
         self.mc.set(sid+'name',casename)
         self.mc.set(sid+'status','start')
         caseresult = self.db['caseresult']
-        caseresult.insert({'sid':sid, 'tid':tid, 'casename':casename, 'log':'N/A', 'traceinfo':'N/A','result':'running', 'starttime':starttime, 'endtime':'N/A','snapshots':[]})
+        caseresult.insert({'sid':sid, 'tid':tid, 'casename':casename, 'log':'N/A', 'traceinfo':'N/A','result':'running', 'starttime':starttime, 'endtime':'N/A','snapshots':[], 'checksnap':''})
         session = self.db['session']
         session.update({'sid':sid},{'$inc':{'result.total':1}})
 
@@ -222,21 +226,25 @@ class dbStore(object):
         log = self.fs.put(logfile)
         caseresult.update({'sid':sid,'tid':tid},{'$set':{'log':str(log)}})
 
-    def writeTestSnapshot(self,sid, tid, snapfile):
+    def writeTestSnapshot(self,sid, tid, snapfile, stype):
         """
         add snapshot png in image buffer
         """
         if self.mc:
             self.mc.set(sid+'snap', snapfile)
 
-        if not (sid+'-'+tid) in self.imgBuffer:
-            self.imgBuffer[sid+'-'+tid] = []
+        if not (sid+'-'+tid) in self.snapquene:
+            self.snapquene[sid+'-'+tid] = []
         try:
             idx = self.fs.put(snapfile)
-            self.imgBuffer[sid+'-'+tid].append(str(idx))
-            snapshots = self.imgBuffer[sid+'-'+tid] 
-            caseresult = self.db['caseresult']
-            caseresult.update({'sid':sid,'tid':tid},{'$set':{'snapshots':snapshots}})
+            caseresult = self.db['caseresult']            
+            if stype == 'check':
+                checksnap = str(idx)
+                caseresult.update({'sid':sid,'tid':tid},{'$set':{'checksnap':checksnap}})
+            else:
+                self.snapquene[sid+'-'+tid].append(str(idx))
+                snapshots = self.snapquene[sid+'-'+tid]
+                caseresult.update({'sid':sid,'tid':tid},{'$set':{'snapshots':snapshots}})
         except:
             pass
 
@@ -260,13 +268,24 @@ class dbStore(object):
         ret = caseresult.find({'sid':sid,'tid':tid})
         snapids = []
         snaps = []
+        checkid = ''
+        checksnap = ''
         for d in ret:
-            snapids = d['snapshots'] 
+            snapids = d['snapshots']
+            if not 'checksnap' in d:
+                checkid = ''
+            else:
+                checkid = d['checksnap']
 
         for fid in snapids:
             fs = self.getfile(fid)
-            snaps.append(base64.encodestring(fs.read()))
+            if not fs is None:
+                snaps.append(base64.encodestring(fs.read()))
+        
+        if checkid != '':
+            fs = self.getfile(checkid)
+            checksnap = base64.encodestring(fs.read())         
 
-        return {'snaps':snaps}
+        return {'snaps':snaps, 'checksnap':checksnap}
 
 store = dbStore(server='192.168.7.212', port=27017)
