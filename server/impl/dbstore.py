@@ -35,13 +35,17 @@ class dbStore(object):
         """
         write a user account record in database
         """
-        m = hashlib.md5()
-        m.update(password)
+        uid = ''
         users = self.db['user']
         ret = users.find({'appid':appid,'username':user})
-        if not ret is None:
+        for t in ret:
+            uid = t['uid']
+
+        if uid != '':
             return {'code':'04', 'msg':'An account with same username exists!'}            
         else:
+            m = hashlib.md5()
+            m.update(password)
             uid = str(uuid.uuid1())
             users.insert({'uid':uid,'appid':appid,'username':user,'password':m.hexdigest(),'info':info})
             return {'uid':uid}

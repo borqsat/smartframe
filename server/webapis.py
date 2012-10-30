@@ -9,11 +9,11 @@ import json, base64, time
 
 appweb = Bottle()
 
-@appweb.route('/user/register',method='POST')
+@appweb.route('/user/register',method='GET')
 def doRegister():
     """
     URL:/user/register
-    TYPE:http/POST
+    TYPE:http/GET
 
     register a new account to server-side
 
@@ -29,12 +29,12 @@ def doRegister():
     @return: ok-{'results':1}
              error-{'errors':{'code':0,'msg':(string)info}} 
     """
-    jsond = request.json
+    jsond = request.params
     if not jsond is None:
         appid = jsond['appid']
         username = jsond['username']
         password = jsond['password']
-        info = jsond['info']
+        info = {'phone':jsond['info[phone]'],'company':jsond['info[company]'],'email':jsond['info[email]']}
         return wrapResults(userRegister(appid,username,password,info))
     else:
         return wrapResults({"errors":{"msg":"Invalid params!", "code":"03"}})

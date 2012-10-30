@@ -77,7 +77,7 @@
 		function quickRegister() {
             if (!verifyFields()) return false;
             password = $('#password').val();
-            invokeWebApiEx("/user/register",
+            invokeWebApi("/user/register",
                          {
                           "username":$('#userId').val(),
                           "password": password,
