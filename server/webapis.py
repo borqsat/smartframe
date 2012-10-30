@@ -29,7 +29,7 @@ def doRegister():
     @return: ok-{'results':1}
              error-{'errors':{'code':0,'msg':(string)info}} 
     """
-    jsond = request.json
+    jsond = request.params
     appid = jsond['appid']
     username = jsond['username']
     password = jsond['password']
