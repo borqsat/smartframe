@@ -13,6 +13,7 @@
 	<script type="text/javascript" src="static/js/jquery-1.7.2.min.js"></script>
 	<script type="text/javascript" src="static/js/jquery.cookie.js"></script>
 	<script type="text/javascript" src="static/js/md5.js"></script>
+	<script type="text/javascript" src="static/js/json2.js"></script>	
     <script type="text/javascript" src="static/js/util.js"></script> 
 	<script type="text/javascript">	
 		$(document).ready(function(){
@@ -24,8 +25,9 @@
 				}
 			}); 
 			$('#password').hide();
-	                document.getElementById("userId").value = "Input UserId";	
-	                document.getElementById("textpassword").value = "Input Password";
+			$('#userId').hide();	
+	        document.getElementById("textuserId").value = "Input UserId";	
+	        document.getElementById("textpassword").value = "Input Password";
         })
 	     						
 		function callback(data) {
@@ -41,12 +43,13 @@
 			}
 		}
 
-		function verifyFields() {
-			if($('#userId').val() == ""){
-				$('#userId').css({"background":"#FFAFAF"},{"border":"1px solid #ccc"});
-				$('#spanuserId').text('Input UserId').show();
-				return false;
-			}
+        function verifyFields() {
+
+            if($('#userId').val() == ""){
+                $('#userId').css({"background":"#FFAFAF"},{"border":"1px solid #ccc"});
+                $('#spanuserId').text('Input UserId').show();
+                return false;
+            }
 
 			if($('#password').val() == ""){
 				$('#password').css({"background":"#FFAFAF"},{"border":"1px solid #ccc"});
@@ -58,7 +61,7 @@
 		}
 
 		function login() {
-			if (!verifyFields()) return false;
+            if (!verifyFields()) return false;
 
 			var password = $('#password').val();
 			var md5password = hex_md5(password);
@@ -67,26 +70,23 @@
 		}
 
         function quickuserIdRegCall(data) {
-            var ret = data["results"];
-            if(ret["error"] != undefined ) {
-                 alert(ret["msg"]);
-            }
-            else alert("Register account successfully!");
+            var ret = data["errors"];
+            if(ret !== undefined ) {
+                alert(ret["msg"]);
+            }else alert("Register account successfully!");
         }
 
 		function quickRegister() {
-			if (!check_userId($('#userId').val())) {
-				$('#userId').css({"background":"#FFAFAF"},{"border":"1px solid #ccc"});
-				$('#spanuserId').text(resInvuserId[locale]).show();
-				return false;
-			}
-			if (!verifyFields()) return false;
-
-			password = $('#password').val();
-			md5password = hex_md5(password);
-			invokeWebApi("/user/register", 
-                         {"username":$('#userId').val(), "password": md5password,"appid":"01"}, 
-                         quickuserIdRegCall);
+            if (!verifyFields()) return false;
+            password = $('#password').val();
+            md5password = hex_md5(password);
+            invokeWebApi("/user/register",
+                         {"username":$('#userId').val(),
+                          "password": md5password,
+                          "appid":"01",
+                          "info":{"email":""}},
+                          quickuserIdRegCall
+                         );
 		}
 
         function onKeyPressed(ev)
@@ -95,26 +95,30 @@
         }
 
         function onuserIdfocus(){
-            var value = $('#userId').val();
-            if(value=="Input UserId")
-                document.getElementById("userId").value = "";	
+            var value = $('#textuserId').val();
+            if(value != "Input UserId")
+                return;
+            $('#textuserId').hide();
+            $('#userId').show();	
+            $('#userId').focus();
 		}
 
 		function onuserIdblur(){
 			var value = $('#userId').val();
-			if(value== "") document.getElementById("userId").value = "Input UserId";
+			if(value!= "") return;
+			$('#textuserId').show();
+			$('#userId').hide();	
 				
 		}
 
-		function ontextpwdfocus(){
-			var value = $('#textpassword').val();			
-			if(value != 'Input Password') 
-			    return;
-
-			$('#textpassword').hide();
-			$('#password').show();	
-			$('#password').focus();
-		}		
+        function ontextpwdfocus(){
+            var value = $('#textpassword').val();			
+            if(value != 'Input Password') 
+                return;
+            $('#textpassword').hide();
+            $('#password').show();	
+            $('#password').focus();
+        }		
 
 		function onpwdblur(){
 			var value = $('#password').val();
@@ -129,10 +133,10 @@
   <body>
         <!-- HEADER START -->
 	<div class='navbar navbar-inner navbar-fixed-top hideOnPhone'>
-		<a class="brand" id='aBrand'>SmartServer</a>
-		<!--div class="nav-collapse"-->
-			<ul class="nav pull-right" style='margin-top:10px'>
-				<li id="mailborqs"><a style='padding-left:10px; padding-right:10px; padding-top:5px; padding-bottom:0px' href="mailto:chengtao.liu@borqs.com" id='aContact'>Contact us</a></li>
+        <a class="brand" id='aBrand'>SmartServer</a>
+        <!--div class="nav-collapse"-->
+            <ul class="nav pull-right" style='margin-top:10px'>
+                <li id="mailborqs"><a style='padding-left:10px; padding-right:10px; padding-top:5px; padding-bottom:0px' href="mailto:chengtao.liu@borqs.com" id='aContact'>Contact us</a></li>
 			<ul>
 		<!--/div-->
 	</div>
@@ -143,8 +147,9 @@
 		<tr>
 			<td align=right><div class='span6 hideOnPhone' style='margin-top:60px'><img src='static/img/login.jpg' title='♥ be with you.'></div></td>
 			<td><div class='span5' style='margin-top:20px' align=center>
-				<input type="text" style='height:42px' id="userId" name="username" class="inputText" onkeyup="onKeyPressed(event)" onfocus="onuserIdfocus()" onblur="onuserIdblur()"/>
-				<span id='spanuserId' style='display:none'></span>
+				<input tabindex="0" type="text" style='height:42px' id="textuserId" onfocus="onuserIdfocus()" />
+				<input type="text" style='height:42px' id="userId" name="username" class="inputText" onkeyup="onKeyPressed(event)" onblur="onuserIdblur()"/>
+				<P><span id='spanuserId' style='display:none'></span></P>
 				<P></P>
 				
 				<input tabindex="0" type="text" style='height:42px' id="textpassword" onfocus="ontextpwdfocus()"/>
@@ -152,15 +157,11 @@
 				<P><span id='spanPass' style='display:none '></span></P>
 				<P></P>				
 					
-				<div >
+				<div>
 					<div tabindex="2" type="button" id='inputLogin' class="btn btn-primary btn-large" onclick="login()" onkeyup="onKeyPressed(event)"> Login</div>
 					&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
 					<div tabindex="3" type="button" id='inputRegister' class="btn btn-primary btn-large" onclick="quickRegister()">Register</div>
-				</div>	
-				<br>
-				<a tabindex="-1" id='aReset' href="recover_show.html">Forget Password?</a>		
-				&nbsp&nbsp<span>|</span>&nbsp&nbsp
-				<a tabindex="-1" id='inputGuest' href="javascript:guestlogin()">Anonymous</a>
+				</div>
 			</div>
 			</td>
 		</tr>
