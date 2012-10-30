@@ -120,15 +120,13 @@ function showHistoryDiv(sid, tid) {
 
 function createSnapshotDiv(sid) {
 
-    $('#snap_div').dialog({height: 700,
+    $('#snap_div').dialog({height: 640,
                           width: 320,
                           resizable:false,
                           modal: true});
-                 
 
     if(ws !== undefined) {
-      alert('close socket');
-      ws.close();
+        ws.close();
     }
 
     //screen snap channel

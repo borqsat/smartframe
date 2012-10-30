@@ -36,10 +36,7 @@ var ajaxend = function(){
  * Http Get Request by Jquery Ajax
  */
 var invokeWebApi = function(apiUrl,dataj,render) {
-   
-     //ajax options prepare
     var options = {}; 
-
     var funok=function(data) {
         if(data['results'] === undefined) {
            if(data['errors'] !== undefined)
@@ -52,24 +49,57 @@ var invokeWebApi = function(apiUrl,dataj,render) {
            ajaxend();          
         }
     };
-	
     var funerror=function() {
         alert("Server Internal error!");
         ajaxend();
     };
-
     dataj['token'] = $.cookie('ticket');
     options['beforeSend'] = ajaxstart;
-    options['url'] = WebServerURL + apiUrl;	
+    options['url'] = WebServerURL + apiUrl;
     options['async'] = true;
     options['type'] = 'GET';
     options['data'] = dataj;
     options['dataType'] = 'jsonp';
     options['timeout'] = 15000;
-	options['success'] = funok;
-	options['error'] = funerror;
+    options['success'] = funok;
+    options['error'] = funerror;
 			
-    //invoke jquery ajax
+    $.ajax(options);
+}
+
+/*
+ * Http POST Request by Jquery Ajax
+ */
+var invokeWebApiEx = function(apiUrl,dataj,render) {
+ 
+    var funok=function(data) {
+        if(data['results'] === undefined) {
+           if(data['errors'] !== undefined)
+              alert(data['errors']['msg']);
+           else
+              alert("Web server Internal error!");
+           ajaxend();
+        } else {
+           render(data);
+           ajaxend();          
+        }
+    };
+    var funerror=function() {
+        alert("Server Internal error!");
+        ajaxend();
+    };
+    var options = {};
+    options['beforeSend'] = ajaxstart;
+    options['url'] = WebServerURL + apiUrl;
+    options['async'] = false;
+    options['type'] = 'POST';
+    options['dataType'] = 'json';
+    options['data'] = JSON.stringify(dataj);
+    options['contentType']= 'application/json';
+    options['timeout'] = 15000;
+    options['success'] = funok;
+    options['error'] = funerror;
+      
     $.ajax(options);
 }
 

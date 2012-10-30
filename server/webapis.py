@@ -9,7 +9,7 @@ import json, base64, time
 
 appweb = Bottle()
 
-@appweb.route('/user/register',method='POST')
+@appweb.route('/user/register',method='GET')
 def doRegister():
     """
     URL:/user/register
