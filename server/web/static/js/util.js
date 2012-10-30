@@ -70,7 +70,7 @@ var invokeWebApi = function(apiUrl,dataj,render) {
 /*
  * Http POST Request by Jquery Ajax
  */
-var invokeWebApiEx = function(apiUrl,dataj,render) {
+var invokeWebApiEx = function(apiUrl,datap,render) {
  
     var funok=function(data) {
         if(data['results'] === undefined) {
@@ -94,8 +94,7 @@ var invokeWebApiEx = function(apiUrl,dataj,render) {
     options['async'] = false;
     options['type'] = 'POST';
     options['dataType'] = 'json';
-    options['data'] = JSON.stringify(dataj);
-    options['contentType']= 'application/json';
+    options['data'] = JSON.stringify(datap);
     options['timeout'] = 15000;
     options['success'] = funok;
     options['error'] = funerror;

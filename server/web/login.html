@@ -79,14 +79,15 @@
 		function quickRegister() {
             if (!verifyFields()) return false;
             password = $('#password').val();
-            md5password = hex_md5(password);
-            invokeWebApi("/user/register",
-                         {"username":$('#userId').val(),
-                          "password": md5password,
+            invokeWebApiEx("/user/register",
+                         {
+                          "username":$('#userId').val(),
+                          "password": password,
                           "appid":"01",
-                          "info":{"email":""}},
+                          "info":{"phone":"N/A","email":"N/A","company":"N/A"}
+                         },
                           quickuserIdRegCall
-                         );
+                        );
 		}
 
         function onKeyPressed(ev)

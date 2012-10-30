@@ -38,8 +38,13 @@ class dbStore(object):
         m = hashlib.md5()
         m.update(password)
         users = self.db['user']
-        uid = str(uuid.uuid1())
-        users.insert({'uid':uid,'appid':appid,'username':user,'password':m.hexdigest(),'info':info});
+        ret = users.find({'appid':appid,'username':user})
+        if not ret is None:
+            return {'code':'04', 'msg':'An account with same username exists!'}            
+        else:
+            uid = str(uuid.uuid1())
+            users.insert({'uid':uid,'appid':appid,'username':user,'password':m.hexdigest(),'info':info})
+            return {'uid':uid}
 
     def validToken(self, token):
         uid = ''
