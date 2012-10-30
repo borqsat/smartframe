@@ -28,7 +28,7 @@ def userRegister(appid,user,pswd,info):
 def userAuth(appid,user,pswd):
     """
     URL:/user/auth
-    TYPE:http/POST
+    TYPE:http/GET
 
     Get access token by username and password
 

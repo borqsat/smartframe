@@ -91,10 +91,10 @@ var invokeWebApiEx = function(apiUrl,datap,render) {
     var options = {};
     options['beforeSend'] = ajaxstart;
     options['url'] = WebServerURL + apiUrl;
-    options['async'] = false;
     options['type'] = 'POST';
-    options['dataType'] = 'json';
     options['data'] = JSON.stringify(datap);
+    options['contentType']= "application/json; charset=utf-8";
+    options['dataType'] = 'json';
     options['timeout'] = 15000;
     options['success'] = funok;
     options['error'] = funerror;

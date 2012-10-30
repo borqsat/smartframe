@@ -53,7 +53,7 @@ class dbStore(object):
         rdata = tokens.find({'token':token})
         for t in rdata:
             uid = t['uid']
-        
+ 
         if uid != '':
             users = self.db['user']
             rdata = users.find({'uid':uid})
