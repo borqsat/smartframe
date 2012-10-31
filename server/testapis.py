@@ -187,7 +187,7 @@ def doUploadFile(sid, tid):
             error-{'errors':{'code':value,'msg':(string)info}}
     """
     content_type = request.headers.get('Content-Type')
-    external_type = request.headers.get('External-Type')
+    external_type = request.headers.get('Ext-Type')
     token = request.headers.get('token')
     if not (content_type):
         return {'errors':{'code':500, 'msg':'Missing Content-Type'}}
@@ -199,8 +199,8 @@ def doUploadFile(sid, tid):
         else:
             ftype = 'zip'
 
-        if external_type == 'check':
-            ctype = 'check'
+        if external_type == 'expect':
+            ctype = 'expect'
         else:
             ctype = ''
 

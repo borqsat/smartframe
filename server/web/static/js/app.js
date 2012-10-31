@@ -30,10 +30,10 @@ function viewStop(){
 
 function createCaseSnaps(sid, tid){
 
-    $('#history_div').dialog({height: 640,
-                              width:360,
-                              resizable:false,
-                              modal: true});
+     $('#history_div').dialog({height: 620,
+                               width:320,
+                               resizable:false,
+                               modal: true});
 
     var $snaplist = $('#img_list'); 
     $snaplist.html('');
@@ -120,7 +120,7 @@ function showHistoryDiv(sid, tid) {
 
 function createSnapshotDiv(sid) {
 
-    $('#snap_div').dialog({height: 640,
+    $('#snap_div').dialog({height: 620,
                           width: 320,
                           resizable:false,
                           modal: true});

@@ -216,7 +216,7 @@ class dbStore(object):
         """
         write a test case resut record in database
         """
-        self.snapquene[sid+'-'+tid] = []
+        self.snapqueue[sid+'-'+tid] = []
         self.mc.set(sid+'id',tid)
         self.mc.set(sid+'name',casename)
         self.mc.set(sid+'status','start')
@@ -259,17 +259,17 @@ class dbStore(object):
         if self.mc:
             self.mc.set(sid+'snap', snapfile)
 
-        if not (sid+'-'+tid) in self.snapquene:
-            self.snapquene[sid+'-'+tid] = []
+        if not (sid+'-'+tid) in self.snapqueue:
+            self.snapqueue[sid+'-'+tid] = []
         try:
             idx = self.fs.put(snapfile)
-            caseresult = self.db['caseresult']            
-            if stype == 'check':
+            caseresult = self.db['caseresult']
+            if stype == 'expect':
                 checksnap = str(idx)
                 caseresult.update({'sid':sid,'tid':tid},{'$set':{'checksnap':checksnap}})
             else:
-                self.snapquene[sid+'-'+tid].append(str(idx))
-                snapshots = self.snapquene[sid+'-'+tid]
+                self.snapqueue[sid+'-'+tid].append(str(idx))
+                snapshots = self.snapqueue[sid+'-'+tid]
                 caseresult.update({'sid':sid,'tid':tid},{'$set':{'snapshots':snapshots}})
         except:
             pass
