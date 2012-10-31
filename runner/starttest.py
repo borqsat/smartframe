@@ -1,6 +1,6 @@
 import sys,os,datetime,string,time,getopt
 from stability import Application
-
+#from urlgrabber3.urlgrabber.keepalive import HTTPHandler
 class CommandOptions(object):
     def __init__(self,argv):
         timestamp = time.strftime('%Y.%m.%d-%H.%M.%S',time.localtime(time.time()))
@@ -9,6 +9,7 @@ class CommandOptions(object):
                      'cycle':1,
                      'duration':None,
                      'plan':None,
+                     'testcase':None,
                      'testcase':None,
                      'starttime':timestamp,
                      'uploadresult':False,
@@ -19,14 +20,14 @@ class CommandOptions(object):
 
     def parse(self,argv):
         try:
-            opts, args = getopt.getopt(argv[1:], 'hrtc', ['help','recording','testing','cycle=','plan=','uploadresult','screenmonitor','random'])
+            opts, args = getopt.getopt(argv[1:], 'hrtc', ['help','recording','testing','cycle=','plan=','testcase=','uploadresult','screenmonitor','random'])
         except getopt.GetoptError, err:
         # print help information and exit:
-            print str(err) # will print something like "option -a not recognized"
+            #print str(err) # will print something like "option -a not recognized"
             self.showUsage()
             sys.exit(2)
         for opt, arg in opts:
-            print opt
+            #print opt
             if opt in ('-h', '--help'):
                 self.showUsage()
             elif opt in ('-r', '--recording'):
@@ -35,12 +36,15 @@ class CommandOptions(object):
                 self.data['testing'] = True
             elif opt in ('-c','--cycle'):
                 self.data['cycle'] = arg
-                print arg
+                #print arg
             elif opt in ('--random'):
                 self.data['random'] = True
             elif opt in ('--plan'):
                 self.data['plan'] = arg
-                print arg
+                #print arg
+            elif opt in ('--testcase'):
+                self.data['testcase'] = arg
+                #print arg
             elif opt in ('--uploadresult'):
                 self.data['uploadresult'] = True
             elif opt in ('--screenmonitor'):
@@ -56,7 +60,7 @@ class CommandOptions(object):
 
     def showUsage(self):
         print 'Usage:'
-        print 'monkeyrunner starttest.py [-r|--recording]'
+        print 'monkeyrunner starttest.py '
         print '                         [-t|--testing]'
         print '                         [--uploadresult]'
         print '                         [--uploadsnapshot]'
@@ -72,7 +76,6 @@ class CommandOptions(object):
         print '-ds or --downloadsnapshot: Enable or disbale downloadsnapshot features. Download the right snapshot of each testcase from the snapshot server.'
         print '-ra or --random: Enable or disbale random features. Run test case sequence in the random order.'
         print '--runner=runnername   : Specify the test runner . Default is text runner.'
-        print '-r or --recording: Enable recording before testing. Disable recording without the option.'
         print '-t or --testing  : Enable testing. Disable testing without the option.'
         print '--cycle=number   : The count of test cycles before ending the test. Default is 1.'
         print '--duration=format: The minumum test duration before ending the test. It has higher priority than --cycle option.'

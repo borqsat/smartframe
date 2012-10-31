@@ -1,4 +1,5 @@
 [tests]
 testcase.cases.phone.PhoneTest.testMOCall = 1
-#testcase.cases.message.MessageTest.testSMSSend = 1
+testcase.cases.message.MessageTest.testSMSSend = 2
+testcase.cases.email.EmailTest.testSendEmail = 1
 #testcase.cases.snapshot.SnapshotTest.testSnapshot = 1

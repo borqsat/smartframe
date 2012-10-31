@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 import unittest
-#from stability import DeviceManager
-from stability import TestCaseBase
 
 PACKAGE_NAME = 'com.android.contacts'
 ACTIVITY_NAME = PACKAGE_NAME + '.DialtactsActivity'
@@ -12,19 +10,45 @@ PHONE_RECT_CHECK_CALL = (493./600, 84./1024, 528./600, 116./1024)
 WAIT_FOR_SCREEN_TIMEOUT=10
 WAIT_SHORT_TIME=1
 
-class PhoneTest(TestCaseBase):         
+class PhoneTest(unittest.TestCase):
 
     def setUp(self):
         super(PhoneTest,self).setUp()
         self.runComponent = PACKAGE_NAME + '/' + ACTIVITY_NAME
 
+    #auto check point
+    def TOtestMOCall123(self):
+        self.launch(component=self.runComponent,flags=0x04000000)\
+        .sleep(3)\
+        .expect()\
+        .input('123456')\
+        .sleep(3)\
+        .expect()\
+        .touch(300,956)\
+        .sleep(3)\
+        .expect()
+
     def testMOCall(self):
         self.launch(component=self.runComponent,flags=0x04000000)\
-        .check()\
-        .check()\
-        .check()\
+        .sleep(3)\
+        .expect('IMG_ACTIVITY_CHECK')\
+        .input('123456')\
+        .sleep(3)\
+        .expect('IMG_INPUT_CHECK')\
+        .touch(300,956)\
+        .sleep(3)\
+        .expect('IMG_CALL_CHECK')
 
-    def testMOCall000(self):
+
+    def testMOCall0000(self):
+        self.launch(component=self.runComponent,flags=0x04000000)\
+        .expect('CHECK_RECT_1')\
+        .touch('BTN_CALL')\
+        .expect('CHECK_RECT_2')\
+        .press('menu')\
+        .expect('CHECK_RECT_3')
+
+    def testMOCall0000000(self):
         self.launch(component=self.runComponent,flags=0x04000000)
         self.waitForScreen(timeout=WAIT_FOR_SCREEN_TIMEOUT,rect=PHONE_RECT_CHECK_CALL)\
         .waitForScreen(timeout=WAIT_FOR_SCREEN_TIMEOUT,rect=PHONE_RECT_CHECK_CALL)\
@@ -33,4 +57,4 @@ class PhoneTest(TestCaseBase):
 
     def tearDown(self):
         self.press('back,back,back')
-        super(PhoneTest,self).tearDown()        
+        super(PhoneTest,self).tearDown()

@@ -29,13 +29,13 @@ def readTestsFromConfigFile(name):
                             v = int(o[1])
                             tests.append((k, v))
                         except Exception, e:
-                            print >>sys.stderr, str(e)
+                            #print >>sys.stderr, str(e)
                             sys.exit(2)
             else:
                 if _getSection(l) == 'tests':
                     tests_section = True
     except Exception, e:
-        print >>sys.stderr, str(e)
+        #print >>sys.stderr, str(e)
         sys.exit(2)
     finally:
         f.close()

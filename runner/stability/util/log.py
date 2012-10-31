@@ -29,6 +29,7 @@ class Logger:
         self._logger = logging.getLogger("SmartRunner")
         self._logger.setLevel(LEVELS[level])
         self._formatter = logging.Formatter("[%(asctime)s] - %(levelname)s : %(message)s",'%Y-%m-%d %H:%M:%S')
+        self._formatterc = logging.Formatter("%(message)s")      
         self.add_file_logger()
         self.add_console_logger()      
 
@@ -44,11 +45,11 @@ class Logger:
         '''Generate console writer [StreamHandler]'''
         ch = logging.StreamHandler()
         ch.setLevel(LEVELS[console_level])
-        ch.setFormatter(self._formatter)
+        ch.setFormatter(self._formatterc)
         self._logger.addHandler(ch)
 
     @staticmethod
-    def getLogger(level="DEBUG"):
+    def getLogger(level="INFO"):
         if(Logger._instance==None):
             Logger._mutex.acquire()
             if(Logger._instance==None):
