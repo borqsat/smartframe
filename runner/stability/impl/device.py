@@ -65,6 +65,7 @@ class AndroidDevice:
         return self          
 
     def resumeConnect(self):
+        self.logger.debug('******************************resume connect*********************************')
         self.impl = _getMonkeyDevice(self.serial)
         self._state = DEVICE_CONNECTED
         return self 
@@ -87,7 +88,9 @@ class AndroidDevice:
         properties = {}
         try:
             properties['display.width'] = self.impl.getProperty('display.width')
+            self.logger.debug(properties['display.width'])
             properties['display.height'] = self.impl.getProperty('display.height')
+            self.logger.debug(properties['display.height'])
             properties['display.density'] = self.impl.getProperty('display.density')
             for k in properties.keys():
                 self.logger.debug(k + ' = ' + properties[k])
@@ -122,6 +125,7 @@ class AndroidDevice:
         for event in eventList:
             event = event.strip()
             self._press(event)
+            MonkeyRunner.sleep(1)
 
     def _press(self, keyEvent):
     #@parm keyEvent: single key event
@@ -158,6 +162,7 @@ class AndroidDevice:
         try:
             self.logger.debug('Launch activity with component: {%s}' % component)
             self.impl.startActivity(component=component,flags=flags)
+            MonkeyRunner.sleep(3)
         except:
             self.logger.debug('Error during startActivity with component name: {%s} !!!' % component)
 
@@ -179,6 +184,7 @@ class AndroidDevice:
         try:
             self.logger.debug('Touch.')
             self.impl.touch(x,y,'DOWN_AND_UP')
+            MonkeyRunner.sleep(3)
         except:
             self.logger.debug('Error during touch!!!')  
 
@@ -186,6 +192,7 @@ class AndroidDevice:
         try:
             self.logger.debug('type word.')
             self.impl.type(content)
+            MonkeyRunner.sleep(3)
         except:
             self.logger.debug('Error during typeWord!!!')
 

@@ -1,0 +1,50 @@
+===================================================
+Smart Runner requirment:
+===================================================
+
+Before you begin, please make sure you have installed:
+
+   - ubuntu 10.04 (English version)
+
+   - python 2.6.x (default installed on ubuntu10.04)
+    
+   - JDK 1.6 or above
+     http://www.oracle.com/technetwork/java/javase/downloads/index.html
+
+   - Android SDK 2.3.3 or above
+     http://developer.android.com/sdk/index.html
+ 
+   -Android tools and platform tools must be in system PATH environment.
+This tool requires to run 'adb', 'monkeyrunner' in shell.
+      
+Remark: It is enough to complete "Prepare your development computer"
+        and "Download and install the SDK starter package" steps
+        from Android SDK Quick Start.
+
+
+========================================================
+Ubuntu10.04 Dependencies: 
+if the tool open cv is below 2.1. you need to update opencv lib first.Follow:
+http://tutorial.downloadatoz.com/how-to-install-opencv-2-1-on-ubuntu-10-04.html
+========================================================
+
+============
+Unit Test:
+============
+
+NOTES: Before running unit tests, please make sure your phone is connected 
+       to PC with usb, and adb is connected.
+
+Enter the directory of the tool and execute below command to run all unittests:
+Execute below command to run specified test cases:
+e.g:
+cd to the directory "./runner/imglib" then execute the shell command:
+$ monkeyrunner test.py
+
+=====================================
+Preparation before stability testing:
+=====================================
+1. Phone environment:
+    a) Your phone is connected to PC with usb cable.Select USB debug mode in setting
+    b) Run 'sudo adb devices' and make sure adb can list your device.
+

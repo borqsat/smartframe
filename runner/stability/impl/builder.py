@@ -21,20 +21,11 @@ class TestBuilder(object):
             raise 'miss data name'
         return value
 
-    #def getStartTime(self):
-    #    '''Return the test session start time'''
-    #    return self.__buildOption.starttime
-        
     def getWorkspace(self):
         '''Return the test session's report workspace '''
         workspace = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),'report')
         if not os.path.exists(workspace):
-            os.makedirs(workspace)                   
-        #report_folder_name = ('%s-%s'%('result',self.__buildOption.starttime))
-        #report_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),'report',report_folder_name)
-        #report_path = os.path.join(workspace,report_folder_name)
-        #if not os.path.exists(report_path):
-        #    os.makedirs(report_path)
+            os.makedirs(workspace)
         return workspace
 
     def getDeviceSerial(self):
@@ -46,31 +37,6 @@ class TestBuilder(object):
         #self.__logger = Logger.getLogger('device.log',"INFO","DEBUG")
         self.__logger = Logger.getLogger()
         return self.__logger
-
-    #def getCycle(self):
-    #    '''Return the cycle count of test session'''
-    #    return self.__buildOption.cycle
-
-    #def isRecording(self):
-    #    '''Return true if the session is recording and otherwise return false'''
-    #    return self.__buildOption.recording
-
-    #def isTesting(self):
-    #    '''Return true is the session is testing and otherwise return false'''
-    #    if self.__buildOption.testing:
-    #        return True
-
-    #def isScreenMonitor(self):
-    #    '''Return true if the session support screen monitor feature '''
-    #    return self.__buildOption.screenmonitor
-
-    #def isUploadResult(self):
-    #    '''Return true if the session support uploading result to server feature '''
-    #    return self.__buildOption.uploadresult
-
-    #def isLocalResult(self):
-    #    '''Return true if the session support to save test result in local'''
-    #    return False
 
     @staticmethod
     def getBuilder(option=None):
@@ -87,11 +53,22 @@ class TestBuilder(object):
         return TestBuilder.__instance
 
     def getTestSuites(self):
+        ''' Return a test object list. we called it TestSuites.
+        test object format:  TestCase.__init__(methodName)
+        A unittest.TestCase instance only contain the target method to be run.
+        '''
         return self.__createTestSuites()
    
     def __createTestSuites(self):
-        #return self.__testLoader.loadTestSuites(self.getProperty('plan'),self.__buildOption.recording,self.__buildOption.random)
-        return self.__testLoader.loadTestSuites(self.getProperty('plan'),self.getProperty('recording'),self.getProperty('random'))
+        tests = []
+        # If --testcase option is specified, we will not load tests from config file.
+        if self.__buildOption.has_key('testcase'):
+            if self.__buildOption['testcase'] is not None:
+                tests.append((self.__buildOption['testcase'], 1))
+        if self.__buildOption['plan']:
+            if self.__buildOption['plan'] is not None:
+                tests = self.__testLoader._defaulConfiger.readTests(self.__buildOption['plan'])
+        return self.__testLoader.loadTestSuites(tests,self.getProperty('recording'),self.getProperty('random'))
 
 class TestLoader(object):
     #testMethodPrefix = 'test' 
@@ -103,12 +80,8 @@ class TestLoader(object):
         if not loader:
             self.loader = TestLoader._defaultTestLoader()
 
-    def loadTestSuites(self,path,mode,isRandom=False):
-        tests = None
+    def loadTestSuites(self,tests,mode,isRandom=False):
         suites = None
-        if path:
-            tests = TestLoader._defaulConfiger.readTests(path)
-        assert tests, 'tests should not be null!'
         if mode:
             suites = self.__loadRecordingTestSuites(tests)
         else:
@@ -137,6 +110,7 @@ class TestLoader(object):
         for (k,v) in t:
             for i in range(v):
                 names.append(k)
+        ###here we can keep test suites sequence.
         suite = self.loader.loadTestsFromNames(names)
         return suite
 

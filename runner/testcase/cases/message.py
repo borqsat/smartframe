@@ -1,24 +1,31 @@
 #!/usr/bin/env python
 import unittest
-#from stability import DeviceManager
-from stability import TestCaseBase
 
 PACKAGE_NAME = 'com.android.mms'
 ACTIVITY_NAME = PACKAGE_NAME + '.ui.ConversationList'
+SMS_RECEIVER = '13581739891'
+SMS_CONTENT = 'testsms'
 
-class MessageTest(TestCaseBase):         
-    #get device
+class MessageTest(unittest.TestCase):
+
     def setUp(self):
         super(MessageTest,self).setUp()
         self.runComponent = PACKAGE_NAME + '/' + ACTIVITY_NAME
 
     def testSMSSend(self):
-        self.worker.startActivity(component=self.runComponent,flags=0x04000000)\
-        .sleep(3)\
-        .pressKey('up')\
-        .touch(60,372)\
-        .sleep(3).waitForScreen(rect=(134./480, 714./800, 340./480, 788./800))
-
+        self.launch(component=self.runComponent)
+        if not self.exists('msg_launch.png'):
+            self.press('menu')\
+            .touch('msg_menu_delete.png')\
+            .touch('msg_dialog_delete.png')
+        self.expect('msg_launch.png')\
+        .touch('msg_create.png')\
+        .input(SMS_RECEIVER)\
+        .touch('msg_content_rect.png')\
+        .input(SMS_CONTENT)\
+        .touch('msg_send.png')\
+        .expect('msg_send_ok.png',timeout=15)
+        
     def tearDown(self):
-        self.worker.pressKey('back,back,back')
-        super(MessageTest,self).tearDown()        
+        self.press('back,back,back')
+        super(MessageTest,self).tearDown()
