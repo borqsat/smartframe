@@ -198,13 +198,11 @@ def doUploadFile(sid, tid):
             ftype = 'png'
         else:
             ftype = 'zip'
-
-        if external_type == 'expect':
-            ctype = 'expect'
+        rawdata = request.body.read()
+        if not (external_type):
+            ctype = external_type
         else:
             ctype = ''
-
-        rawdata = request.body.read()
         return uploadCaseResultFile(token, sid, tid, rawdata, ftype, ctype)
 
 if __name__ == '__main__':

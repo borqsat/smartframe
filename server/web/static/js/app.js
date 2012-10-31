@@ -30,13 +30,16 @@ function viewStop(){
 
 function createCaseSnaps(sid, tid){
 
-     $('#history_div').dialog({height: 620,
-                               width:320,
-                               resizable:false,
-                               modal: true});
-
     var $snaplist = $('#img_list'); 
     $snaplist.html('');
+    var wd = parseInt(_appglobal.deviceinfo['width'])/2;
+    var ht = parseInt(_appglobal.deviceinfo['height'])/2;
+    $('#history_div').dialog({title:"case snapshots",
+                              height: ht + 220,
+                              width: wd + 80,
+                              resizable:false,
+                              modal: true});
+
     invokeWebApi('/test/caseresult/'+sid+'/'+tid+'/snapshot',
                 {},
                 function(data){
@@ -48,15 +51,25 @@ function createCaseSnaps(sid, tid){
                         $snaplist.html('None');
                         return;
                     }
+                    var idx = 0;
+                    var total = data.results.snaps.length;
                     for(var d in data.results.snaps) {
                         var $snapli = $('<li>');
+                        ++idx;
                         var $ig = new Image();
+                        var $icg = new Image();
                         $ig.src = 'data:image/png;base64,' + data.results.snaps[d];
-                        $ig.setAttribute("width",parseInt(_appglobal.deviceinfo['width'])/2+"px");
-                        $ig.setAttribute("height",parseInt(_appglobal.deviceinfo['height'])/2+"px");
+                        $ig.setAttribute("id","snap"+idx);                        
+                        $ig.setAttribute("width",wd+"px");
+                        $ig.setAttribute("height",ht+"px");
                         $ig.setAttribute('class','thumbnail');
+                        if((idx === total) && (data.results.checksnap !== undefined)) {
+                            $icg.src = 'data:image/png;base64,' + data.results.checksnap;
+                        }
+                        $icg.setAttribute('class','thumbnail');
                         $snaplist.append($snapli);
                         $snapli.append($ig);
+                        $snapli.append($icg);                        
                     }
                     $("#history_div").jCarouselLite({
                         btnNext: ".next",
@@ -120,16 +133,15 @@ function showHistoryDiv(sid, tid) {
 
 function createSnapshotDiv(sid) {
 
-    $('#snap_div').dialog({height: 620,
-                          width: 320,
-                          resizable:false,
-                          modal: true});
-
-    if(ws !== undefined) {
-        ws.close();
-    }
-
-    //screen snap channel
+    if(ws !== undefined)  ws.close();
+    var wd = parseInt(_appglobal.deviceinfo['width'])/2;
+    var ht = parseInt(_appglobal.deviceinfo['height'])/2;
+    $('#snap_div').dialog({
+                            title:"case real-time snap",
+                            height: ht+120,
+                            width: wd+40,
+                            resizable:false,
+                            modal: true});
     ws = getWebsocket("/test/session/"+sid+"/screen");
     var c=document.getElementById("snapCanvas");
     var cxt=c.getContext("2d");
@@ -143,8 +155,8 @@ function createSnapshotDiv(sid) {
         if (data.indexOf('snapsize:') >= 0 ) {
             data = data.substr('snapsize:'.length);
             data = JSON.parse(data);
-            c.setAttribute('width', parseInt(data['width'])/2 + 'px');
-            c.setAttribute('height', parseInt(data['height'])/2 + 'px');      
+            c.setAttribute('width', wd + 'px');
+            c.setAttribute('height', ht + 'px');      
         } else if (data.indexOf('snapshot:') >= 0 ) {
             data = data.substr('snapshot:'.length);
             doRenderImg(data);
@@ -155,7 +167,7 @@ function createSnapshotDiv(sid) {
     function doRenderImg(data) {
         var img = new Image();
         img.src = 'data:image/png;base64,' + data;
-        cxt.drawImage(img,0,0,300,512);
+        cxt.drawImage(img,0,0,wd,ht);
     }
 }
 

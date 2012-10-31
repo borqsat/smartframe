@@ -31,7 +31,7 @@
     </div>
 
  <div class="container-fluid">
-    <div id="img" style="position:absolute;z-index: 999;"></div>
+    <div id="img" style="position:absolute;z-index:1999;"></div>
     <div class="row-fluid">
         <div class="span6 mtbfunit">
             <div id="summary_div"></div>
@@ -42,15 +42,11 @@
             <div id="rtcases_div"></div>           
             <div id="cases_div"></div>         
             <div id="history_div" style="display:none">
-                <div><span class="label label-info">Case Snaps</span></div>
-                <div>
-                    <button class="prev"><<</button>
-                    <button class="next">>></button>
-                </div>
+                <span style="float:left"><a class="prev" href='#'> << </a></span>
+                <span style="float:right"><a class="next" href='#'> >> </a></span>
                 <div><ul id="img_list">None</ul></div>
             </div>
             <div id="snap_div" style="display:none">
-                <div><span class="label label-info">Real-time Snap</span></div>
                 <canvas id="snapCanvas" border="1px"></canvas>
             </div>                  
         </div>

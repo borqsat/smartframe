@@ -157,7 +157,10 @@ def doGetCaseResultLog(sid, tid):
     """
     jsond = request.params
     if not jsond is None:
-        #token = jsond['token']
+        if not 'token' in jsond:
+            token = '1122334455667788'
+        else:
+            token = jsond['token']
         record_id = sid+'_'+tid
         response.set_header('Content-Type','application/x-download')
         response.set_header('Content-Disposition','attachment; filename=log_'+record_id+'.zip',True)
