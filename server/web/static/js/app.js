@@ -35,8 +35,8 @@ function createCaseSnaps(sid, tid){
     var wd = parseInt(_appglobal.deviceinfo['width'])/2;
     var ht = parseInt(_appglobal.deviceinfo['height'])/2;
     $('#history_div').dialog({title:"case snapshots",
-                              height: ht + 220,
-                              width: wd + 80,
+                              height: ht + 200,
+                              width: wd + 40,
                               resizable:false,
                               modal: true});
 
@@ -55,18 +55,26 @@ function createCaseSnaps(sid, tid){
                     var total = data.results.snaps.length;
                     for(var d in data.results.snaps) {
                         var $snapli = $('<li>');
-                        ++idx;
                         var $ig = new Image();
                         var $icg = new Image();
+                        ++idx;
                         $ig.src = 'data:image/png;base64,' + data.results.snaps[d];
                         $ig.setAttribute("id","snap"+idx);                        
                         $ig.setAttribute("width",wd+"px");
                         $ig.setAttribute("height",ht+"px");
-                        $ig.setAttribute('class','thumbnail');
                         if((idx === total) && (data.results.checksnap !== undefined)) {
                             $icg.src = 'data:image/png;base64,' + data.results.checksnap;
+                            var cwd = $icg.width;
+                            var cht = $icg.height;
+                            $icg.setAttribute("width",cwd/2+"px");
+                            $icg.setAttribute("height",cht/2+"px");
+                            $ig.setAttribute('class','thumbnailr');
+                            $icg.setAttribute('class','thumbnaile');                         
+                        } else {
+                            $ig.setAttribute('class','thumbnail');
+                            $icg.setAttribute('class','thumbnail');                          
                         }
-                        $icg.setAttribute('class','thumbnail');
+
                         $snaplist.append($snapli);
                         $snapli.append($ig);
                         $snapli.append($icg);                        

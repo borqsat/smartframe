@@ -158,10 +158,10 @@ a:hover, a:active {
     margin: 0;
 }
 
-.carousel li img, 
-.carousel li p {
-    background-color: #fff;
-    width: 150px;
-    height: 118px;
-    margin: 10px;
+.thumbnailr {
+  border: 2px solid red;
+}
+
+.thumbnaile {
+  border: 2px solid green;
 }
