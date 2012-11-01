@@ -199,7 +199,7 @@ def doUploadFile(sid, tid):
         else:
             ftype = 'zip'
         rawdata = request.body.read()
-        if not (external_type):
+        if not external_type is None:
             ctype = external_type
         else:
             ctype = ''

@@ -76,6 +76,7 @@ function createCaseSnaps(sid, tid){
                         btnPrev: ".prev",
                         visible: 1
                     });
+                    $("#history_div").attr('height',ht+"px");
                 });
 }
 
@@ -253,7 +254,7 @@ function fillDetailTable(data, ids, tag){
         }
     }
 
-    TablePage('#'+ids,30, 5);
+    TablePage('#'+ids, 20, 10);
 }
 
 
@@ -274,7 +275,7 @@ function arrayUnique(data){
         if (typeof(a[v]) == 'undefined'){  
             a[v] = 1;  
         }  
-    };  
+    }
 
     data.length=0;  
     for (var i in a){  

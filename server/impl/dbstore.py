@@ -264,7 +264,7 @@ class dbStore(object):
         try:
             idx = self.fs.put(snapfile)
             caseresult = self.db['caseresult']
-            if stype != '':
+            if stype == 'expect':
                 checksnap = str(idx)
                 caseresult.update({'sid':sid,'tid':tid},{'$set':{'checksnap':checksnap}})
             else:
