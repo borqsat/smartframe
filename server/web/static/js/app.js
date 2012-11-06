@@ -77,9 +77,11 @@ function createCaseSnaps(sid, tid){
 
                         $snaplist.append($snapli);
                         $snapli.append($ig);
+                        $snapli.append('<br>'+idx+'/'+total+'<br>');
                         $snapli.append($icg);                        
                     }
                     $("#history_div").jCarouselLite({
+                        circular: false,
                         btnNext: ".next",
                         btnPrev: ".prev",
                         visible: 1
@@ -309,7 +311,7 @@ function createAllTestList(key) {
                       }
 
                   });
- }
+}
 
 function createDeviceInfo(data) {
 

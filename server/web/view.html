@@ -33,12 +33,12 @@
  <div class="container-fluid">
     <div id="img" style="position:absolute;z-index:1999;"></div>
     <div class="row-fluid">
-        <div class="span6 mtbfunit">
-            <div id="summary_div"></div>
-            <div id="device_div"></div>
+        <div class="span11 mtbfunit">
+            <div id="summary_div" style="width:40%;float:left"></div>
+            <div id="device_div"  style="width:50%;float:left"></div>
         </div>
 
-        <div class="span5 mtbfunit">
+        <div class="span11 mtbfunit" style="margin-left:0px">
             <div id="rtcases_div"></div>           
             <div id="cases_div"></div>         
             <div id="history_div" style="display:none">
@@ -74,7 +74,7 @@
     <script type="text/javascript" src="static/js/app.js"></script>
 
     <script type="text/javascript">
-        if($.cookie('ticket') === undefined || $.cookie('ticket') === null) window.location = "login.html"
+        if($.cookie('ticket') === undefined || $.cookie('ticket') === null) window.location = "./login.html"
         $(window).load(function(){
             $("#loading").hide();
         });

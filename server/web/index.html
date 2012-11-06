@@ -35,7 +35,7 @@
     <div class="row-fluid">
         <div class="span12">
            <div class="mtbfunit" id="maintab">
-               <ul class="nav nav-tabs">
+               <ul class="nav nav-pills">
                   <li id="tabrun" class="active"><a href="javascript:viewRun();">Running Session</a></li>
                   <li id="tabstop"><a href="javascript:viewStop();">Stopped Session</a></li>
                </ul>
@@ -64,7 +64,7 @@
     <script src="static/js/bootstrap-tab.js"></script>
     <script type="text/javascript">
         if($.cookie('ticket') === undefined || $.cookie('ticket') === null)
-            window.location = "login.html"
+            window.location = "./login.html"
         $(window).load(function(){$("#loading").hide();})
         $(function(){
             $('#maintab').tab('show');
