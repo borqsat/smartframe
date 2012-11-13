@@ -262,13 +262,17 @@ class dbStore(object):
         if not (sid+'-'+tid) in self.snapqueue:
             self.snapqueue[sid+'-'+tid] = []
         try:
-            idx = self.fs.put(snapfile)
+            idx = self.fs.put(snapfile)                
+            fid = str(idx)
             caseresult = self.db['caseresult']
+            posi = stype.index(':')
+            leni = len(stype)
+            stype = stype[0:posi-1]
+            sfile = stype[posi+1:leni-posi]
             if stype == 'expect':
-                checksnap = str(idx)
-                caseresult.update({'sid':sid,'tid':tid},{'$set':{'checksnap':checksnap}})
-            else:
-                self.snapqueue[sid+'-'+tid].append(str(idx))
+                caseresult.update({'sid':sid,'tid':tid},{'$set':{'checksnap':{'title':sfile,'fid':fid} })
+            elif stype == 'current':
+                self.snapqueue[sid+'-'+tid].append({'title':sfile, 'fid':fid})
                 snapshots = self.snapqueue[sid+'-'+tid]
                 caseresult.update({'sid':sid,'tid':tid},{'$set':{'snapshots':snapshots}})
         except:
@@ -296,22 +300,26 @@ class dbStore(object):
         snaps = []
         checkid = ''
         checksnap = ''
+        stitle = ''
         for d in ret:
             snapids = d['snapshots']
             if not 'checksnap' in d:
                 checkid = ''
+                stitle = ''
             else:
-                checkid = d['checksnap']
-
-        for fid in snapids:
-            fs = self.getfile(fid)
-            if not fs is None:
-                snaps.append(base64.encodestring(fs.read()))
-        
+                stitle = d['checksnap']['title']
+                checkid = d['checksnap']['fid']
+  
         if checkid != '':
             fs = self.getfile(checkid)
             if not fs is None:
-                checksnap = base64.encodestring(fs.read())         
+                checksnap = {'title':stitle,'':base64.encodestring(fs.read())}
+
+        for d in snapids:
+            stitle = d['title']
+            fs = self.getfile(d['fid'])
+            if not fs is None:
+                snaps.append(base64.encodestring(fs.read()))   
 
         return {'snaps':snaps, 'checksnap':checksnap}
 
