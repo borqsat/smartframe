@@ -35,8 +35,8 @@ function createCaseSnaps(sid, tid){
     var wd = parseInt(_appglobal.deviceinfo['width'])/2;
     var ht = parseInt(_appglobal.deviceinfo['height'])/2;
     $('#history_div').dialog({title:"case snapshots",
-                              height: ht + 200,
-                              width: wd + 620,
+                              height: ht + 120,
+                              width: 2*wd + 40,
                               resizable:false,
                               modal: true});
 
@@ -46,48 +46,53 @@ function createCaseSnaps(sid, tid){
                     if(data.results === undefined) {
                         $snaplist.html('None');
                         return;
-                    }
-                    if(data.results.snaps.length === 0) {
+                    } else if(data.results.snaps.length === 0) {
                         $snaplist.html('None');
                         return;
                     }
                     var idx = 0;
                     var total = data.results.snaps.length;
                     for(var d in data.results.snaps) {
-                        var $snapli = $('<li>');
+                        ++idx;
+                        var $snapli = $('<div>');
+                        var $igdiv = $('<div>').attr('style', 'float:left');
+                        var $icgdiv = $('<div>').attr('style', 'float:left');                                 
                         var $ig = new Image();
                         var $icg = new Image();
-                        ++idx;
+                        $snaptitle = $('<div>').attr('class', '');
+                        $snaptitle.html('<h4>('+idx+'/'+total+')'+ data.results.snaps[d]['title']+'</h4>');
+                        $snapli.append($snaptitle); 
                         $ig.src = 'data:image/png;base64,' + data.results.snaps[d]['data'];
                         $ig.setAttribute("id","snap"+idx);                        
                         $ig.setAttribute("width",wd+"px");
                         $ig.setAttribute("height",ht+"px");
                         if((idx === total) && (data.results.checksnap !== undefined)) {
                             $icg.src = 'data:image/png;base64,' + data.results.checksnap['data'];
-                            var cwd = $icg.width;
-                            var cht = $icg.height;
-                            $icg.setAttribute("width",cwd/2+"px");
-                            $icg.setAttribute("height",cht/2+"px");
+                            $icg.setAttribute("width",wd+"px");
+                            $icg.setAttribute("height",ht+"px");
                             $ig.setAttribute('class','thumbnailr');
-                            $icg.setAttribute('class','thumbnaile');                         
+                            $icg.setAttribute('class','thumbnaile'); 
+                            $igdiv.append($ig);
+                            $icgdiv.append($icg);   
+                            $snapli.append($igdiv); 
+                            $snapli.append($icgdiv);
+                            $snapli.attr('class','active item');                                                 
                         } else {
                             $ig.setAttribute('class','thumbnail');
-                            $icg.setAttribute('class','thumbnail');                          
-                        }
-
-                        $snaplist.append($snapli);
-                        $snapli.append($ig);
-                        $snapli.append('<br>('+idx+'/'+total+')'+ data.results.snaps[d]['title']+'<br>');
-                        $snapli.append($icg);                        
+                            $icg.setAttribute('class','thumbnail');
+                            $igdiv.append($ig);
+                            //$icgdiv.append($icg);   
+                            $snapli.append($igdiv); 
+                            //$snapli.append($icgdiv);
+                            $snapli.attr('class','item');                                     
+                        }  
+                        $snaplist.append($snapli);                              
                     }
-                    $("#history_div").jCarouselLite({
-                        circular: false,
-                        btnNext: ".next",
-                        btnPrev: ".prev",
-                        visible: 1
-                    });
-                    $("#history_div").attr('height',ht+"px");
-                });
+                    $('#history_div').carousel();
+                }
+            );
+
+
 }
 
 function createDetailTable(ids){
@@ -211,7 +216,7 @@ function fillDetailTable(data, ids, tag){
                                         "<td>"+ctime+"</td>"+
                                         "<td>"+casename+"</td>"+
                                         "<td><font color=\"red\">"+cresult+"<font></td>"+
-                                        "<td><a class=\"popup_link\" onfocus=\"this.blur();\" href=\"javascript:showTestDetail('div_"+ids+"_"+i+"')\">"+"detail"+"</a>"+
+                                        "<td><a onfocus=\"this.blur();\" href=\"javascript:showTestDetail('div_"+ids+"_"+i+"')\">"+"detail"+"</a>"+
                                         "<div id='div_"+ids+"_"+i+"'class=\"popup_window\">" + 
                                         "<div style=\"text-align: right; color:red;cursor:pointer\">"+
                                         "<a onfocus=\"this.blur();\" onclick=\"document.getElementById('div_"+ids+"_"+i+"').style.display ='none' \"> [x] </a>"+
@@ -229,7 +234,7 @@ function fillDetailTable(data, ids, tag){
                                      "<td>"+ctime+"</td>"+
                                      "<td>"+casename+"</td>"+
                                      "<td><font color=\"red\">"+cresult+"<font></td>"+
-                                     "<td><a class=\"popup_link\" onfocus=\"this.blur();\" href=\"javascript:showTestDetail('div_"+ids+"_"+i+"')\">"+"detail"+"</a>"+
+                                     "<td><a onfocus=\"this.blur();\" href=\"javascript:showTestDetail('div_"+ids+"_"+i+"')\">"+"detail"+"</a>"+
                                      "<div id='div_"+ids+"_"+i+"'class=\"popup_window\">"+
                                      "<div style=\"text-align: right; color:red;cursor:pointer\">"+
                                      "<a onfocus=\"this.blur();\" onclick=\"document.getElementById('div_"+ids+"_"+i+"').style.display ='none' \"> [x] </a>"+"</div>"+

@@ -6,9 +6,8 @@
 	<title>Login SmartServer</title> 
 	<link rel="stylesheet" href="static/css/bootstrap.css">
 	<link rel="stylesheet" href="static/css/bootstrap-responsive.css">
-	<!--[if lte IE 8]>
-		<link href="style/IE.css" rel="stylesheet" type="text/css" />
-	<![endif]-->   
+	<link rel="stylesheet" href="static/css/style.css">
+
 	<script type="text/javascript" src="static/js/jquery-1.7.2.min.js"></script>
 	<script type="text/javascript" src="static/js/jquery.cookie.js"></script>
 	<script type="text/javascript" src="static/js/md5.js"></script>
@@ -125,27 +124,27 @@
 			$('#textpassword').show();
 			$('#password').hide();					
 		}
-		
-
 	</script>
   </head> 
-  <body>
-        <!-- HEADER START -->
-	<div class='navbar navbar-inner navbar-fixed-top hideOnPhone'>
-        <a class="brand" id='aBrand'>SmartServer</a>
-        <!--div class="nav-collapse"-->
-            <ul class="nav pull-right" style='margin-top:10px'>
-                   <li id="downapp"><a style='padding-left:10px; padding-right:10px; padding-top:5px; padding-bottom:0px' href="static/runner.tar.gz">Download smartRunner</a></li>
-                   <li id="mailborqs"><a style='padding-left:10px; padding-right:10px; padding-top:5px; padding-bottom:0px' href="mailto:chengtao.liu@borqs.com" id='aContact'>Contact us</a></li>
-			<ul>
-		<!--/div-->
-	</div>
-        <!-- HEADER END -->
   
-<div class="container row" style='margin:auto' id='v1.0.0'>
-	<table style='margin:auto'>
+  <body>
+
+    <header>
+        <div class="sfContentBlock">
+            <h2>SmartServer</h2>
+            <div class="navbar pull-right">
+              <ul class="nav">
+                   <li id="downapp"><a href="static/runner.tar.gz">Download smartRunner</a></li>
+                   <li id="mailborqs"><a href="mailto:chengtao.liu@borqs.com" id='aContact'>Contact us</a></li>
+              </ul>
+            </div> 
+        </div>
+   </header>
+
+  <div id="main" class="container-fluid">
+	<table class="pull-right">
 		<tr>
-			<td align=right><div class='span6 hideOnPhone' style='margin-top:60px'><img src='static/img/login.jpg' title='♥ be with you.'></div></td>
+			<td align=right><div class='span6 hideOnPhone' style='margin-top:60px'><img src='static/img/login.jpg' title='Faster,Higher,Stronger.'></div></td>
 			<td><div class='span5' style='margin-top:20px' align=center>
 				<input tabindex="0" type="text" style='height:42px' id="textuserId" onfocus="onuserIdfocus()" />
 				<input type="text" style='height:42px' id="userId" name="username" class="inputText" onkeyup="onKeyPressed(event)" onblur="onuserIdblur()"/>
@@ -165,13 +164,19 @@
 			</div>
 			</td>
 		</tr>
-		
-		<tr class='hideOnPhone'><td colspan=2 style='text-align:center'>
-			<br><br>
-			<footer>Copyright © 2007 - 2012 BORQS International Holding Corp. All Rights Reserved.</footer>
-		</td></tr>
 	</table>
-</div>
+  </div>
 
-  </body>
+
+    <footer>
+	    <table align="center" style="border: none">
+		       <tr align="center">
+		    	    <td>
+		    		    <address>Copyright &copy; 2007-2012 Borqs.co</address>
+	                </td>
+	          </tr>
+	    </table>             	       	
+	</footer>
+</body>
+
 </html>
