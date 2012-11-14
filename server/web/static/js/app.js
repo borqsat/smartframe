@@ -36,7 +36,7 @@ function createCaseSnaps(sid, tid){
     var ht = parseInt(_appglobal.deviceinfo['height'])/2;
     $('#history_div').dialog({title:"case snapshots",
                               height: ht + 200,
-                              width: wd + 40,
+                              width: wd + 620,
                               resizable:false,
                               modal: true});
 
@@ -58,12 +58,12 @@ function createCaseSnaps(sid, tid){
                         var $ig = new Image();
                         var $icg = new Image();
                         ++idx;
-                        $ig.src = 'data:image/png;base64,' + data.results.snaps[d];
+                        $ig.src = 'data:image/png;base64,' + data.results.snaps[d]['data'];
                         $ig.setAttribute("id","snap"+idx);                        
                         $ig.setAttribute("width",wd+"px");
                         $ig.setAttribute("height",ht+"px");
                         if((idx === total) && (data.results.checksnap !== undefined)) {
-                            $icg.src = 'data:image/png;base64,' + data.results.checksnap;
+                            $icg.src = 'data:image/png;base64,' + data.results.checksnap['data'];
                             var cwd = $icg.width;
                             var cht = $icg.height;
                             $icg.setAttribute("width",cwd/2+"px");
@@ -77,7 +77,7 @@ function createCaseSnaps(sid, tid){
 
                         $snaplist.append($snapli);
                         $snapli.append($ig);
-                        $snapli.append('<br>'+idx+'/'+total+'<br>');
+                        $snapli.append('<br>('+idx+'/'+total+')'+ data.results.snaps[d]['title']+'<br>');
                         $snapli.append($icg);                        
                     }
                     $("#history_div").jCarouselLite({

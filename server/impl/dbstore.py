@@ -267,17 +267,18 @@ class dbStore(object):
             caseresult = self.db['caseresult']
             posi = stype.index(':')
             leni = len(stype)
-            stype = stype[0:posi-1]
-            sfile = stype[posi+1:leni-posi]
-            if stype == 'expect':
-                caseresult.update({'sid':sid,'tid':tid},{'$set':{'checksnap':{'title':sfile,'fid':fid} })
-            elif stype == 'current':
+            sfiletype = stype[0:posi]
+            sfile = stype[posi+1:]
+            print '%s %s' % (stype, sfile)
+            if sfiletype == 'expect':
+                caseresult.update({'sid':sid,'tid':tid},{'$set':{'checksnap':{'title':sfile,'fid':fid} }})
+            elif sfiletype == 'current':
                 self.snapqueue[sid+'-'+tid].append({'title':sfile, 'fid':fid})
                 snapshots = self.snapqueue[sid+'-'+tid]
                 caseresult.update({'sid':sid,'tid':tid},{'$set':{'snapshots':snapshots}})
         except:
             pass
-
+    
     def readTestLiveSnaps(self,sid):
         result = []
         rdata = self.mc.get(sid+'snap')
@@ -313,13 +314,13 @@ class dbStore(object):
         if checkid != '':
             fs = self.getfile(checkid)
             if not fs is None:
-                checksnap = {'title':stitle,'':base64.encodestring(fs.read())}
+                checksnap = {'title':stitle,'data': base64.encodestring(fs.read())}
 
         for d in snapids:
             stitle = d['title']
             fs = self.getfile(d['fid'])
             if not fs is None:
-                snaps.append(base64.encodestring(fs.read()))   
+                snaps.append({'title':stitle,'data':base64.encodestring(fs.read())})   
 
         return {'snaps':snaps, 'checksnap':checksnap}
 
