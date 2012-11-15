@@ -147,7 +147,10 @@ class dbStore(object):
         read list of test session records in database
         """
         session = self.db['session']
-        rdata = session.find({'sid':sid, 'uid':uid})
+        if uid == '001':
+            rdata = session.find({'sid':sid})
+        else:
+            rdata = session.find({'sid':sid, 'uid':uid})
         for d in rdata:
             result = {'sid':d['sid'],
                       'planname':d['planname'],
@@ -269,7 +272,6 @@ class dbStore(object):
             leni = len(stype)
             sfiletype = stype[0:posi]
             sfile = stype[posi+1:]
-            print '%s %s' % (stype, sfile)
             if sfiletype == 'expect':
                 caseresult.update({'sid':sid,'tid':tid},{'$set':{'checksnap':{'title':sfile,'fid':fid} }})
             elif sfiletype == 'current':

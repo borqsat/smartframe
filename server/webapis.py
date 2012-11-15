@@ -89,6 +89,28 @@ def doGetSessionList():
     else:
         return wrapResults({"errors":{"msg":"Invalid params!", "code":"03"}})
 
+
+@appweb.route('/test/session/<sid>/delete',method='GET')
+def doDeleteSession(sid):
+    """
+    URL:/test/session/<sid>/delete
+    TYPE:http/GET
+
+    delete a test session from server.
+
+    @type data:JSON
+    @param data:{'token':(string)value}
+    @rtype: JSON
+    @return:ok-{'results':1}
+            error-{'errors':{'code':value,'msg':(string)info}}
+    """
+    jsond = request.params
+    if not jsond is None:
+        token = jsond['token']
+        return wrapResults(deleteTestSession(token, sid))
+    else:
+        return wrapResults({"errors":{"msg":"Invalid params!", "code":"03"}}) 
+
 @appweb.route('/test/caseresult/<sid>',method='GET')
 def doGetSessionInfo(sid):
     """

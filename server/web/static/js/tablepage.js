@@ -17,9 +17,9 @@ function TablePage(id,size,pagesize){
            .bind("click", { "newPage": page }, function(event){
                 currentPage = event.data["newPage"];
                 $(this).children("span").attr("class","click_page");
-                $(this).children("span").css({"color":"#FFFFFF"});
+                $(this).children("span").css({"color":"#000000"}).css({"font-weight":"bold"});
                 $(".page a span").not($(this).children("span")).attr("class","");
-                $(".page a span").not($(this).children("span")).css({"color":"#1155BB"});
+                $(".page a span").not($(this).children("span")).css({"color":"#0088cc"}).css({"font-weight":"normal"});
                 $table.trigger("repaginate");
             })
             .appendTo($pager);
@@ -29,36 +29,37 @@ function TablePage(id,size,pagesize){
     $pager.append(next);
     $pager.insertBefore($table);//分页div插入table
     $("#1").attr("class","click_page");
-    $("#1").css({"color":"#FFFFFF"});
+    $("#1").css({"color":"#000000"});
     $table.trigger("repaginate");
     $("#Prev").bind("click",function(){
-    var prev=Number($(".click_page").text())-2;
-    currentPage=prev;
-    $(this).css({"background":"#000000"});
-    if(currentPage<0) {
-        $(this).css({"background":"#c0c0c0"});
-        return;
-    }
-    $("#"+(prev+1)).attr("class","click_page");
-       $("#"+(prev+1)).css({"color":"#FFFFFF"});
-       $(".page a span").not($("#"+(prev+1))).attr("class","");
-       $(".page a span").not($("#"+(prev+1))).css({"color":"#1155BB"});
-       //console.log(currentPage);
-       $table.trigger("repaginate");
+        var prev=Number($(".click_page").text())-2;
+        currentPage=prev;
+        //$(this).css({"background":"#000000"});
+        if(currentPage<0) {
+            //$(this).css({"background":"#c0c0c0"});
+            return;
+        }
+        $("#"+(prev+1)).attr("class","click_page");
+        $("#"+(prev+1)).css({"color":"#000000"}).css({"font-weight":"bold"});
+        $(".page a span").not($("#"+(prev+1))).attr("class","");
+        $(".page a span").not($("#"+(prev+1))).css({"color":"#0088cc"}).css({"font-weight":"normal"});
+        //console.log(currentPage);
+        $table.trigger("repaginate");
     });
+
     $("#Next").bind("click",function(){
         var next=$(".click_page").attr("id");
         currentPage=Number(next);
         //console.log($(".click_page").text());
-        $(this).css({"background":"#FFFFFF"});
+        //$(this).css({"background":"#000000"});
         if((currentPage+1)>numPages) {
-           $(this).css({"background":"#c0c0c0"});
+           //$(this).css({"background":"#c0c0c0"});
            return;
         }
         $("#"+(currentPage+1)).attr("class","click_page");
-        $("#"+(currentPage+1)).css({"color":"#FFFFFF"});
+        $("#"+(currentPage+1)).css({"color":"#000000"}).css({"font-weight":"bold"});
         $(".page a span").not($("#"+(currentPage+1))).attr("class","");
-        $(".page a span").not($("#"+(currentPage+1))).css({"color":"#1155BB"});
+        $(".page a span").not($("#"+(currentPage+1))).css({"color":"#0088cc"}).css({"font-weight":"normal"});
         $table.trigger("repaginate");
     });
     

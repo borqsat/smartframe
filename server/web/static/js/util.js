@@ -42,7 +42,7 @@ var invokeWebApi = function(apiUrl,dataj,render) {
            if(data['errors'] !== undefined)
               alert(data['errors']['msg']);
            else
-              alert("Web server Internal error!");
+              alert("Web server error code!");
            ajaxend();
         } else {
            render(data);

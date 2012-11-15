@@ -11,6 +11,12 @@ function createSessionList(){
     invokeWebApi("/test/session", {}, createSessionTable);
 }
 
+
+function initMainPage(){
+    createSessionList();
+    setTimeout(initMainPage, 15000);
+}
+
 function viewRun(){
     $('#tabrun').addClass('active');
     $('#tabstop').removeClass('active');
@@ -36,7 +42,7 @@ function createCaseSnaps(sid, tid){
     var ht = parseInt(_appglobal.deviceinfo['height'])/2;
     $('#history_div').dialog({title:"case snapshots",
                               height: ht + 120,
-                              width: 2*wd + 40,
+                              width: 2*wd + 60,
                               resizable:false,
                               modal: true});
 
@@ -70,8 +76,8 @@ function createCaseSnaps(sid, tid){
                             $icg.src = 'data:image/png;base64,' + data.results.checksnap['data'];
                             $icg.setAttribute("width",wd+"px");
                             $icg.setAttribute("height",ht+"px");
-                            $ig.setAttribute('class','thumbnailr');
-                            $icg.setAttribute('class','thumbnaile'); 
+                            $ig.setAttribute('class','thumbnail thumbnailr');
+                            $icg.setAttribute('class','thumbnail thumbnaile'); 
                             $igdiv.append($ig);
                             $icgdiv.append($icg);   
                             $snapli.append($igdiv); 
@@ -79,16 +85,13 @@ function createCaseSnaps(sid, tid){
                             $snapli.attr('class','active item');                                                 
                         } else {
                             $ig.setAttribute('class','thumbnail');
-                            $icg.setAttribute('class','thumbnail');
-                            $igdiv.append($ig);
-                            //$icgdiv.append($icg);   
+                            $igdiv.append($ig); 
                             $snapli.append($igdiv); 
-                            //$snapli.append($icgdiv);
                             $snapli.attr('class','item');                                     
                         }  
                         $snaplist.append($snapli);                              
                     }
-                    $('#history_div').carousel();
+                    $('#history_div').carousel({"pause":"hover"});
                 }
             );
 
@@ -449,6 +452,7 @@ function createRunningSessionDiv(product_list,product_cycle_product,product_cycl
 
     var plist = product_list;
     var $cycle_panel = $("#run_cycle_panel");
+    $cycle_panel.html('');
     for(var i = 0; i < plist.length; i++) {
         if(plist[i] === 'undefined') continue;
         if($("#ongoing"+plist[i]).length <=0 ){
@@ -486,18 +490,29 @@ function createRunningSessionDiv(product_list,product_cycle_product,product_cycl
        })
    }
 }
+
+function deleteSessionById(sid) {
+          invokeWebApi('/test/session/'+sid+'/delete',
+                        {},
+                        function(data){ 
+                           createSessionList();
+                      });
+
+}
+
 //create html data content
 function createFinishedSessionDiv(product_list,product_cycle_product,product_cycle_planname,product_cycle_result,product_cycle_starttime,product_cycle_endtime,product_cycle_revision){
 
     var plist = product_list;
     var $cycle_panel = $("#stop_cycle_panel");
+    $cycle_panel.html('');
     for(var i = 0; i < plist.length; i++) {
         if(plist[i] === 'undefined') continue;
 
         if($("#stoprun"+plist[i]).length <=0 ){
             var $product_div = $('<div>').attr('id','stoprun'+plist[i]);
             var $product_table = $('<table>').attr('class','table table-bordered').attr('id','otable'+plist[i]);
-            var $th = '<thead><tr><th width=\'50px\'>product</th><th width=\'250px\'>build</th><th width=\'50px\'>planname</th><th>statrtime</th><th>all</th><th>pass</th><th>fail</th><th>error</th><th>endtime</th></tr></thead>';
+            var $th = '<thead><tr><th width=\'50px\'>product</th><th width=\'150px\'>build</th><th width=\'50px\'>planname</th><th>statrtime</th><th>all</th><th>pass</th><th>fail</th><th>error</th><th>endtime</th><th></th></tr></thead>';
             var $tbody = '<tbody></tbody>';
             $product_table.append($th);
             $product_table.append($tbody);
@@ -525,6 +540,7 @@ function createFinishedSessionDiv(product_list,product_cycle_product,product_cyc
                       "<td>"+product_cycle_result[key]['fail']+"</td>"+
                       "<td>"+product_cycle_result[key]['error']+"</td>"+
                       "<td>"+product_cycle_endtime[key]+"</td>"+
+                      "<td><a href=\"javascript:deleteSessionById('"+key+"')\">[X]</a></td>"+
                       "</tr>";
                 $product_table.append($tr);
             }
