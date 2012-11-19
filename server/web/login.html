@@ -18,7 +18,7 @@
 	<script type="text/javascript" src="static/js/json2.js"></script>	
         <script type="text/javascript" src="static/js/util.js"></script> 
 	<script type="text/javascript">	
-		$(document).ready(function(){
+             $(function(){
 			$('input.inputText').bind("blur",function(event){
 				if($(this).val()){
 					$(this).next().text("").hide();
@@ -29,20 +29,20 @@
 			$('#userId').hide();	
 	        document.getElementById("textuserId").value = "Input UserId";	
 	        document.getElementById("textpassword").value = "Input Password";
-        })
+             })
 	     						
-		function callback(data) {
-            ret = data["results"];
-            if (ret !== undefined && ret["token"] !== undefined) {
-                $.cookie('ticket', ret["token"], { expires: 7 });
-                $.cookie('loginname', $('#userId').val(), { expires: 7 });
-                window.location = "index.html";
-			} else {
+	    function callback(data) {
+                ret = data["results"];
+                if (ret !== undefined && ret["token"] !== undefined) {
+                    $.cookie('ticket', ret["token"], { expires: 7 });
+                    $.cookie('loginname', $('#userId').val(), { expires: 7 });
+                    window.location = "index.html";
+	        } else {
 				$('#password').css({"background":"#FFAFAF"},{"border":"1px solid #ccc"});
 				$('#spanPass').text("Incorrect password!").show();
 				expect = verify();
 			}
-		}
+	    }
 
         function verifyFields() {
 

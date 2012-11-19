@@ -75,7 +75,7 @@ a.button:hover, button:hover, a.button:focus, button:focus {
 }
 .greyback {
     background: url("images/greyback.png") repeat-x scroll left bottom transparent;
-    height: 53px;
+    height: 33px;
     position: relative;
 }
 nav.greyback ul {
@@ -95,7 +95,7 @@ nav.greyback li a {
     color: #2E2E2E;
     display: inline-block;
     font-size: 16px;
-    line-height: 50px;
+    line-height: 30px;
     padding: 0 15px;
     text-decoration: none;
     text-shadow: 0 1px 0 #FFFFFF;
@@ -710,14 +710,27 @@ footer {
     margin-bottom: 15px;
     padding-bottom: 6px;
 }
-input {
-    margin-top: 8px;
+#main {
+    margin-top:12px;
 }
 
-.comboval {
-    margin-top: 0px; 
+#gotop {
+    bottom: 10px;
+    float: right;
+    position: fixed;
+    right: 10px;
+    z-index: 1005;
+}
+#gotop img {
+    opacity: 0.3;
+    width: 42px;
 }
 
-.k-header1 {
-    background-color: #eee;
+#gotop a:hover {
+    color: #220000;
+    text-decoration: none;
 }
+#gotop a:hover img {
+    opacity: 1;
+}
+

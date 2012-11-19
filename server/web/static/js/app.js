@@ -33,13 +33,25 @@ function viewStop(){
     $('#stop_cycle_panel').show();    
 }
 
+function getTop(e) {
+    var offset = e.offsetTop;
+    if (e.offsetParent != null) offset += getTop(e.offsetParent);
+    return offset;
+}
+
+function getLeft(e) {
+    var offset = e.offsetLeft;
+    if (e.offsetParent != null) offset += getLeft(e.offsetParent);
+    return offset;
+}
 
 function createCaseSnaps(sid, tid){
 
     var $snaplist = $('#img_list'); 
     $snaplist.html('');
-    var wd = parseInt(_appglobal.deviceinfo['width'])/2;
-    var ht = parseInt(_appglobal.deviceinfo['height'])/2;
+    var zoom = 1;
+    var wd = parseInt(_appglobal.deviceinfo['width']) >> zoom;
+    var ht = parseInt(_appglobal.deviceinfo['height']) >> zoom;
     $('#history_div').dialog({title:"case snapshots",
                               height: ht + 120,
                               width: 2*wd + 60,
@@ -62,33 +74,43 @@ function createCaseSnaps(sid, tid){
                         ++idx;
                         var $snapli = $('<div>');
                         var $igdiv = $('<div>').attr('style', 'float:left');
-                        var $icgdiv = $('<div>').attr('style', 'float:left');                                 
+                        var $icgdiv = $('<div>').attr('style', 'float:left');                                
                         var $ig = new Image();
                         var $icg = new Image();
-                        $snaptitle = $('<div>').attr('class', '');
+                        $snaptitle = $('<div>');
                         $snaptitle.html('<h4>('+idx+'/'+total+')'+ data.results.snaps[d]['title']+'</h4>');
-                        $snapli.append($snaptitle); 
+                        //$snapli.append($snaptitle); 
                         $ig.src = 'data:image/png;base64,' + data.results.snaps[d]['data'];
                         $ig.setAttribute("id","snap"+idx);                        
                         $ig.setAttribute("width",wd+"px");
                         $ig.setAttribute("height",ht+"px");
                         if((idx === total) && (data.results.checksnap !== undefined)) {
                             $icg.src = 'data:image/png;base64,' + data.results.checksnap['data'];
-                            $icg.setAttribute("width",wd+"px");
-                            $icg.setAttribute("height",ht+"px");
-                            $ig.setAttribute('class','thumbnail thumbnailr');
-                            $icg.setAttribute('class','thumbnail thumbnaile'); 
+                            $icg.setAttribute("width", wd + "px");
+                            $icg.setAttribute("height", ht + "px");
+                            $ig.setAttribute('class','thumbnailr');
+                            $icg.setAttribute('class','thumbnaile'); 
+                            var rect = data.results.checksnap['title']
+                            rect = rect.substring(rect.indexOf('(')+1, rect.indexOf(')'));
+                            var x = parseInt(rect.substring(rect.indexOf('x')+1, rect.indexOf('y'))) >> zoom;
+                            var y = parseInt(rect.substring(rect.indexOf('y')+1, rect.indexOf('w'))) >> zoom;
+                            var w = parseInt(rect.substring(rect.indexOf('w')+1, rect.indexOf('h'))) >> zoom;
+                            var h = parseInt(rect.substring(rect.indexOf('h')+1)) >> zoom;
                             $igdiv.append($ig);
                             $icgdiv.append($icg);   
-                            $snapli.append($igdiv); 
-                            $snapli.append($icgdiv);
+                            var $pdiv = $('<div>').attr('style','border:3px solid green; position:absolute; top:'+y+'px; left:'+x+'px; width:' +w+'px; height:'+h+'px');
+                            
+                            $icgdiv.append($pdiv);
+                            $snapli.append($icgdiv); 
+                            $snapli.append($igdiv);
                             $snapli.attr('class','active item');                                                 
                         } else {
                             $ig.setAttribute('class','thumbnail');
                             $igdiv.append($ig); 
                             $snapli.append($igdiv); 
                             $snapli.attr('class','item');                                     
-                        }  
+                        } 
+                        $snapli.append($snaptitle); 
                         $snaplist.append($snapli);                              
                     }
                     $('#history_div').carousel({"pause":"hover"});
@@ -190,15 +212,28 @@ function createSnapshotDiv(sid) {
     }
 }
 
+function processCasesData(data) {
+    var datacases = data.results.cases;
+    if(datacases !== undefined) {
+        datacases.sort(function(a,b){ 
+           return parseInt(b['tid']) - parseInt(a['tid']) ; 
+        });
+    }
+    return datacases;
+  
+}
+
 function fillDetailTable(data, ids, tag){
 
     var detail_table = $("#"+ids+" > tbody");
 
+    data = processCasesData(data);
+
     if($("#"+ids).length > 0){ 
         $("#"+ids+ " tr:gt(0)").remove(); //delete table content
-        for (var i in data.results.cases){
-            var ctime,cname,cresult,ctraceinfo,ctid,csid, trId;
-            var citem = data.results.cases[i];
+        for (var i in data){
+            var cname,cresult,ctraceinfo,ctid,csid, trId;
+            var citem = data[i];
             ctid = citem['tid'];
             csid = citem['sid'];
             ctime = citem['starttime'];
@@ -272,7 +307,7 @@ function fillDetailTable(data, ids, tag){
         }
     }
 
-    TablePage('#'+ids, 20, 10);
+    TablePage('#'+ids, 20, 20);
 }
 
 
@@ -355,7 +390,7 @@ function createLiveCaseSummary(data) {
     var allId = "o_"+key;
 
     var $summary_table = $('<table>').attr('class','table table-bordered').attr('id','stable'+key);
-    var $th = '<thead><tr><th>planname</th><th>statrtime</th><th>runtime</th></tr></thead>';
+    var $th = '<thead><tr><th>planname</th><th>owner</th><th>statrtime</th><th>runtime</th><th></th></tr></thead>';
     var $tbody = '<tbody></tbody>';
     $('#summary_div').append($summary_table);
     $summary_table.append($th);
@@ -363,7 +398,9 @@ function createLiveCaseSummary(data) {
 
     $tr = "<tr>"+     
           "<td>"+data['planname']+"</td>"+    
+          "<td>"+data['user']+"</td>"+
           "<td>"+data['starttime']+"</td>"+
+          "<td>"+setRunTime(data['runtime'])+"</td>"+
           "<td>"+"<a id="+allId+" href=\"javascript:showSnapDiv(\'"+key+"\');\">livesnaps</a></td>"+
           "</tr>";
 
@@ -380,7 +417,7 @@ function createHistoryCaseSummary(data) {
     var errorId = 'error_'+key;
 
     var $summary_table = $('<table>').attr('class','table table-bordered').attr('id','stable'+key);
-    var $th = '<thead><tr><th>planname</th><th>statrtime</th><th>runtime</th><th>all</th><th>pass</th><th>fail</th><th>error</th></tr></thead>';
+    var $th = '<thead><tr><th>planname</th><th>owner</th><th>statrtime</th><th>runtime</th><th>all</th><th>pass</th><th>fail</th><th>error</th></tr></thead>';
     var $tbody = '<tbody></tbody>';
     $('#summary_div').append($summary_table);
     $summary_table.append($th);
@@ -388,8 +425,9 @@ function createHistoryCaseSummary(data) {
 
     $tr = "<tr>"+     
           "<td>"+data['planname']+"</td>"+    
+          "<td>"+data['user']+"</td>"+
           "<td>"+data['starttime']+"</td>"+
-          "<td>"+data['runtime']+"</td>"+
+          "<td>"+setRunTime(data['runtime'])+"</td>"+
           "<td>"+"<a id="+allId+" href=\"javascript:void(0);\">"+data['result']['total']+"</a></td>"+
           "<td>"+"<a id="+passId+" href=\"javascript:void(0);\">"+data['result']['pass']+"</a></td>"+
           "<td>"+"<a id="+failId+" href=\"javascript:void(0);\">"+data['result']['fail']+"</a></td>"+
@@ -445,10 +483,8 @@ function createHistoryCaseSummary(data) {
     });
 }
 
-
-
 //create html data content
-function createRunningSessionDiv(product_list,product_cycle_product,product_cycle_planname,product_cycle_starttime,product_cycle_runtime,product_cycle_revision){
+function createRunningSessionDiv(product_list,product_cycle_product,product_cycle_planname,product_cycle_owner,product_cycle_starttime,product_cycle_runtime,product_cycle_revision){
 
     var plist = product_list;
     var $cycle_panel = $("#run_cycle_panel");
@@ -459,7 +495,7 @@ function createRunningSessionDiv(product_list,product_cycle_product,product_cycl
             var $product_div = $('<div>').attr('id','ongoing'+plist[i]);
             //var $product_label = "<span class=\"label label-info\">"+plist[i]+"</span><span align=right>";
             var $product_table = $('<table>').attr('class','table table-bordered').attr('id','otable'+plist[i]);
-            var $th = '<thead><tr><th width=\'50px\'>product</th><th width=\'250px\'>build</th><th width=\'50px\'>planname</th><th>statrtime</th></tr></thead>';
+            var $th = '<thead><tr><th width=\'50px\'>product</th><th width=\'250px\'>build</th><th width=\'50px\'>planname</th><th>owner</th><th>statrtime</th><th>runtime</th></tr></thead>';
             var $tbody = '<tbody></tbody>';
             $product_table.append($th);
             $product_table.append($tbody);
@@ -480,8 +516,10 @@ function createRunningSessionDiv(product_list,product_cycle_product,product_cycl
                 $tr = "<tr>"+
                       "<td><a href=\"view.html?sid="+key+"\" target=\"_blank\">"+value+"</a></td>"+      
                       "<td>"+product_cycle_revision[key]+"</td>"+  
-                      "<td>"+product_cycle_planname[key]+"</td>"+                        
+                      "<td>"+product_cycle_planname[key]+"</td>"+
+                      "<td>"+product_cycle_owner[key]+"</td>"+                        
                       "<td>"+product_cycle_starttime[key]+"</td>"+
+                      "<td>"+setRunTime(product_cycle_runtime[key])+"</td>"+
                       "</tr>";
 
                 $product_table.append($tr);
@@ -492,16 +530,19 @@ function createRunningSessionDiv(product_list,product_cycle_product,product_cycl
 }
 
 function deleteSessionById(sid) {
-          invokeWebApi('/test/session/'+sid+'/delete',
-                        {},
-                        function(data){ 
-                           createSessionList();
-                      });
+          
+    if(confirm('Confirm to delete this session?')) {
+       invokeWebApi('/test/session/'+sid+'/delete',
+                    {},
+                    function(data){ 
+                       createSessionList();
+                   });
+   }
 
 }
 
 //create html data content
-function createFinishedSessionDiv(product_list,product_cycle_product,product_cycle_planname,product_cycle_result,product_cycle_starttime,product_cycle_endtime,product_cycle_revision){
+function createFinishedSessionDiv(product_list,product_cycle_product,product_cycle_planname,product_cycle_owner,product_cycle_result,product_cycle_starttime,product_cycle_runtime,product_cycle_revision){
 
     var plist = product_list;
     var $cycle_panel = $("#stop_cycle_panel");
@@ -512,7 +553,7 @@ function createFinishedSessionDiv(product_list,product_cycle_product,product_cyc
         if($("#stoprun"+plist[i]).length <=0 ){
             var $product_div = $('<div>').attr('id','stoprun'+plist[i]);
             var $product_table = $('<table>').attr('class','table table-bordered').attr('id','otable'+plist[i]);
-            var $th = '<thead><tr><th width=\'50px\'>product</th><th width=\'150px\'>build</th><th width=\'50px\'>planname</th><th>statrtime</th><th>all</th><th>pass</th><th>fail</th><th>error</th><th>endtime</th><th></th></tr></thead>';
+            var $th = '<thead><tr><th width=\'50px\'>product</th><th width=\'150px\'>build</th><th width=\'50px\'>planname</th><th>owner</th><th>statrtime</th><th>runtime</th><th>all</th><th>pass</th><th>fail</th><th>error</th><th></th></tr></thead>';
             var $tbody = '<tbody></tbody>';
             $product_table.append($th);
             $product_table.append($tbody);
@@ -534,12 +575,13 @@ function createFinishedSessionDiv(product_list,product_cycle_product,product_cyc
                       "<td><a href=\"view.html?sid="+key+"\" target=\"_blank\">"+value+"</a></td>"+      
                       "<td>"+product_cycle_revision[key]+"</td>"+
                       "<td>"+product_cycle_planname[key]+"</td>"+                               
+                      "<td>"+product_cycle_owner[key]+"</td>"+
                       "<td>"+product_cycle_starttime[key]+"</td>"+
+                      "<td>"+setRunTime(product_cycle_runtime[key])+"</td>"+
                       "<td>"+product_cycle_result[key]['total']+"</td>"+
                       "<td>"+product_cycle_result[key]['pass']+"</td>"+
                       "<td>"+product_cycle_result[key]['fail']+"</td>"+
                       "<td>"+product_cycle_result[key]['error']+"</td>"+
-                      "<td>"+product_cycle_endtime[key]+"</td>"+
                       "<td><a href=\"javascript:deleteSessionById('"+key+"')\">[X]</a></td>"+
                       "</tr>";
                 $product_table.append($tr);
@@ -550,13 +592,14 @@ function createFinishedSessionDiv(product_list,product_cycle_product,product_cyc
 }
 
 function setRunTime(secs) {
+    var seconds = Math.floor( secs % 60);
     var minute = Math.floor((secs / 60) % 60);
     var hour = Math.floor((secs / 3600));
-    if(hour>0) {
-        return  hour+'h'+minute+'m';
-    } else {
-        return minute+'m';
-    }        
+    var result = '';
+    if(hour>0) result += hour+'h';
+    if(minute>0) result += minute+'m';
+    if(seconds>0) result += seconds+'s'; 
+    return result; 
 }
 
 function createSessionTable(data){
@@ -581,6 +624,8 @@ function createSessionTable(data){
     var product_stop_cycle_cyclestarttime = {};
     var product_run_cycle_starttime = {};
     var product_stop_cycle_starttime = {};
+    var product_run_cycle_owner = {};
+    var product_stop_cycle_owner = {};
 
     $.each(data.results.sessions,function(idx,item){
 
@@ -595,6 +640,7 @@ function createSessionTable(data){
         var cyclestarttime = item.starttime;
         var cycleruntime = item.runtime;
         var cycleendtime = item.endtime;
+        var cycleowner = item.user; 
 
         if (cycleendtime !== '' && cycleendtime !== 'N/A'){
             product_stop_list[idx] = product;
@@ -608,6 +654,7 @@ function createSessionTable(data){
             product_stop_cycle_revision[cycleid] = revision;
             product_stop_cycle_imei[cycleid] = cycleimei;
             product_stop_cycle_cyclestarttime[cycleid] = cyclestarttime;
+            product_stop_cycle_owner[cycleid] = cycleowner;
         } else {
             product_run_list[idx] = product;
             product_run_cycle_product[cycleid] = product;
@@ -617,22 +664,25 @@ function createSessionTable(data){
             product_run_cycle_result[cycleid] = cycleresult;
             product_run_cycle_runtime[cycleid] = cycleruntime;
             product_run_cycle_userid[cycleid] = cycleuserid;
+            product_run_cycle_owner[cycleid] = cycleowner;
         }
     });
 
     createRunningSessionDiv(arrayUnique(product_run_list),
                             product_run_cycle_product,
-                            product_run_cycle_plan,                            
+                            product_run_cycle_plan, 
+                            product_run_cycle_owner,                           
                             product_run_cycle_starttime,
                             product_run_cycle_runtime,
                             product_run_cycle_revision);
 
     createFinishedSessionDiv(arrayUnique(product_stop_list),
                             product_stop_cycle_product,
-                            product_stop_cycle_plan,    
+                            product_stop_cycle_plan,
+                            product_stop_cycle_owner,    
                             product_stop_cycle_result,                    
                             product_stop_cycle_starttime,
-                            product_stop_cycle_endtime,
+                            product_stop_cycle_runtime,
                             product_stop_cycle_revision);
 
 }

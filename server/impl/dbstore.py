@@ -5,18 +5,19 @@ import gridfs
 import memcache
 import hashlib,uuid,base64
 from bson.objectid import ObjectId
+from datetime import datetime
 
 class dbStore(object):
     """
     Class dbStore provides the access to MongoDB DataBase
     """
-    def __init__(self, server='192.168.7.212', port=27017):
+    def __init__(self, server, port):
         """
         do the database instance init works
         """
         print 'init db store class!!!'
         self.db = Connection(server, port)['smartServer']
-        self.fs = gridfs.GridFS(Connection(server, port)['smartGridFS'], collection='rawfiles')
+        self.fs = gridfs.GridFS(Connection(server, port)['smartFiles'], collection='fs')
         self.mc = memcache.Client(['127.0.0.1:11211'],debug=0)
         self.snapqueue = {}
 
@@ -126,11 +127,16 @@ class dbStore(object):
         """
         read list of test session records in database
         """
+        users = self.db['user']
+        user = 'N/A'
+        rdata = users.find({'uid':uid})
+        for d in rdata:
+            user = d['username']
         session = self.db['session']
         rdata = session.find({'uid':uid})
         result = {}
         lists = [{'sid':d['sid'],
-                'uid':d['uid'],
+                'user':user,
                 'planname':d['planname'],
                 'result':d['result'],
                 'starttime':d['starttime'],
@@ -146,6 +152,12 @@ class dbStore(object):
         """
         read list of test session records in database
         """
+        users = self.db['user']
+        user = 'N/A'
+        rdata = users.find({'uid':uid})
+        for d in rdata:
+            user = d['username']
+
         session = self.db['session']
         if uid == '001':
             rdata = session.find({'sid':sid})
@@ -153,6 +165,7 @@ class dbStore(object):
             rdata = session.find({'sid':sid, 'uid':uid})
         for d in rdata:
             result = {'sid':d['sid'],
+                      'user':user,
                       'planname':d['planname'],
                       'result':d['result'],
                       'starttime':d['starttime'],
@@ -236,13 +249,20 @@ class dbStore(object):
         caseresult = self.db['caseresult']
         session = self.db['session']
         status = status.lower()
-        self.mc.set(sid+'status','result->'+status)
+        runtime = 0
+        rdata = session.find({'sid':sid})
+        for d in rdata:
+            starttime = d['starttime']             
+            d1 = datetime.strptime(starttime, "%Y-%m-%d %H:%M:%S")
+            d2 = datetime.strptime(endtime, "%Y-%m-%d %H:%M:%S")        
+            runtime = (d2 - d1).seconds
+        #self.mc.set(sid+'status','result->'+status)
         if status == 'pass':
-            session.update({'sid':sid},{'$inc':{'result.pass':1}})
+            session.update({'sid':sid},{'$inc':{'result.pass':1},'$set':{'runtime':runtime}})
         elif status == 'fail':
-            session.update({'sid':sid},{'$inc':{'result.fail':1}})               
+            session.update({'sid':sid},{'$inc':{'result.fail':1},'$set':{'runtime':runtime}})               
         else:
-            session.update({'sid':sid},{'$inc':{'result.error':1}})
+            session.update({'sid':sid},{'$inc':{'result.error':1},'$set':{'runtime':runtime}})
 
         caseresult.update({'sid':sid,'tid':tid},{'$set':{'result':status,'traceinfo':traceinfo,'endtime':endtime}})
 
@@ -269,7 +289,6 @@ class dbStore(object):
             fid = str(idx)
             caseresult = self.db['caseresult']
             posi = stype.index(':')
-            leni = len(stype)
             sfiletype = stype[0:posi]
             sfile = stype[posi+1:]
             if sfiletype == 'expect':

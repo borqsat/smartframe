@@ -22,15 +22,21 @@
                   <li><a href="#" class="navbar-text" id="logname"></a></li>    
                   <li><a href="javascript:logout()" class="navbar-text" id="logout">logout</a></li>
               </ul>
-            </div> 
+            </div>
         </div>
     </header>
 
- <div id="main" class="container-fluid">
-    <div id="img" style="position:absolute;z-index: 1999;"></div>
-    <div class="row-fluid">
-        <div class="span12">
-           <div class="mtbfunit" id="maintab">
+    <nav class='greyback'>			
+        <ul>
+            <li class="first-child"><a href="index.html"></a></li>
+            <li class="active"><a href="javascript:createSessionList()">Results</a></li>
+	</ul>
+    </nav>
+
+    <div id="main" class="container-fluid">
+        <div id="img" style="position:absolute;z-index: 1999;"></div>
+        <div class="row-fluid">
+            <div class="span12" class="mtbfunit" id="maintab">
                <ul class="nav nav-pills">
                   <li id="tabrun" class="active"><a href="javascript:viewRun();">Running Session</a></li>
                   <li id="tabstop"><a href="javascript:viewStop();">Stopped Session</a></li>
@@ -40,14 +46,20 @@
             </div>
         </div>
     </div>
-</div>
+
+   <div id="gotop">
+      <a href="#" onclick="javascript:document.body.scrollTop=0;document.documentElement.scrollTop=0;this.blur();return false;" title="回到顶部">
+          <img src="static/img/top.png" alt="TOP" />
+      </a>
+   </div>
+
 
     <footer>
       <table align="center" style="border: none">
-           <tr align="center">
-              <td>
-                <address>Copyright &copy; 2007-2012 Borqs.co</address>
-                  </td>
+            <tr align="center">
+                <td>
+                    <address>Copyright &copy; 2007-2012 Borqs.co</address>
+                </td>
             </tr>
       </table>                      
   </footer>
