@@ -21,16 +21,22 @@ Remark: It is enough to complete "Prepare your development computer"
         and "Download and install the SDK starter package" steps
         from Android SDK Quick Start.
 
-=============================================
 Check the environment of PC and install the required lib using below srcipt in shell comand line:
 Enter the directory of 'runner/'
 Execute: python install.py
+
 =============================================
+How to run the demo of test:
+   monkeyrunner runtest.py --plan bkb/cases/plan/plan2 --product bkb
+   
+=============================================
+how to write test case of smartrunner:
+   See the sample of bkb/cases/message.py
+   Launch SmartShot snapshot tool -> how to to find more detail.
 
 =============================================
 Preparation before stability testing:
-==============================================
+=============================================
 1. Phone environment:
     a) Your phone is connected to PC with usb cable.Select USB debug mode in setting
     b) Run 'sudo adb devices' and make sure adb can list your device.
-
