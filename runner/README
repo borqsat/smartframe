@@ -22,8 +22,7 @@ Remark: It is enough to complete "Prepare your development computer"
         from Android SDK Quick Start.
 
 =============================================
-Chect the if the environment is ok.
-Verify the environment of PC and install the required lib using below srcipt in shell comand line:
+Check the environment of PC and install the required lib using below srcipt in shell comand line:
 Enter the directory of 'runner/'
 Execute: python install.py
 =============================================
