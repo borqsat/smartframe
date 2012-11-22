@@ -1,5 +1,5 @@
 ===================================================
-Smart Runner requirment:
+SmartRunner environment:
 ===================================================
 
 Before you begin, please make sure you have installed:
@@ -21,28 +21,14 @@ Remark: It is enough to complete "Prepare your development computer"
         and "Download and install the SDK starter package" steps
         from Android SDK Quick Start.
 
+=============================================
+Chect the if the environment is ok.
+Verify the environment of PC and install the required lib using below srcipt in shell comand line:
+Enter the directory of 'runner/'
+Execute: python install.py
+=============================================
 
-========================================================
-Verify the environment of PC and install the required lib using below srcipt.
-cd to ./runner
-python install.py
-
-========================================================
-
-============
-Unit Test:
-============
-
-NOTES: Before running unit tests, please make sure your phone is connected 
-       to PC with usb, and adb is connected.
-
-Enter the directory of the tool and execute below command to run all unittests:
-Execute below command to run specified test cases:
-e.g:
-cd to the directory "./runner/imglib" then execute the shell command:
-$ monkeyrunner test.py
-
-==============================================
+=============================================
 Preparation before stability testing:
 ==============================================
 1. Phone environment:
