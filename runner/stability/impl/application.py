@@ -1,22 +1,29 @@
-import sys,time,signal
-from stability.util.log import Logger 
+'''
+EpyDoc
+@version: $id$
+@author: U{borqsat<www.borqs.com>}
+@see: null
+'''
+
 from builder import TestBuilder
 from testrunner import TestRunner
-from pubsub import pub
 
 class Application(object):
-    def __init__(self,properties=None):
+    '''
+    Application context.
+    '''
+    def __init__(self,properties):
         '''
-        init looger,builder,runner before testing start
+        Init test builder test runner before testing start.
+
+        @type properties: Obejct of CommandOptions
+        @param properties: Instance of CommandOptions for user command line.
         '''
-        self.logger = Logger.getLogger()
         self.builder = TestBuilder.getBuilder(properties)
         self.runner = TestRunner(properties)
 
     def run(self):
-        #signal.signal(signal.SIGINT, signal_handler)
+        '''
+        Run the test suites.
+        '''
         self.runner.runTest(self.builder.getTestSuites())
-
-def signal_handler(signal, frame):
-        pub.sendMessage('collectresult',sessionStatus='sessionstop')
-        sys.exit(0)

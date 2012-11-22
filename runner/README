@@ -1,50 +1,42 @@
 ===================================================
-Smart Runner requirment:
+SmartRunner environment:
 ===================================================
 
 Before you begin, please make sure you have installed:
 
-   - ubuntu 10.04 (English version)
+   - ubuntu 10.04 (English version) 32 bit
 
    - python 2.6.x (default installed on ubuntu10.04)
     
-   - JDK 1.6 or above
+   - JDK 1.6 or (not open JDK)
      http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
    - Android SDK 2.3.3 or above
      http://developer.android.com/sdk/index.html
  
-   -Android tools and platform tools must be in system PATH environment.
+   -Android tools and platform tools ,tools, must be in system PATH environment.
 This tool requires to run 'adb', 'monkeyrunner' in shell.
       
 Remark: It is enough to complete "Prepare your development computer"
         and "Download and install the SDK starter package" steps
         from Android SDK Quick Start.
 
+Check the environment of PC and install the required lib using below srcipt in shell comand line:
+Enter the directory of 'runner/'
+Execute: python install.py
 
-========================================================
-Ubuntu10.04 Dependencies: 
-if the tool open cv is below 2.1. you need to update opencv lib first.Follow:
-http://tutorial.downloadatoz.com/how-to-install-opencv-2-1-on-ubuntu-10-04.html
-========================================================
+=============================================
+How to run the demo of test:
+   monkeyrunner runtest.py --plan bkb/cases/plan/plan2 --product bkb
+   
+=============================================
+how to write test case of smartrunner:
+   See the sample of bkb/cases/message.py
+   Launch SmartShot snapshot tool -> how to to find more detail.
 
-============
-Unit Test:
-============
-
-NOTES: Before running unit tests, please make sure your phone is connected 
-       to PC with usb, and adb is connected.
-
-Enter the directory of the tool and execute below command to run all unittests:
-Execute below command to run specified test cases:
-e.g:
-cd to the directory "./runner/imglib" then execute the shell command:
-$ monkeyrunner test.py
-
-=====================================
+=============================================
 Preparation before stability testing:
-=====================================
+=============================================
 1. Phone environment:
     a) Your phone is connected to PC with usb cable.Select USB debug mode in setting
     b) Run 'sudo adb devices' and make sure adb can list your device.
-

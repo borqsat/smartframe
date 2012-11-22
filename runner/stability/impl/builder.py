@@ -1,11 +1,16 @@
-import os,sys,string
-import threading
-import unittest
+'''
+EpyDoc
+@version: $id$
+@author: U{borqsat<www.borqs.com>}
+@see: null
+'''
+
+import os,sys,string,threading,unittest
 from configparser import ConfigParser
 from stability.util.log import Logger
 
 class TestBuilder(object):
-    '''Class for store test session properties '''
+    '''Class for storing test session properties'''
     __instance = None
     __mutex = threading.Lock()
     __buildOption = None
@@ -23,9 +28,7 @@ class TestBuilder(object):
 
     def getWorkspace(self):
         '''Return the test session's report workspace '''
-        workspace = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),'report')
-        if not os.path.exists(workspace):
-            os.makedirs(workspace)
+        workspace = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
         return workspace
 
     def getDeviceSerial(self):
@@ -73,7 +76,7 @@ class TestBuilder(object):
 class TestLoader(object):
     #testMethodPrefix = 'test' 
     #sortTestMethodsUsing = cmp 
-    #suiteClass = TestSuite 
+    #suiteClass = TestSuite
     _defaultTestLoader =  unittest.TestLoader
     _defaulConfiger = ConfigParser
     def __init__(self,loader=None):

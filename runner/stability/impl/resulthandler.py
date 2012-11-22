@@ -1,22 +1,46 @@
+'''
+EpyDoc
+@version: $id$
+@author: U{borqsat<www.borqs.com>}
+@see: null
+'''
+
+import os,shutil,thread,threading,time,zipfile,sys
+from signal import signal, SIGINT
+from pubsub import pub
 from stability.util.log import Logger
 from builder import TestBuilder
 from uploader import ResultSender,Sender
-import os,shutil,thread,threading
-from pubsub import pub
-import time,zipfile,os
-  
+
+def stop(signum, frame):
+    print 'stop singal'
+    if ResultHandler.sender:
+        ResultHandler.sender.stop()
+    task_wait = ResultSender.getInstance().queue
+    if not task_wait.empty():
+        task_wait.mutex.acquire()
+        try:
+            task_wait.queue.clear()
+            task_wait.unfinished_tasks = 0
+            task_wait.not_full.notify()
+            task_wait.all_tasks_done.notifyAll()
+        finally:
+            task_wait.mutex.release()
+    sys.exit()
+
 class ResultHandler(object):
     sender = None
     def __init__(self):
         pass
 
-    #@staticmethod
     def handle(self,info=None,path=None,sessionStatus=None):
         _isUpload = TestBuilder.getBuilder().getProperty('uploadresult')
         _isLocal = True
         if _isUpload and not ResultHandler.sender:
             ResultHandler.sender = Sender(ResultSender.getInstance().queue)
+            ResultHandler.sender.setDaemon(True)
             ResultHandler.sender.start()
+            signal(SIGINT, stop)
         handleResult(info,path,sessionStatus,_isUpload)
         #print '************************************************************'
         #handler = Handler(info,path,sessionStatus,_isUpload)
@@ -45,7 +69,8 @@ def handleResult(info,path,sessionStatus,isUpload):
             case_name = '%s.%s' %(type( info[1][1]).__name__,  info[1][1]._testMethodName)
             case_starttime = info[1][0].case_start_time
             testcase_result_folder = '%s-%s'%(case_name,case_starttime)
-            result_path = os.path.join(TestBuilder.getBuilder().getWorkspace(),'result-%s'%TestBuilder.getBuilder().getProperty('starttime'))
+            report_path = os.path.join(TestBuilder.getBuilder().getWorkspace(),'report')
+            result_path = os.path.join(report_path,'result-%s'%TestBuilder.getBuilder().getProperty('starttime'))
             src =  os.path.join(os.path.join(result_path,'all'),testcase_result_folder)
             if info[0] == 'addFailure':
                 logger.debug('distribute add failed')
@@ -54,7 +79,7 @@ def handleResult(info,path,sessionStatus,isUpload):
                 logger.debug('distribute add error:')
                 dest = os.path.join(os.path.join(result_path,'error',testcase_result_folder))
             if (src is not None and dest is not None):
-                flag =  _copyFilesToOtherFolder(src, dest)
+                flag =  _copyFilesToOtherFolder(src, dest,info[1][1])
                 f = False
                 if flag:
                     f = _saveLog(dest)
@@ -93,14 +118,16 @@ def zipLog(name,dest):
     zipName = '%s/%s.%s'%(dest,name,'zip')
     zipFolder(logfolder,zipName)
 
-def _copyFilesToOtherFolder(src, dest):
+def _copyFilesToOtherFolder(src, dest,info):
     '''Copy test failures or error case from source folder to destination folder.
     Keyword arguments:
     src -- Path of source folder. (should not be none)
     dest -- Path of destination folder(should not be none)
-     '''
+    '''
     try:
+        rightPath = info.checker.expectResult.getCurrentCheckPoint()
         shutil.copytree(src, dest)
+        shutil.copy2(rightPath,dest)
         return True
     except:
         return False

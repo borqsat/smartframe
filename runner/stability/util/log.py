@@ -1,9 +1,12 @@
-#!/usr/bin/env python
-import logging
-import time
+'''
+EpyDoc
+@version: $id$
+@author: U{borqsat<www.borqs.com>}
+@see: null
+'''
+
+import logging,time,os,threading,sys
 import logging.handlers
-import os
-import threading
 
 #File Level
 FILE_LOG_LEVEL="DEBUG"
@@ -29,9 +32,9 @@ class Logger:
         self._logger = logging.getLogger("SmartRunner")
         self._logger.setLevel(LEVELS[level])
         self._formatter = logging.Formatter("[%(asctime)s] - %(levelname)s : %(message)s",'%Y-%m-%d %H:%M:%S')
-        self._formatterc = logging.Formatter("%(message)s")      
+        self._formatterc = logging.Formatter("%(message)s")
         self.add_file_logger()
-        self.add_console_logger()      
+        self.add_console_logger()
 
     def add_file_logger(self, logFile="./log/test.log", file_level="DEBUG"):
         '''Generate file writer [RotatingFileHandler]'''
@@ -41,7 +44,7 @@ class Logger:
         fh.setFormatter(self._formatter)
         self._logger.addHandler(fh)
 
-    def add_console_logger(self, console_level="DEBUG"):
+    def add_console_logger(self, console_level="INFO"):
         '''Generate console writer [StreamHandler]'''
         ch = logging.StreamHandler()
         ch.setLevel(LEVELS[console_level])
@@ -49,7 +52,7 @@ class Logger:
         self._logger.addHandler(ch)
 
     @staticmethod
-    def getLogger(level="INFO"):
+    def getLogger(level="DEBUG"):
         if(Logger._instance==None):
             Logger._mutex.acquire()
             if(Logger._instance==None):
