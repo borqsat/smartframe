@@ -73,10 +73,10 @@ class CommandOptions(object):
 
     def showUsage(self):
         print 'Usage:'
-        print 'monkeyrunner starttest.py --testcase productname.cases.testClassName.testMethodName --product productname'
-        print 'monkeyrunner starttest.py --plan productname/plan/planfilename --product productname --cycle 10 --uploadresult'
+        print 'monkeyrunner runtest.py --testcase productname.cases.testClassName.testMethodName --product productname'
+        print 'monkeyrunner runtest.py --plan productname/plan/planfilename --product productname --cycle 10 --uploadresult'
         print 'All supported arguments:'
-        print 'monkeyrunner starttest.py '
+        print 'monkeyrunner runtest.py '
         print '                         [--testcase casename]'
         print '                         [--plan planfile]'
         print '                         [--cycle number]'
