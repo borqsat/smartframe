@@ -1,8 +1,20 @@
+'''
+EpyDoc
+@version: $id$
+@author: U{borqsat<www.borqs.com>}
+@see: null
+'''
+
 import datetime,traceback,time,os,shutil,threading,uuid,Queue,hashlib,urllib2
 from stability.util.log import Logger
 from builder import TestBuilder
 from devicemanager import DeviceManager
 import minjson
+import ConfigParser
+
+RESULT_SERVER_URL = 'http://192.168.7.212:8081'
+SERVER_AUTH_URL = 'http://192.168.7.212:8080/user/auth'
+CONFIG_FILE = os.path.join('%s%s%s' % (os.path.dirname(os.path.dirname(__file__)),os.sep,'sysconfig'))
 
 def _openFile(path):
     f = None
@@ -17,14 +29,18 @@ def _openFile(path):
             f.close()
 
 class SendUtils(object):
-    _server_url = 'http://192.168.7.212:8081'
+    _config = ConfigParser.ConfigParser()
+    _config.read(CONFIG_FILE)
+    _server_url = _config.get('server','result_update_url')
+    _auth_url = '%s%s%s' % (_config.get('server','server_auth_url'),os.sep,'user/auth')
+    _username = _config.get('server','username')
+    _password = _config.get('server','password')
     _session_create_url = _server_url + '/test/session/%s/create'
     _session_update_url = _server_url + '/test/session/%s/update'
     _caseresult_create_url = _server_url + '/test/caseresult/%s/%s/create'
     _caseresult_update_url = _server_url + '/test/caseresult/%s/%s/update'
     _upload_file_url = _server_url + '/test/caseresult/%s/%s/fileupload'
-    _auth_url = 'http://192.168.7.212:8080/user/auth'
-    _auth_field = {'appid':'01','username':'borqsat','password':'654321'}
+    _auth_field = {'appid':'01','username':_username,'password':_password}
 
     @staticmethod
     def request(task):
@@ -37,9 +53,11 @@ class SendUtils(object):
         if task.has_key('exttype'):
             exttype = task['exttype']
             #exttype = '{left:1,top:2,width:3:height:4}'
-        logger.debug('url:'+url+' type:'+content_type+' method:'+method+'exttype: '+ exttype)   
-        SendUtils._doCommonRequest(url,postdata,content_type,method,exttype)
-
+            logger.debug('url:'+url+' type:'+content_type+' method:'+method+' exttype: '+ exttype)
+            SendUtils._doCommonRequest(url,postdata,content_type,method,ext_type=exttype)
+        else:
+            SendUtils._doCommonRequest(url,postdata,content_type,method)
+            
     @staticmethod
     def _doCommonRequest(url,postdata,content_type,method,ext_type=None):
         '''
@@ -73,8 +91,11 @@ class SendUtils(object):
             #the content type of data application/json application/zip image/png
             logger.debug('add content_type!')
             request.add_header('Content-Type',content_type)
-            #add picture type expect img or the img of error screen 
-            request.add_header('Ext-Type',ext_type)
+            logger.debug('add Ext_type!')
+            logger.debug(ext_type)
+            #add picture type expect img or the img of error screen
+            if ext_type:
+                request.add_header('Ext-Type',ext_type)
             #the content type of feedback from server
             logger.debug('add Accept!')
             request.add_header('Accept', 'application/json')
@@ -94,7 +115,7 @@ class SendUtils(object):
 
         except Exception,e:
             #all exception.urllib2.URLError: <urlopen error timed out>...
-            self.logger.debug(e)
+            logger.debug(e)
             #logger.debug('Do http request, got error: ' + e)
             return
         finally:
@@ -103,18 +124,18 @@ class SendUtils(object):
                 f.close()
 
 class ResultSender(object):
-    '''Class for upload data to server.Support JSON and application/zip and image/png.
+    '''Class for uploading data to server.Support JSON and application/zip and image/png.
     '''
     __instance = None 
     __mutex = threading.Lock()
 
     def __init__(self):
         self.logger = Logger.getLogger()
-        self.tid = 0
-        self.queue = Queue.Queue()
-        self.sessionId = str(uuid.uuid1())
         self.token = self.getToken()
         assert self.token,'token is none'
+        self.tid = 0
+        self.queue = Queue.Queue(30)
+        self.sessionId = str(uuid.uuid1())
         self.addTask(sessionStatus='sessionstart')
 
     def getToken(self):
@@ -220,7 +241,7 @@ class ResultSender(object):
                 elif info[0] == 'addSuccess':
                     logger.debug('********************add success***********************')
                     url = (SendUtils._caseresult_update_url) % (sid,tid)
-                    _time = time.strftime('%Y-%m-%d %H:%M:%S  ', time.localtime(time.time()))
+                    _time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
                     postData = {'result':'pass','time':_time,'traceinfo':'N/A'}
                     contentType = 'application/json'
                     method = 'POST'
@@ -228,7 +249,7 @@ class ResultSender(object):
                 elif info[0] == 'addFailure':
                     logger.debug('********************add failure***********************')
                     resultUrl = (SendUtils._caseresult_update_url) % (sid,tid)
-                    resultTime = time.strftime('%Y-%m-%d %H:%M:%S  ', time.localtime(time.time()))
+                    resultTime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
                     traceInfo = ResultSender._trace_to_string((info[1][2],info[1][1]))
                     resultPostData = {'result':'fail','time':resultTime,'traceinfo':traceInfo}
                     resultContentType = 'application/json'
@@ -237,10 +258,12 @@ class ResultSender(object):
                     #log file
                     url = (SendUtils._upload_file_url) % (sid,tid)
                     #logfolder = os.path.join(info[1][1].worker.store.getFailDir(),'log')
+                    #TODO 20121108
                     case_name = '%s.%s' %(type( info[1][1]).__name__,  info[1][1]._testMethodName)
                     case_starttime = info[1][0].case_start_time
                     testcase_result_folder = '%s-%s'%(case_name,case_starttime)
-                    result_path = os.path.join(TestBuilder.getBuilder().getWorkspace(),'result-%s'%TestBuilder.getBuilder().getProperty('starttime'))      
+                    report_path =  os.path.join(TestBuilder.getBuilder().getWorkspace(),'report')
+                    result_path = os.path.join(report_path,'result-%s'%TestBuilder.getBuilder().getProperty('starttime'))      
                     dest = os.path.join(os.path.join(result_path,'fail',testcase_result_folder))
                     zipName = '%s.%s'%(testcase_result_folder,'zip')
                     logPath = os.path.join(dest,zipName)
@@ -248,12 +271,20 @@ class ResultSender(object):
                     logContentType = 'application/zip'
                     logMethod = 'PUT'
                     failFileRequest = {'url':url,'data':logPostData,'content_type':logContentType,'method':logMethod}
-                    logger.debug('except file path: ')
-                    rightPath = info[1][1].checker.expectResult.getCurrentCheckPoint()
-                    rightPostData = _openFile(rightPath)
-                    expectFileRequest = {'url':url,'data':rightPostData,'content_type':'image/png','method':'PUT','exttype':'expect'}
+                    ####
+                    ##logger.debug('except file path: ')
+                    ##rightPath = info[1][1].checker.expectResult.getCurrentCheckPoint()
+                    ##rightPostData = _openFile(rightPath)
+                    ##expectFileRequest = {'url':url,'data':rightPostData,'content_type':'image/png','method':'PUT','exttype':'expect'}
+                    #start send expect full snapshot
+                    rightFullPath = info[1][1].checker.expectResult.getCurrentCheckPointParent()
+                    dirs,rightFullName =  os.path.split(rightFullPath)
+                    rightFullData = _openFile(rightFullPath)
+                    expectFullRequest = {'url':url,'data':rightFullData,'content_type':'image/png','method':'PUT','exttype':'expect:'+rightFullName}
+                    logger.debug('ready to send expect full snapshot with corrdinates')
+                    logger.debug(rightFullPath)                    
                     logger.debug('********************end failure***********************')
-                    return [resultRequest,failFileRequest,expectFileRequest]
+                    return [resultRequest,failFileRequest,expectFullRequest]
 
                 elif info[0] == 'addError':
                     logger.debug('********************add error***********************')
@@ -271,9 +302,10 @@ class ResultSender(object):
                 tid = caseresult_id
                 url = (SendUtils._upload_file_url) % (sid,tid)
                 postData = _openFile(file_path)
+                dirs,currentSnapshotName = os.path.split(file_path)
                 contentType = 'image/png'
                 method = 'PUT'
-                return [{'url':url,'data':postData,'content_type':contentType,'method':method}]
+                return [{'url':url,'data':postData,'content_type':contentType,'method':method,'exttype':'current:'+currentSnapshotName}]
 
     @classmethod
     def _trace_to_string(cls,traceinfo):
@@ -301,7 +333,7 @@ class ResultSender(object):
                 length += 1
                 tb = tb.tb_next
             return length
-
+ 
 class Sender(threading.Thread):
     def __init__(self,q):
         threading.Thread.__init__(self)
@@ -311,13 +343,31 @@ class Sender(threading.Thread):
 
     def run(self):
         while not self.isStop:
+            #if don't get tid from server. Can create thread for each request.
+            try:
+                self.logger.debug('>>>task queue size')
+                self.logger.debug(str(self.task_queue.qsize()))
+                job = self.task_queue.get(timeout=300)
+                self.logger.debug('>>>sender thread got a task')
+                SendUtils.request(job)
+                self.logger.debug('>>>sender thread finished a task')
+            except:
+                self.stop()
+                break
+            finally:
+                self.task_queue.task_done()
+
+    def run11(self):
+        while not self.isStop:
             if self.task_queue.qsize() > 0:
-                job = self.task_queue.get()
+                job = self.task_queue.get(timeout=30)
                 #if don't get tid from server. Can create thread for each request.
                 try:
-                    self.logger.debug('******sender thread got a task********')
+                    self.logger.debug('>>>sender thread got a task')
                     SendUtils.request(job)
-                    self.logger.debug('******sender thread finished a task********')
+                    self.logger.debug('>>>sender thread finished a task')
+                except:
+                    self.stop()
                 finally:
                     self.task_queue.task_done()
 

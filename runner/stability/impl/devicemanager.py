@@ -1,6 +1,11 @@
-#!/usr/bin/env python
-import time,sys,os
-import threading
+'''
+EpyDoc
+@version: $id$
+@author: U{borqsat<www.borqs.com>}
+@see: null
+'''
+
+import time,sys,os,threading
 from device import AndroidDevice
 from stability.util.log import Logger
 

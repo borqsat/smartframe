@@ -1,0 +1,23 @@
+#idle time between user action
+[time]
+after_launch_time = 3
+after_press_time = 1
+after_touch_time = 1
+after_input_time = 0.5
+after_drag_time = 1
+after_shellcmd_time = 2
+expect_interval_time = 3
+expect_timeout = 9
+exists_interval_time = 2
+exists_timeout = 4
+longpress_time = 2
+short_time = 1
+[log]
+path = '/data/log/aplog,/data/log/aplog.1'
+
+[server]
+username = bhb
+password = 123456
+###Dont change below option
+result_update_url = http://ats.borqs.com/smartapi
+server_auth_url =  http://ats.borqs.com/smartquery

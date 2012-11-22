@@ -1,4 +1,10 @@
-#!/usr/bin/env python
+'''
+EpyDoc
+@version: $id$
+@author: U{borqsat<www.borqs.com>}
+@see: null
+'''
+
 import time, sys, os, shutil, datetime, string, uuid
 from com.android.monkeyrunner import MonkeyRunner, MonkeyDevice
 from stability.util.log import Logger
@@ -19,6 +25,8 @@ def _getMonkeyDevice(serial=None):
     global _device
     reconnect = False
     if _device is None:
+        logger = Logger.getLogger()
+        logger.debug('Device is None. Got device again...')
         reconnect = True
     else:
         try:
@@ -31,6 +39,10 @@ def _getMonkeyDevice(serial=None):
         else:
             _device = MonkeyRunner.waitForConnection(timeout=15, deviceId=serial)
     return _device
+
+def reconnect(msg=None):
+    global _device
+    _device = None
 
 # Device STATE CODES
 DEVICE_DISCONNECTED = 0x00000000
@@ -62,13 +74,13 @@ class AndroidDevice:
         else:
             self.properties = None
             self._state = DEVICE_ERROR
-        return self          
+        return self
 
     def resumeConnect(self):
         self.logger.debug('******************************resume connect*********************************')
         self.impl = _getMonkeyDevice(self.serial)
         self._state = DEVICE_CONNECTED
-        return self 
+        return self
 
     def getDeviceId(self):
         return str(uuid.uuid1())
@@ -96,8 +108,10 @@ class AndroidDevice:
                 self.logger.debug(k + ' = ' + properties[k])
         except Exception, e:
             self.logger.debug('Exception during retrieving properties!')
+            self.logger.debug('Adb connection error!')
+            global _device
+            _device = None
         return properties
-
 
     def convert_to_screen_rect(self, rect):
         left = rect[0]
@@ -112,12 +126,12 @@ class AndroidDevice:
         # check if the rectangle is in the screen
         #self.assertTrue(0<=left and left < right and right <= self.display_width)
         #self.assertTrue(0<=top and top < bottom and bottom <= self.display_height)
-        return (left, top, right-left, bottom-top)   
+        return (left, top, right-left, bottom-top)
 
     def getState(self):
         return self._state
 
-    def _pressSeq(self, keySeq):
+    def _pressSeq(self, keySeq,interval=None):
     #@param keySeq: eg:'up,up,down'
         seq = string.lower(keySeq)
         len(seq)
@@ -125,7 +139,8 @@ class AndroidDevice:
         for event in eventList:
             event = event.strip()
             self._press(event)
-            MonkeyRunner.sleep(1)
+            if interval:
+                MonkeyRunner.sleep(interval)
 
     def _press(self, keyEvent):
     #@parm keyEvent: single key event
@@ -150,49 +165,47 @@ class AndroidDevice:
         elif keyEvent == 'back':
             key = 'KEYCODE_BACK'
             self.logger.debug('KEYCODE_DPAD_BACK')
-
-        self.impl.press(key, 'DOWN_AND_UP')
-        self.sleep(2)
+        try:
+            self.impl.press(key, 'DOWN_AND_UP')
+        except:
+            self.logger.debug('Error during press key!!!')
 
     def sleep(self,tsec):
         MonkeyRunner.sleep(tsec)
         return self
 
-    def startActivity(self, component=None, flags=None):
+    def startActivity(self, component, flags,data,action,uri,mimetype,categories,extras):
         try:
-            self.logger.debug('Launch activity with component: {%s}' % component)
-            self.impl.startActivity(component=component,flags=flags)
-            MonkeyRunner.sleep(3)
+            self.impl.startActivity(component=component, flags=flags,data=data,action=action,uri=uri,mimetype=mimetype,categories=categories,extras=extras)
         except:
-            self.logger.debug('Error during startActivity with component name: {%s} !!!' % component)
+            self.logger.debug('Error during startActivity with component name: {%s} !!!' % 'fail')
 
-    def pressKey(self, keyseq):
+    def pressKey(self, keyseq,interval=None):
         try:
             self.logger.debug('Press key: %s'%(keyseq) )
-            self._pressSeq(keyseq)
+            self._pressSeq(keyseq,interval=interval)
         except:
-            self.logger.debug('Error during pressKey!!!')  
+            self.logger.debug('Error during pressKey!!!')
 
     def drag(self,start,end,time,steps):
         try:
             self.logger.debug('Drag.')
-            self.impl.drag(start=start,end=end,time=time,steps=steps)
+            self.impl.drag(start,end,time,steps)
         except:
-            self.logger.debug('Error during DragDrop!!!')  
+            self.logger.debug('Error during DragDrop!!!')
 
     def touch(self,x,y):
         try:
             self.logger.debug('Touch.')
             self.impl.touch(x,y,'DOWN_AND_UP')
-            MonkeyRunner.sleep(3)
         except:
-            self.logger.debug('Error during touch!!!')  
+            self.logger.debug('Error during touch!!!') 
 
     def typeWord(self,content):
         try:
             self.logger.debug('type word.')
             self.impl.type(content)
-            MonkeyRunner.sleep(3)
+            #MonkeyRunner.sleep(3)
         except:
             self.logger.debug('Error during typeWord!!!')
 
@@ -214,12 +227,13 @@ class AndroidDevice:
             # Writes the screenshot to a file
             result.writeToFile(filePath, ext)
         except:
-            self.logger.debug('Error during SnapShot!!!')  
+            self.logger.debug('Error during SnapShot!!!')
 
     def adbcommand(self, command):
         try:
             # Takes a screenshot
             self.logger.debug('ADB Shell command.' )
             result = self.impl.shell(command)
+            return result
         except:
             self.logger.debug('Error during adb command!!!')

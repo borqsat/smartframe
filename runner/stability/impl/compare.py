@@ -1,4 +1,9 @@
-#!/usr/bin/env python
+'''
+EpyDoc
+@version: $id$
+@author: U{borqsat<www.borqs.com>}
+@see: null
+'''
 
 from PIL import Image, ImageChops
 import sys, math, operator, os

@@ -1,0 +1,5 @@
+##tests format > package.package.file.class.method = count
+[tests]
+#bkb.cases.phone.PhoneTest.testMOCall = 1
+bkb.cases.message.MessageTest.testSMSSend = 500
+#bkb.cases.email.EmailTest.testSendEmail = 1

@@ -1,0 +1,3 @@
+##tests format > package.package.file.class.method = count
+[tests]
+bkb.cases.message.MessageTest.testSMSSend = 2

@@ -20,15 +20,18 @@ def isRegionMatch(src,sub,similarity=0.7,msg=None):
     @return: True--If sub image can be found in src image . 
                False--If sub image can not be found in src image or exception was thrown.
     '''
+    result = False
     try:
         recognizer = Finder(src)
         recognizer.find(sub,similarity)
+        if recognizer.hasNext():
+            result = True
+        return result
     except:
         return False
-    if recognizer.hasNext():
-        return True
-    else:
-        return False
+    finally:
+        if recognizer != None:
+            recognizer.destroy() # release the memory used by finder
         
 def getRegionCenterPoint(src,sub,similarity=0.7,msg=None):
     '''
@@ -44,18 +47,21 @@ def getRegionCenterPoint(src,sub,similarity=0.7,msg=None):
     @param msg:a custom argument.  
     @return: (x-coordinate,y-coordinate)--the center point coordinates of the matched region in the src image
              None--If sub image can not be found in src image or exception was thrown.
-    '''   
+    '''
+    result = None
     try:
         recognizer = Finder(src)
         recognizer.find(sub,similarity)
+        if recognizer.hasNext():
+            region = recognizer.next()
+            point = region.getCenter()
+            result = (point.getX(),point.getY())
+        return result
     except:
         return None
-    if recognizer.hasNext():
-        region = recognizer.next()
-        point = region.getCenter()
-        return (point.getX(),point.getY())
-    else:
-        return None
+    finally:
+        if recognizer != None:
+            recognizer.destroy() # release the memory used by finder       
     
 def getRegionTopleftPoint(src,sub,similarity=0.7,msg=None):
     '''
@@ -71,18 +77,21 @@ def getRegionTopleftPoint(src,sub,similarity=0.7,msg=None):
     @param msg:a custom argument.  
     @return: (x-coordinate,y-coordinate)--the left top point coordinates of the matched region in the src image
              None--If sub image can not be found in src image or exception was thrown.
-    '''   
+    '''
+    result = None  
     try:
         recognizer = Finder(src)
         recognizer.find(sub,similarity)
+        if recognizer.hasNext():
+            region = recognizer.next()
+            point = region.getTopLeft()
+            result = (point.getX(),point.getY())
+        return result
     except:
         return None
-    if recognizer.hasNext():
-        region = recognizer.next()
-        point = region.getTopLeft()
-        return (point.getX(),point.getY())
-    else:
-        return None
+    finally:
+        if recognizer != None:
+            recognizer.destroy() # release the memory used by finder
 
 def assertExists(fullImgPath,subImgPath,msg=None):
     full = Finder(fullImgPath)

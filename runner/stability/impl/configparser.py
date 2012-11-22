@@ -1,11 +1,21 @@
+'''
+EpyDoc
+@version: $id$
+@author: U{borqsat<www.borqs.com>}
+@see: null
+'''
+
 import os,string,sys
 class ConfigParser(object):
-    CONFIG_FILE_NAME = 'plan' 
+    #CONFIG_FILE_NAME = 'plan' 
     @staticmethod
     def readTests(path):
         return readTestsFromConfigFile(path)
 
-        
+    @staticmethod
+    def readTestActionConfig(path):
+        readTestActionConfigFromFile(path)
+
 def readTestsFromConfigFile(name):
     if not os.path.exists(name):
         print >>sys.stderr, 'Config file does not exist.'
@@ -71,4 +81,3 @@ def _getOption(s):
         return (string.strip(ls[0]), string.strip(ls[1]))
     else:
         return None
-

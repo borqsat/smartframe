@@ -1,7 +1,14 @@
+'''
+EpyDoc
+@version: $id$
+@author: U{borqsat<www.borqs.com>}
+@see: null
+'''
+
 from pubsub import pub
-from stability.util.log import Logger
 from builder import TestBuilder
 from resulthandler import ResultHandler
+from device import reconnect
 
 def collectResult(func):
     def wrap(*args, **argkw):
@@ -55,6 +62,7 @@ def onTopicMemoryTrack():
 #print 'init pubsub listener begin:'
 handler = ResultHandler()
 pub.subscribe(handler.handle,'collectresult')
+#pub.subscribe(reconnect,'reconnecttopic')
 #print 'init pubsub listener over:'
 #for (k,v) in mapper.items():
 #    print '-'+str(k)
