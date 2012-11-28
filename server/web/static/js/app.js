@@ -14,13 +14,12 @@ function createSessionList(){
 
 function initMainPage(){
     createSessionList();
-    setTimeout(initMainPage, 15000);
+    setTimeout(initMainPage, 20000);
 }
 
 function viewRun(){
     $('#tabrun').addClass('active');
     $('#tabstop').removeClass('active');
-
     $('#run_cycle_panel').show();
     $('#stop_cycle_panel').hide();    
 }
@@ -28,33 +27,20 @@ function viewRun(){
 function viewStop(){
     $('#tabrun').removeClass('active');
     $('#tabstop').addClass('active');
-
     $('#run_cycle_panel').hide();
     $('#stop_cycle_panel').show();    
 }
 
-function getTop(e) {
-    var offset = e.offsetTop;
-    if (e.offsetParent != null) offset += getTop(e.offsetParent);
-    return offset;
-}
-
-function getLeft(e) {
-    var offset = e.offsetLeft;
-    if (e.offsetParent != null) offset += getLeft(e.offsetParent);
-    return offset;
-}
-
 function createCaseSnaps(sid, tid){
-
     var $snaplist = $('#img_list'); 
     $snaplist.html('');
+
     var zoom = 1;
     var wd = parseInt(_appglobal.deviceinfo['width']) >> zoom;
     var ht = parseInt(_appglobal.deviceinfo['height']) >> zoom;
     $('#history_div').dialog({title:"case snapshots",
-                              height: ht + 120,
-                              width: 2*wd + 60,
+                              height: ht + 160,
+                              width: 2*wd + 80,
                               resizable:false,
                               modal: true});
 
@@ -73,13 +59,12 @@ function createCaseSnaps(sid, tid){
                     for(var d in data.results.snaps) {
                         ++idx;
                         var $snapli = $('<div>');
-                        var $igdiv = $('<div>').attr('style', 'float:left');
-                        var $icgdiv = $('<div>').attr('style', 'float:left');                                
+                        var $igdiv = $('<div>');
+                        var $icgdiv = $('<div>');                                
                         var $ig = new Image();
                         var $icg = new Image();
-                        $snaptitle = $('<div>');
-                        $snaptitle.html('<h4>('+idx+'/'+total+')'+ data.results.snaps[d]['title']+'</h4>');
-                        //$snapli.append($snaptitle); 
+                        var title = '';
+                        var rect = '';
                         $ig.src = 'data:image/png;base64,' + data.results.snaps[d]['data'];
                         $ig.setAttribute("id","snap"+idx);                        
                         $ig.setAttribute("width",wd+"px");
@@ -88,10 +73,11 @@ function createCaseSnaps(sid, tid){
                             $icg.src = 'data:image/png;base64,' + data.results.checksnap['data'];
                             $icg.setAttribute("width", wd + "px");
                             $icg.setAttribute("height", ht + "px");
-                            $ig.setAttribute('class','thumbnailr');
-                            $icg.setAttribute('class','thumbnaile'); 
-                            var rect = data.results.checksnap['title']
-                            rect = rect.substring(rect.indexOf('(')+1, rect.indexOf(')'));
+                            $ig.setAttribute('class','thumbnail thumbnailr');
+                            $icg.setAttribute('class','thumbnail thumbnaile'); 
+                            title = data.results.checksnap['title']
+                            rect = title.substring(title.indexOf('(')+1, title.indexOf(')'));
+                            title = title.substring(0, title.indexOf('('))
                             var x = parseInt(rect.substring(rect.indexOf('x')+1, rect.indexOf('y'))) >> zoom;
                             var y = parseInt(rect.substring(rect.indexOf('y')+1, rect.indexOf('w'))) >> zoom;
                             var w = parseInt(rect.substring(rect.indexOf('w')+1, rect.indexOf('h'))) >> zoom;
@@ -99,21 +85,33 @@ function createCaseSnaps(sid, tid){
                             $igdiv.append($ig);
                             $icgdiv.append($icg);   
                             var $pdiv = $('<div>').attr('style','border:3px solid green; position:absolute; top:'+y+'px; left:'+x+'px; width:' +w+'px; height:'+h+'px');
-                            
                             $icgdiv.append($pdiv);
                             $snapli.append($icgdiv); 
                             $snapli.append($igdiv);
+                            $icgdiv.attr('style','float:left');
+                            $igdiv.attr('style','float:left');
                             $snapli.attr('class','active item');                                                 
                         } else {
                             $ig.setAttribute('class','thumbnail');
-                            $igdiv.append($ig); 
+                            title = data.results.snaps[d]['title']
+                            rect = title.substring(title.indexOf('(')+1, title.indexOf(')'));
+                            title = title.substring(0, title.indexOf('('))
+                            var x = parseInt(rect.substring(rect.indexOf('x')+1, rect.indexOf('y'))) >> zoom;
+                            var y = parseInt(rect.substring(rect.indexOf('y')+1, rect.indexOf('w'))) >> zoom;
+                            var w = parseInt(rect.substring(rect.indexOf('w')+1, rect.indexOf('h'))) >> zoom;
+                            var h = parseInt(rect.substring(rect.indexOf('h')+1)) >> zoom;
+                            $igdiv.append($ig);
+                            var $pdiv = $('<div>').attr('style','border:3px solid green; position:absolute; top:'+y+'px; left:'+x+'px; width:' +w+'px; height:'+h+'px');
+                            $igdiv.append($pdiv).attr('style','float:left'); 
                             $snapli.append($igdiv); 
                             $snapli.attr('class','item');                                     
-                        } 
-                        $snapli.append($snaptitle); 
-                        $snaplist.append($snapli);                              
+                        }
+                         $snaptitle = $('<div>');
+                         $snaptitle.html('<h3>('+idx+'/'+total+')'+ title +'</h3>');
+                         //$snapli.append($snaptitle); 
+                         $snaplist.append($snapli);                              
                     }
-                    $('#history_div').carousel({"pause":"hover"});
+                    $('#history_div').carousel({"interval":100000,"pause":"hover"});
                 }
             );
 
@@ -123,7 +121,7 @@ function createCaseSnaps(sid, tid){
 function createDetailTable(ids){
 
     var $div_detail = $("#cases_div");
-    var $tb = $('<table>').attr('id', ids).attr('class','table table-striped');
+    var $tb = $('<table>').attr('id', ids).attr('class','table table-striped table-hover');
     var $th = '<thead>'+
               '<tr>'+
               '<th align="left">id</th>'+
@@ -277,8 +275,10 @@ function fillDetailTable(data, ids, tag){
                                      "<div style=\"text-align: right; color:red;cursor:pointer\">"+
                                      "<a onfocus=\"this.blur();\" onclick=\"document.getElementById('div_"+ids+"_"+i+"').style.display ='none' \"> [x] </a>"+"</div>"+
                                      "<pre><h5>"+ctraceinfo+"</h5></pre> </div>"+"</td>"+
-                                     "<td><a href=\""+WebServerURL+"/test/caseresult/"+csid+"/"+ctid+"/log\">log</a> </td>"+
-                                     "<td><a id=\"f_"+ctid+"_"+i+"\" href=\"javascript:showHistoryDiv('"+csid+"','"+ctid+"');\">snapshot</a></td>"+
+                                     "<td></td>"+
+                                     "<td></td>"+
+                                     //"<td><a href=\""+WebServerURL+"/test/caseresult/"+csid+"/"+ctid+"/log\">log</a> </td>"+
+                                     //"<td><a id=\"f_"+ctid+"_"+i+"\" href=\"javascript:showHistoryDiv('"+csid+"','"+ctid+"');\">snapshot</a></td>"+
                                      "</tr>");
 
            } else if (cresult == 'running' || cresult == 'pass'){
@@ -338,20 +338,21 @@ function arrayUnique(data){
 }  
 
 function createAllTestList(key) {
-      var allTableId = 'alltable_'+key.replace('cycle:','');
+      var allTableId = 'alltable_' + key;
       invokeWebApi('/test/caseresult/'+key,
                    {},
-                  function(data){
-                      createDeviceInfo(data);
-                      if(data['results'] !== undefined && data['results']['endtime'] !== 'N/A') {
-                         createHistoryCaseSummary(data);
-                         createDetailTable(allTableId);
-                         fillDetailTable(data,allTableId,'all');                       
-                      } else {
-                         createLiveCaseSummary(data);
-                         createDetailTable(allTableId);
-                         fillDetailTable(data,allTableId,'all');                          
-                      }
+                   function(data){
+                       createDeviceInfo(data);
+                       if(data['results'] !== undefined && data['results']['endtime'] !== 'N/A') {
+                           createHistoryCaseSummary(data);
+                           createDetailTable(allTableId);
+                           fillDetailTable(data,allTableId,'all');                
+                       } else {
+                           createLiveCaseSummary(data);
+                           createDetailTable(allTableId);
+                           fillDetailTable(data,allTableId,'all');           
+                           setTimeout("createAllTestList(\""+key+"\")",20000);
+                       }
 
                   });
 }
@@ -367,6 +368,7 @@ function createDeviceInfo(data) {
     var passId = 'pass_'+key;
     var errorId = 'error_'+key;
 
+    $('#device_div').html('');
     var $dev_table = $('<table>').attr('class','table table-bordered').attr('id','dtable'+key);
     var $th = '<thead><tr><th>product</th><th>build</th><th>width</th><th>height</th></tr></thead>';
     var $tbody = '<tbody></tbody>';
@@ -389,6 +391,7 @@ function createLiveCaseSummary(data) {
     var key = data['sid'];
     var allId = "o_"+key;
 
+    $('#summary_div').html('');
     var $summary_table = $('<table>').attr('class','table table-bordered').attr('id','stable'+key);
     var $th = '<thead><tr><th>planname</th><th>owner</th><th>statrtime</th><th>runtime</th><th></th></tr></thead>';
     var $tbody = '<tbody></tbody>';
@@ -415,7 +418,7 @@ function createHistoryCaseSummary(data) {
     var failId = 'fail_'+key;
     var passId = 'pass_'+key;
     var errorId = 'error_'+key;
-
+    $('#summary_div').html('');
     var $summary_table = $('<table>').attr('class','table table-bordered').attr('id','stable'+key);
     var $th = '<thead><tr><th>planname</th><th>owner</th><th>statrtime</th><th>runtime</th><th>all</th><th>pass</th><th>fail</th><th>error</th></tr></thead>';
     var $tbody = '<tbody></tbody>';
@@ -484,7 +487,7 @@ function createHistoryCaseSummary(data) {
 }
 
 //create html data content
-function createRunningSessionDiv(product_list,product_cycle_product,product_cycle_planname,product_cycle_owner,product_cycle_starttime,product_cycle_runtime,product_cycle_revision){
+function createRunningSessionDiv(product_list,product_cycle_id,product_cycle_product,product_cycle_planname,product_cycle_owner,product_cycle_starttime,product_cycle_runtime,product_cycle_revision){
 
     var plist = product_list;
     var $cycle_panel = $("#run_cycle_panel");
@@ -494,8 +497,8 @@ function createRunningSessionDiv(product_list,product_cycle_product,product_cycl
         if($("#ongoing"+plist[i]).length <=0 ){
             var $product_div = $('<div>').attr('id','ongoing'+plist[i]);
             //var $product_label = "<span class=\"label label-info\">"+plist[i]+"</span><span align=right>";
-            var $product_table = $('<table>').attr('class','table table-bordered').attr('id','otable'+plist[i]);
-            var $th = '<thead><tr><th width=\'50px\'>product</th><th width=\'250px\'>build</th><th width=\'50px\'>planname</th><th>owner</th><th>statrtime</th><th>runtime</th></tr></thead>';
+            var $product_table = $('<table>').attr('class','table table-bordered table-striped table-hover').attr('id','otable'+plist[i]);
+            var $th = '<thead><tr><th width=\'50px\'>id</th><th width=\'50px\'>product</th><th width=\'250px\'>build</th><th width=\'50px\'>planname</th><th>owner</th><th>statrtime</th><th>runtime</th></tr></thead>';
             var $tbody = '<tbody></tbody>';
             $product_table.append($th);
             $product_table.append($tbody);
@@ -514,7 +517,8 @@ function createRunningSessionDiv(product_list,product_cycle_product,product_cycl
 
             if($("#"+allId).length<=0){
                 $tr = "<tr>"+
-                      "<td><a href=\"view.html?sid="+key+"\" target=\"_blank\">"+value+"</a></td>"+      
+                      "<td><a href=\"view.html?sid="+key+"\" target=\"_blank\">"+product_cycle_id[key]+"</a></td>"+ 
+                      "<td>"+value+"</td>"+
                       "<td>"+product_cycle_revision[key]+"</td>"+  
                       "<td>"+product_cycle_planname[key]+"</td>"+
                       "<td>"+product_cycle_owner[key]+"</td>"+                        
@@ -542,7 +546,7 @@ function deleteSessionById(sid) {
 }
 
 //create html data content
-function createFinishedSessionDiv(product_list,product_cycle_product,product_cycle_planname,product_cycle_owner,product_cycle_result,product_cycle_starttime,product_cycle_runtime,product_cycle_revision){
+function createFinishedSessionDiv(product_list,product_cycle_id,product_cycle_product,product_cycle_planname,product_cycle_owner,product_cycle_result,product_cycle_starttime,product_cycle_runtime,product_cycle_revision){
 
     var plist = product_list;
     var $cycle_panel = $("#stop_cycle_panel");
@@ -552,8 +556,8 @@ function createFinishedSessionDiv(product_list,product_cycle_product,product_cyc
 
         if($("#stoprun"+plist[i]).length <=0 ){
             var $product_div = $('<div>').attr('id','stoprun'+plist[i]);
-            var $product_table = $('<table>').attr('class','table table-bordered').attr('id','otable'+plist[i]);
-            var $th = '<thead><tr><th width=\'50px\'>product</th><th width=\'150px\'>build</th><th width=\'50px\'>planname</th><th>owner</th><th>statrtime</th><th>runtime</th><th>all</th><th>pass</th><th>fail</th><th>error</th><th></th></tr></thead>';
+            var $product_table = $('<table>').attr('class','table table-bordered table-striped table-hover').attr('id','otable'+plist[i]);
+            var $th = '<thead><tr><th width=\'50px\'>id</th><th width=\'50px\'>product</th><th width=\'150px\'>build</th><th width=\'50px\'>planname</th><th>owner</th><th>statrtime</th><th>runtime</th><th>all</th><th>pass</th><th>fail</th><th>error</th><th></th></tr></thead>';
             var $tbody = '<tbody></tbody>';
             $product_table.append($th);
             $product_table.append($tbody);
@@ -572,7 +576,8 @@ function createFinishedSessionDiv(product_list,product_cycle_product,product_cyc
 
             if($("#"+allId).length<=0){
                 $tr = "<tr>"+
-                      "<td><a href=\"view.html?sid="+key+"\" target=\"_blank\">"+value+"</a></td>"+      
+                      "<td><a href=\"view.html?sid="+key+"\" target=\"_blank\">"+product_cycle_id[key]+"</a></td>"+
+                      "<td>"+value+"</td>"+      
                       "<td>"+product_cycle_revision[key]+"</td>"+
                       "<td>"+product_cycle_planname[key]+"</td>"+                               
                       "<td>"+product_cycle_owner[key]+"</td>"+
@@ -598,7 +603,7 @@ function setRunTime(secs) {
     var result = '';
     if(hour>0) result += hour+'h';
     if(minute>0) result += minute+'m';
-    if(seconds>0) result += seconds+'s'; 
+    if(seconds>=0) result += seconds+'s'; 
     return result; 
 }
 
@@ -626,6 +631,8 @@ function createSessionTable(data){
     var product_stop_cycle_starttime = {};
     var product_run_cycle_owner = {};
     var product_stop_cycle_owner = {};
+    var product_run_cycle_id = {};
+    var product_stop_cycle_id = {};
 
     $.each(data.results.sessions,function(idx,item){
 
@@ -641,6 +648,7 @@ function createSessionTable(data){
         var cycleruntime = item.runtime;
         var cycleendtime = item.endtime;
         var cycleowner = item.user; 
+        var cyclevid = item._id;
 
         if (cycleendtime !== '' && cycleendtime !== 'N/A'){
             product_stop_list[idx] = product;
@@ -655,6 +663,7 @@ function createSessionTable(data){
             product_stop_cycle_imei[cycleid] = cycleimei;
             product_stop_cycle_cyclestarttime[cycleid] = cyclestarttime;
             product_stop_cycle_owner[cycleid] = cycleowner;
+            product_stop_cycle_id[cycleid] = cyclevid;
         } else {
             product_run_list[idx] = product;
             product_run_cycle_product[cycleid] = product;
@@ -665,10 +674,12 @@ function createSessionTable(data){
             product_run_cycle_runtime[cycleid] = cycleruntime;
             product_run_cycle_userid[cycleid] = cycleuserid;
             product_run_cycle_owner[cycleid] = cycleowner;
+            product_run_cycle_id[cycleid] = cyclevid;
         }
     });
 
     createRunningSessionDiv(arrayUnique(product_run_list),
+                            product_run_cycle_id,
                             product_run_cycle_product,
                             product_run_cycle_plan, 
                             product_run_cycle_owner,                           
@@ -677,6 +688,7 @@ function createSessionTable(data){
                             product_run_cycle_revision);
 
     createFinishedSessionDiv(arrayUnique(product_stop_list),
+                            product_stop_cycle_id,
                             product_stop_cycle_product,
                             product_stop_cycle_plan,
                             product_stop_cycle_owner,    

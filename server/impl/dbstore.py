@@ -7,19 +7,25 @@ import hashlib,uuid,base64
 from bson.objectid import ObjectId
 from datetime import datetime
 
+
 class dbStore(object):
     """
     Class dbStore provides the access to MongoDB DataBase
     """
-    def __init__(self, server, port):
+    def __init__(self, dbserver, dbport, mcserver, mcport):
         """
         do the database instance init works
         """
         print 'init db store class!!!'
-        self.db = Connection(server, port)['smartServer']
-        self.fs = gridfs.GridFS(Connection(server, port)['smartFiles'], collection='fs')
-        self.mc = memcache.Client(['127.0.0.1:11211'],debug=0)
+        self.db = Connection(dbserver, dbport)['smartServer']
+        self.fs = gridfs.GridFS(Connection(dbserver, dbport)['smartFiles'], collection='fs')
+        connstr = '%s:%s' % (mcserver, mcport)
+        self.mc = memcache.Client([connstr], debug=0)
         self.snapqueue = {}
+
+    def counter(self, ctype):  
+        ret = self.db.counter.find_and_modify(query={"_id":ctype},update={"$inc":{"next":1}},new=True,upsert=True)
+        return int(ret["next"]); 
 
     def getfile(self,fileId): 
         '''
@@ -47,7 +53,7 @@ class dbStore(object):
         else:
             m = hashlib.md5()
             m.update(password)
-            uid = str(uuid.uuid1())
+            uid = '%05d' % self.counter('userid')
             users.insert({'uid':uid,'appid':appid,'username':user,'password':m.hexdigest(),'info':info})
             return {'uid':uid}
 
@@ -87,16 +93,19 @@ class dbStore(object):
                 tokens.insert({'uid':uid,'token':token,'expires':'2000'})
 
         if token == '':
-            return {'code':1, 'msg':'user or password is incorrect!'}              
+            return {'code':1, 'msg':'user or password is incorrect!'}
         else:
             return {'token':token,'uid':uid}
+
 
     def createTestSession(self, sid, uid, planname, starttime, deviceid, devinfo):
         """
         write a test session record in database
         """
+        _id = self.counter('sessionid')
         session = self.db['session']
-        session.insert({'sid':sid,
+        session.insert({'_id':_id,
+                       'sid':sid,
                        'uid':uid, 
                        'planname':planname,
                        'result':{'total':0,'pass':0,'fail':0,'error':0},
@@ -129,21 +138,40 @@ class dbStore(object):
         """
         users = self.db['user']
         user = 'N/A'
-        rdata = users.find({'uid':uid})
-        for d in rdata:
-            user = d['username']
         session = self.db['session']
-        rdata = session.find({'uid':uid})
+        if uid == '00001':
+            rdata = session.find()
+        else:
+            rdata = session.find({'uid':uid})
         result = {}
-        lists = [{'sid':d['sid'],
-                'user':user,
-                'planname':d['planname'],
-                'result':d['result'],
-                'starttime':d['starttime'],
-                'endtime':d['endtime'],
-                'runtime':d['runtime'],
-                'deviceid':d['deviceid'],
-                'deviceinfo':d['deviceinfo']} for d in rdata]
+        dtnow = datetime.now()
+        lists = []
+        for d in rdata:
+            if d['endtime'] == 'N/A':
+                dttime = self.mc.get(str(d['sid'])+'timestamp')
+                if dttime is None:
+                    idletime = 1800 
+                else:
+                    idle = datetime.strptime(dttime, "%Y-%m-%d %H:%M:%S")
+                    idletime = (dtnow - idle).seconds
+                
+                if idletime >= 1800:
+                    d['endtime'] = 'Break'
+
+            rrdata = users.find({'uid':d['uid']})
+            for dd in rrdata:
+                user = dd['username']
+
+            lists.append({'_id':d['_id'],
+                         'sid':d['sid'],
+                         'user':user,
+                         'planname':d['planname'],
+                         'result':d['result'],
+                         'starttime':d['starttime'],
+                         'endtime':d['endtime'],
+                         'runtime':d['runtime'],
+                         'deviceid':d['deviceid'],
+                         'deviceinfo':d['deviceinfo']})
         result['count'] = len(lists)
         result['sessions'] = lists
         return result
@@ -154,17 +182,31 @@ class dbStore(object):
         """
         users = self.db['user']
         user = 'N/A'
-        rdata = users.find({'uid':uid})
-        for d in rdata:
-            user = d['username']
-
         session = self.db['session']
-        if uid == '001':
+        if uid == '00001':
             rdata = session.find({'sid':sid})
         else:
             rdata = session.find({'sid':sid, 'uid':uid})
+        
+        dtnow = datetime.now()
         for d in rdata:
-            result = {'sid':d['sid'],
+            if d['endtime'] == 'N/A':
+                dttime = self.mc.get(str(d['sid'])+'timestamp')
+                if dttime is None:
+                    idletime = 1800
+                else:
+                    idle = datetime.strptime(dttime, "%Y-%m-%d %H:%M:%S")
+                    idletime = (dtnow - idle).seconds
+
+                if idletime >= 1800:
+                    d['endtime'] = 'Break'
+
+            rrdata = users.find({'uid':d['uid']})
+            for dd in rrdata:
+                user = dd['username']
+
+            result = {'_id':d['_id'],
+                      'sid':d['sid'],
                       'user':user,
                       'planname':d['planname'],
                       'result':d['result'],
@@ -233,9 +275,8 @@ class dbStore(object):
         write a test case resut record in database
         """
         self.snapqueue[sid+'-'+tid] = []
-        self.mc.set(sid+'id',tid)
-        self.mc.set(sid+'name',casename)
-        self.mc.set(sid+'status','start')
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        self.mc.set(sid+'timestamp',timestamp)
         caseresult = self.db['caseresult']
         caseresult.insert({'sid':sid, 'tid':tid, 'casename':casename, 'log':'N/A', 'traceinfo':'N/A','result':'running', 'starttime':starttime, 'endtime':'N/A','snapshots':[], 'checksnap':''})
         session = self.db['session']
@@ -256,7 +297,6 @@ class dbStore(object):
             d1 = datetime.strptime(starttime, "%Y-%m-%d %H:%M:%S")
             d2 = datetime.strptime(endtime, "%Y-%m-%d %H:%M:%S")        
             runtime = (d2 - d1).seconds
-        #self.mc.set(sid+'status','result->'+status)
         if status == 'pass':
             session.update({'sid':sid},{'$inc':{'result.pass':1},'$set':{'runtime':runtime}})
         elif status == 'fail':
@@ -345,4 +385,4 @@ class dbStore(object):
 
         return {'snaps':snaps, 'checksnap':checksnap}
 
-store = dbStore(server='192.168.7.212', port=27017)
+store = dbStore(dbserver='192.168.7.212', dbport=27017, mcserver='127.0.0.1',mcport='11211')

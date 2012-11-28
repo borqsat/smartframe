@@ -155,13 +155,13 @@ a:hover, a:active {
 }  
 */
 .carousel ul {
-    margin: 0;
+  margin: 0;
 }
 
 .thumbnailr {
-  border: 2px solid red;
+  border: 1px solid red;
 }
 
 .thumbnaile {
-  border: 2px solid green;
+  border: 1px solid green;
 }

@@ -1,4 +1,4 @@
-var WebServerURL = "http://ats.borqs.com/smartquery";
+var WebServerURL = "http://"+window.location.host+"/smartquery";
 var SocketURL = "ws://192.168.7.212:8082";
 //function invokeWebApi(cmd, jdata, call){
 //    $.getJSON(WebServerURL+cmd+"?callback=?", jdata, call);

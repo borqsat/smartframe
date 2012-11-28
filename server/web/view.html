@@ -94,9 +94,13 @@
         $(window).load(function(){
             $("#loading").hide();
         });
+        function renderViewPage(sid){
+            createAllTestList(sid);
+        }
+
         $(function(){
             var sid = getRequestParam(window.location.href,'sid');
-            createAllTestList(sid);
+            renderViewPage(sid);
         });
     </script>
 </html>

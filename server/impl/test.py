@@ -4,10 +4,10 @@ def createTestSession(token,sid,planname,starttime, deviceid, deviceinfo):
     ret = store.validToken(token)
     if ret.has_key('uid'):
         uid = ret['uid']
+        store.createTestSession(sid, uid, planname, starttime, deviceid, deviceinfo)
+        return {'results':1}
     else:
-        uid = '001'
-    store.createTestSession(sid, uid, planname, starttime, deviceid, deviceinfo)
-    return {'results':1}
+        return {'errors':{'code':'01','msg':'Invalid token.'}}
 
 def updateTestSession(token,sid,endtime):
     store.updateTestSession(sid, endtime)
@@ -21,25 +21,25 @@ def getTestSessionList(token):
     ret = store.validToken(token)
     if ret.has_key('uid'):
         uid = ret['uid']
+        rdata = store.readTestSessionList(uid)
+        if not rdata is None :
+            return {'results':rdata}
+        else:
+            return {'errors':{'code':404,'msg':'None reuslt.'}}
     else:
-        uid = '001'
-    rdata = store.readTestSessionList(uid)
-    if not rdata is None :
-        return {'results':rdata}
-    else:
-        return {'errors':{'code':404,'msg':'None reuslt.'}}
+        return {'errors':{'code':'01','msg':'Invalid token.'}}
 
 def getTestSessionInfo(token, sid):
     ret = store.validToken(token)
     if ret.has_key('uid'):
         uid = ret['uid']
+        rdata = store.readTestSessionInfo(sid, uid)
+        if not rdata is None :
+            return {'results':rdata}
+        else:
+            return {'errors':{'code':404,'msg':'None reuslt.'}}
     else:
-        uid = '001'
-    rdata = store.readTestSessionInfo(sid, uid)
-    if not rdata is None :
-        return {'results':rdata}
-    else:
-        return {'errors':{'code':404,'msg':'None reuslt.'}}
+        return {'errors':{'code':'01','msg':'Invalid token.'}}
 
 def createCaseResult(token,sid,tid,casename,starttime):
     store.createTestCaseResult(sid, tid, casename, starttime)
