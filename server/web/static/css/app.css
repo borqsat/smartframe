@@ -96,7 +96,7 @@ scrollbar-darkshadow-color: #E3E9ED;/*滚动条暗边框颜色*/
   line-height: 27px;
 }
 
-
+/*
 body {
   padding-top: 50px;
 }
@@ -128,7 +128,7 @@ a.popup_link:hover {
   width: 550px;
 }
 
-/*a.prev, a.next {
+a.prev, a.next {
     display: block;
     float: left;
     width: 30px;
@@ -155,13 +155,17 @@ a:hover, a:active {
 }  
 */
 .carousel ul {
-    margin: 0;
+  margin: 0;
 }
 
-.carousel li img, 
-.carousel li p {
-    background-color: #fff;
-    width: 150px;
-    height: 118px;
-    margin: 10px;
+.thumbnailr {
+  border: 1px solid red;
+}
+
+.thumbnaile {
+  border: 1px solid green;
+}
+
+.prodcut_nav {
+  margin-bottom: 15px;
 }

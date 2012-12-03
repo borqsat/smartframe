@@ -1,4 +1,4 @@
-var WebServerURL = 'http://192.168.7.212:8080';
+var WebServerURL = "http://"+window.location.host+"/smartquery";
 var SocketURL = "ws://192.168.7.212:8082";
 //function invokeWebApi(cmd, jdata, call){
 //    $.getJSON(WebServerURL+cmd+"?callback=?", jdata, call);
@@ -42,7 +42,7 @@ var invokeWebApi = function(apiUrl,dataj,render) {
            if(data['errors'] !== undefined)
               alert(data['errors']['msg']);
            else
-              alert("Web server Internal error!");
+              alert("Web server error code!");
            ajaxend();
         } else {
            render(data);
@@ -70,7 +70,7 @@ var invokeWebApi = function(apiUrl,dataj,render) {
 /*
  * Http POST Request by Jquery Ajax
  */
-var invokeWebApiEx = function(apiUrl,dataj,render) {
+var invokeWebApiEx = function(apiUrl,datap,render) {
  
     var funok=function(data) {
         if(data['results'] === undefined) {
@@ -91,11 +91,10 @@ var invokeWebApiEx = function(apiUrl,dataj,render) {
     var options = {};
     options['beforeSend'] = ajaxstart;
     options['url'] = WebServerURL + apiUrl;
-    options['async'] = false;
     options['type'] = 'POST';
+    options['data'] = JSON.stringify(datap);
+    options['contentType']= "application/json; charset=utf-8";
     options['dataType'] = 'json';
-    options['data'] = JSON.stringify(dataj);
-    options['contentType']= 'application/json';
     options['timeout'] = 15000;
     options['success'] = funok;
     options['error'] = funerror;

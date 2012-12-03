@@ -13,7 +13,7 @@ appweb = Bottle()
 def doRegister():
     """
     URL:/user/register
-    TYPE:http/POST
+    TYPE:http/GET
 
     register a new account to server-side
 
@@ -29,12 +29,15 @@ def doRegister():
     @return: ok-{'results':1}
              error-{'errors':{'code':0,'msg':(string)info}} 
     """
-    jsond = request.json
-    appid = jsond['appid']
-    username = jsond['username']
-    password = jsond['password']
-    userinfo = jsond['info']
-    return wrapResults(userRegister(appid,username,password,userinfo))
+    jsond = request.params
+    if not jsond is None:
+        appid = jsond['appid']
+        username = jsond['username']
+        password = jsond['password']
+        info = {'phone':jsond['info[phone]'],'company':jsond['info[company]'],'email':jsond['info[email]']}
+        return wrapResults(userRegister(appid,username,password,info))
+    else:
+        return wrapResults({"errors":{"msg":"Invalid params!", "code":"03"}})
 
 @appweb.route('/user/auth',method='GET')
 def doAuth():
@@ -55,10 +58,13 @@ def doAuth():
              error-{'errors':{'code':0,'msg':(string)info}} 
     """
     jsond = request.params
-    appid = jsond['appid']
-    username = jsond['username']
-    password = jsond['password']
-    return wrapResults(userAuth(appid,username,password))
+    if not jsond is None:
+        appid = jsond['appid']
+        username = jsond['username']
+        password = jsond['password']
+        return wrapResults(userAuth(appid,username,password))
+    else:
+        return wrapResults({"errors":{"msg":"Invalid params!", "code":"03"}})
 
 @appweb.route('/test/session',method='GET')
 def doGetSessionList():
@@ -79,9 +85,31 @@ def doGetSessionList():
     jsond = request.params
     if not jsond is None:
         token = jsond['token']
+        return wrapResults(getTestSessionList(token))
     else:
-        token = '1122334455667788'
-    return wrapResults(getTestSessionList(token))
+        return wrapResults({"errors":{"msg":"Invalid params!", "code":"03"}})
+
+
+@appweb.route('/test/session/<sid>/delete',method='GET')
+def doDeleteSession(sid):
+    """
+    URL:/test/session/<sid>/delete
+    TYPE:http/GET
+
+    delete a test session from server.
+
+    @type data:JSON
+    @param data:{'token':(string)value}
+    @rtype: JSON
+    @return:ok-{'results':1}
+            error-{'errors':{'code':value,'msg':(string)info}}
+    """
+    jsond = request.params
+    if not jsond is None:
+        token = jsond['token']
+        return wrapResults(deleteTestSession(token, sid))
+    else:
+        return wrapResults({"errors":{"msg":"Invalid params!", "code":"03"}}) 
 
 @appweb.route('/test/caseresult/<sid>',method='GET')
 def doGetSessionInfo(sid):
@@ -101,10 +129,10 @@ def doGetSessionInfo(sid):
     """
     jsond = request.params
     if not jsond is None:
-        token=jsond['token']
+        token = jsond['token']
+        return wrapResults(getTestSessionInfo(token, sid))
     else:
-        token='1122334455667788'       
-    return wrapResults(getTestSessionInfo(token, sid))
+        return wrapResults({"errors":{"msg":"Invalid params!", "code":"03"}})    
 
 @appweb.route('/test/caseresult/<sid>/<tid>',method='GET')
 def doGetCaseResultInfo(sid, tid):
@@ -126,10 +154,10 @@ def doGetCaseResultInfo(sid, tid):
     """
     jsond = request.params
     if not jsond is None:
-        token = jsond['token']     
+        token = jsond['token']
+        return wrapResults(getTestCaseInfo(token, sid, tid))
     else:
-        token = '1122334455667788'
-    return wrapResults(getTestCaseInfo(token, sid, tid))
+        return wrapResults({"errors":{"msg":"Invalid params!", "code":"03"}}) 
 
 @appweb.route('/test/caseresult/<sid>/<tid>/log',method='GET')
 def doGetCaseResultLog(sid, tid):
@@ -151,13 +179,16 @@ def doGetCaseResultLog(sid, tid):
     """
     jsond = request.params
     if not jsond is None:
-        token=jsond['token']     
+        if not 'token' in jsond:
+            token = '1122334455667788'
+        else:
+            token = jsond['token']
+        record_id = sid+'_'+tid
+        response.set_header('Content-Type','application/x-download')
+        response.set_header('Content-Disposition','attachment; filename=log_'+record_id+'.zip',True)
+        return getTestCaseLog(token, sid, tid)
     else:
-        token='1122334455667788'
-    record_id = sid+'_'+tid
-    response.set_header('Content-Type','application/x-download')
-    response.set_header('Content-Disposition','attachment; filename=log_'+record_id+'.zip',True)
-    return getTestCaseLog(token, sid, tid)
+        return wrapResults({"errors":{"msg":"Invalid params!", "code":"03"}}) 
 
 @appweb.route('/test/caseresult/<sid>/<tid>/snapshot',method='GET')
 def doGetCaseResultSnapshots(sid, tid):
@@ -179,10 +210,10 @@ def doGetCaseResultSnapshots(sid, tid):
     """
     jsond = request.params
     if not jsond is None:
-        token=jsond['token']
+        token = jsond['token']
+        return wrapResults(getTestCaseSnaps(token,sid,tid))
     else:
-        token='1122334455667788'
-    return wrapResults(getTestCaseSnaps(token,sid,tid))
+        return wrapResults({"errors":{"msg":"Invalid params!", "code":"03"}})
 
 ###################Utilities####################
 def wrapResults(results):

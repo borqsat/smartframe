@@ -17,15 +17,18 @@ def userRegister(appid,user,pswd,info):
     @param info:the info of account  
     @rtype: JSON
     @return: ok-{'results':1}
-             error-{'errors':{'code':0,'msg':(string)info}} 
+             error-{'errors':{'code':'04','msg':(string)info}} 
     """
-    store.createUser(appid,user,pswd,info)
-    return {'results':1}
+    rdata = store.createUser(appid,user,pswd,info)
+    if rdata.has_key('uid'):
+        return {'results':1}
+    else:
+        return {'errors':rdata}
 
 def userAuth(appid,user,pswd):
     """
     URL:/user/auth
-    TYPE:http/POST
+    TYPE:http/GET
 
     Get access token by username and password
 
@@ -36,8 +39,8 @@ def userAuth(appid,user,pswd):
     @type pswd:string
     @param pswd:the password of account
     @rtype: JSON
-    @return: ok-{'results':{'token':(string)value}}
-             error-{'errors':{'code':0,'msg':(string)info}} 
+    @return: ok-{'results':{'token':(string)token, 'uid':(string)uid} }
+             error-{'errors':{'code':0,'msg':(string)msg}} 
     """
     rdata = store.createToken(appid,user,pswd)
     if rdata.has_key('token'):
