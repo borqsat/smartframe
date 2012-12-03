@@ -34,6 +34,7 @@ def handle_screen_websocket(sid):
         try:
             snaps = getTestSessionSnaps(token, sid)
             lenf = len(snaps)
+            print 'snap:%s' % lenf
             msgdata = 'nop'
             if lenf > 0:
                 msgdata = 'snapshot:' + base64.encodestring(snaps[lenf-1])
