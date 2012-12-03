@@ -33,13 +33,14 @@ def getTestSessionInfo(token, sid):
     ret = store.validToken(token)
     if ret.has_key('uid'):
         uid = ret['uid']
-        rdata = store.readTestSessionInfo(sid, uid)
-        if not rdata is None :
-            return {'results':rdata}
-        else:
-            return {'errors':{'code':404,'msg':'None reuslt.'}}
     else:
-        return {'errors':{'code':'01','msg':'Invalid token.'}}
+        uid = '00001'
+
+    rdata = store.readTestSessionInfo(sid, uid)
+    if not rdata is None :
+        return {'results':rdata}
+    else:
+        return {'errors':{'code':404,'msg':'None reuslt.'}}
 
 def createCaseResult(token,sid,tid,casename,starttime):
     store.createTestCaseResult(sid, tid, casename, starttime)

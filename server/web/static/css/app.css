@@ -96,7 +96,7 @@ scrollbar-darkshadow-color: #E3E9ED;/*滚动条暗边框颜色*/
   line-height: 27px;
 }
 
-
+/*
 body {
   padding-top: 50px;
 }
@@ -128,7 +128,7 @@ a.popup_link:hover {
   width: 550px;
 }
 
-/*a.prev, a.next {
+a.prev, a.next {
     display: block;
     float: left;
     width: 30px;
@@ -164,4 +164,8 @@ a:hover, a:active {
 
 .thumbnaile {
   border: 1px solid green;
+}
+
+.prodcut_nav {
+  margin-bottom: 15px;
 }

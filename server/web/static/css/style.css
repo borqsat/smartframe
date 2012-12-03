@@ -100,7 +100,7 @@ nav.greyback li a {
     text-decoration: none;
     text-shadow: 0 1px 0 #FFFFFF;
 }
-nav.greyback li:hover, nav.greyback li:focus, nav.greyback li.last-child:hover, nav.greyback li.last-child:focus {
+/*nav.greyback li:hover, nav.greyback li:focus, nav.greyback li.last-child:hover, nav.greyback li.last-child:focus {
     border-left: 1px solid #EEEEEE;
     border-right: 1px solid #E0E0E0;
 }
@@ -120,7 +120,7 @@ nav.greyback li.active a:hover {
 }
 nav.greyback li.active {
     border-color: #E9E9E9;
-}
+}*/
 nav.greyback li:not(.first-child) {
 }
 nav.greyback li.first-child {
@@ -734,3 +734,16 @@ footer {
     opacity: 1;
 }
 
+.product_nav {
+   margin-top:10px;
+   margin-bottom:15px;
+}
+
+.label {
+   margin-right:15px;
+}
+th {
+   background:#DADADA;
+   border:1px solid #ffffff;
+   font-size:14px;
+}

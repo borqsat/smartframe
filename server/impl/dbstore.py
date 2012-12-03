@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 
-from pymongo import Connection
+#from pymongo import Connection
 import gridfs
 import memcache
 import hashlib,uuid,base64
 from bson.objectid import ObjectId
 from datetime import datetime
-
+import pymongo
+from pymongo import ReplicaSetConnection
+from pymongo.read_preferences import ReadPreference
+from pymongo import ReadPreference
+from pymongo.errors import AutoReconnect
 
 class dbStore(object):
     """
@@ -17,8 +21,12 @@ class dbStore(object):
         do the database instance init works
         """
         print 'init db store class!!!'
-        self.db = Connection(dbserver, dbport)['smartServer']
-        self.fs = gridfs.GridFS(Connection(dbserver, dbport)['smartFiles'], collection='fs')
+        #self.db = Connection(dbserver, dbport)['smartServer']
+        #self.fs = gridfs.GridFS(Connection(dbserver, dbport)['smartFiles'], collection='fs')
+        conn = ReplicaSetConnection("192.168.5.60:27017,192.168.7.52:27017,192.168.7.210:27017", replicaSet='ats_rs')
+        conn.read_preference = ReadPreference.SECONDARY_PREFERRED
+        self.db = conn['smartServer']
+        self.fs = gridfs.GridFS(conn['smartFiles'], collection='fs')
         connstr = '%s:%s' % (mcserver, mcport)
         self.mc = memcache.Client([connstr], debug=0)
         self.snapqueue = {}
@@ -37,6 +45,13 @@ class dbStore(object):
         if exists:
             data = self.fs.get(objId)
         return data
+
+    def deletefile(self,fileId):
+        '''
+        Delete file.
+        '''
+        objId = ObjectId(fileId)
+        self.fs.delete(objId)
 
     def createUser(self,appid,user,password,info):
         """
@@ -278,7 +293,7 @@ class dbStore(object):
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.mc.set(sid+'timestamp',timestamp)
         caseresult = self.db['caseresult']
-        caseresult.insert({'sid':sid, 'tid':tid, 'casename':casename, 'log':'N/A', 'traceinfo':'N/A','result':'running', 'starttime':starttime, 'endtime':'N/A','snapshots':[], 'checksnap':''})
+        caseresult.insert({'sid':sid, 'tid':tid, 'casename':casename, 'log':'N/A', 'traceinfo':'N/A','result':'running', 'starttime':starttime, 'endtime':'N/A','snapshots':[]})
         session = self.db['session']
         session.update({'sid':sid},{'$inc':{'result.total':1}})
 
@@ -291,20 +306,25 @@ class dbStore(object):
         session = self.db['session']
         status = status.lower()
         runtime = 0
+        snapshots = self.snapqueue[sid+'-'+tid]
         rdata = session.find({'sid':sid})
         for d in rdata:
             starttime = d['starttime']             
             d1 = datetime.strptime(starttime, "%Y-%m-%d %H:%M:%S")
             d2 = datetime.strptime(endtime, "%Y-%m-%d %H:%M:%S")        
             runtime = (d2 - d1).seconds
+
         if status == 'pass':
+            for d in snapshots:
+                self.deletefile(d['fid'])
+            snapshots = []
             session.update({'sid':sid},{'$inc':{'result.pass':1},'$set':{'runtime':runtime}})
         elif status == 'fail':
             session.update({'sid':sid},{'$inc':{'result.fail':1},'$set':{'runtime':runtime}})               
         else:
             session.update({'sid':sid},{'$inc':{'result.error':1},'$set':{'runtime':runtime}})
 
-        caseresult.update({'sid':sid,'tid':tid},{'$set':{'result':status,'traceinfo':traceinfo,'endtime':endtime}})
+        caseresult.update({'sid':sid,'tid':tid},{'$set':{'result':status,'traceinfo':traceinfo,'endtime':endtime,'snapshots':snapshots}})
 
     def writeTestLog(self,sid, tid,logfile):
         """
@@ -335,8 +355,6 @@ class dbStore(object):
                 caseresult.update({'sid':sid,'tid':tid},{'$set':{'checksnap':{'title':sfile,'fid':fid} }})
             elif sfiletype == 'current':
                 self.snapqueue[sid+'-'+tid].append({'title':sfile, 'fid':fid})
-                snapshots = self.snapqueue[sid+'-'+tid]
-                caseresult.update({'sid':sid,'tid':tid},{'$set':{'snapshots':snapshots}})
         except:
             pass
     
