@@ -12,6 +12,17 @@ from pymongo.read_preferences import ReadPreference
 from pymongo import ReadPreference
 from pymongo.errors import AutoReconnect
 
+DATE_FORMAT_STR1 = "%Y-%m-%d %H:%M:%S"
+DATE_FORMAT_STR = "%Y.%m.%d-%H.%M.%S"
+IDLE_TIME_OUT = 1800
+
+def datetimeSpan(time1, time2):
+    d1 = datetime.strptime(time1, DATE_FORMAT_STR)
+    d2 = datetime.strptime(time2, DATE_FORMAT_STR)
+    delta = d2 - d1
+    span = delta.days*86400 + delta.seconds
+    return span
+
 class dbStore(object):
     """
     Class dbStore provides the access to MongoDB DataBase
@@ -165,12 +176,16 @@ class dbStore(object):
             if d['endtime'] == 'N/A':
                 dttime = self.mc.get(str(d['sid'])+'timestamp')
                 if dttime is None:
-                    idletime = 1800 
+                    idletime = IDLE_TIME_OUT
                 else:
-                    idle = datetime.strptime(dttime, "%Y-%m-%d %H:%M:%S")
-                    idletime = (dtnow - idle).seconds
+                    try:
+                        idle = datetime.strptime(dttime, DATE_FORMAT_STR1)
+                    except:
+                        idle = datetime.strptime(dttime, DATE_FORMAT_STR)
+                    delta = dtnow - idle
+                    idletime = delta.days*86400 + delta.seconds
                 
-                if idletime >= 1800:
+                if idletime >= IDLE_TIME_OUT:
                     d['endtime'] = 'Break'
 
             rrdata = users.find({'uid':d['uid']})
@@ -208,12 +223,16 @@ class dbStore(object):
             if d['endtime'] == 'N/A':
                 dttime = self.mc.get(str(d['sid'])+'timestamp')
                 if dttime is None:
-                    idletime = 1800
+                    idletime = IDLE_TIME_OUT
                 else:
-                    idle = datetime.strptime(dttime, "%Y-%m-%d %H:%M:%S")
-                    idletime = (dtnow - idle).seconds
+                    try:
+                        idle = datetime.strptime(dttime, DATE_FORMAT_STR1)
+                    except:
+                        idle = datetime.strptime(dttime, DATE_FORMAT_STR)
+                    delta = dtnow - idle
+                    idletime = delta.days * 86400 + delta.seconds
 
-                if idletime >= 1800:
+                if idletime >= IDLE_TIME_OUT:
                     d['endtime'] = 'Break'
 
             rrdata = users.find({'uid':d['uid']})
@@ -290,7 +309,7 @@ class dbStore(object):
         write a test case resut record in database
         """
         self.snapqueue[sid+'-'+tid] = []
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        timestamp = datetime.now().strftime(DATE_FORMAT_STR1)
         self.mc.set(sid+'timestamp',timestamp)
         caseresult = self.db['caseresult']
         caseresult.insert({'sid':sid, 'tid':tid, 'casename':casename, 'log':'N/A', 'traceinfo':'N/A','result':'running', 'starttime':starttime, 'endtime':'N/A','snapshots':[]})
@@ -310,9 +329,17 @@ class dbStore(object):
         rdata = session.find({'sid':sid})
         for d in rdata:
             starttime = d['starttime']             
-            d1 = datetime.strptime(starttime, "%Y-%m-%d %H:%M:%S")
-            d2 = datetime.strptime(endtime, "%Y-%m-%d %H:%M:%S")        
-            runtime = (d2 - d1).seconds
+            try:
+                d1 = datetime.strptime(starttime, DATE_FORMAT_STR)
+            except:
+                d1 = datetime.strptime(starttime, DATE_FORMAT_STR1)
+            try:
+                d2 = datetime.strptime(endtime, DATE_FORMAT_STR)
+            except:
+                d2 = datetime.strptime(endtime, DATE_FORMAT_STR1)
+
+            delta = d2 - d1
+            runtime = delta.days*86400 + delta.seconds
 
         if status == 'pass':
             for d in snapshots:

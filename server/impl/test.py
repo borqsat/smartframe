@@ -10,12 +10,22 @@ def createTestSession(token,sid,planname,starttime, deviceid, deviceinfo):
         return {'errors':{'code':'01','msg':'Invalid token.'}}
 
 def updateTestSession(token,sid,endtime):
-    store.updateTestSession(sid, endtime)
-    return {'results':1}
+    ret = store.validToken(token)
+    if ret.has_key('uid'):
+        uid = ret['uid']
+        store.updateTestSession(sid, endtime)
+        return {'results':1}
+    else:
+        return {'errors':{'code':'01','msg':'Invalid token.'}}
 
 def deleteTestSession(token,sid):
-    store.deleteTestSession(sid)
-    return {'results':1}
+    ret = store.validToken(token)
+    if ret.has_key('uid'):
+        uid = ret['uid']
+        store.deleteTestSession(sid)
+        return {'results':1}
+    else:
+        return {'errors':{'code':'01','msg':'Invalid token.'}}
 
 def getTestSessionList(token):
     ret = store.validToken(token)

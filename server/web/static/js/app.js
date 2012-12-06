@@ -2,9 +2,10 @@
 var _appglobal = function () {};
 
 $(function(){
-    if($.cookie('loginname') !== undefined && $.cookie('loginname') !== null) {
+    if($.cookie('loginname') !== null) {
         $('#logname').html($.cookie('loginname'));
     }
+    _appglobal.zoom = 1;
 });
 
 function createSessionList(){
@@ -32,9 +33,8 @@ function viewStop(){
 }
 
 function createCaseSnaps(sid, tid){
-
-    var $snaplist = $('#img_list').html('');
     var zoom = 1;
+    var $snaplist = $('#img_list').html('');
     var wd = parseInt(_appglobal.deviceinfo['width']) >> zoom;
     var ht = parseInt(_appglobal.deviceinfo['height']) >> zoom;
     $('#history_div').dialog({title:"case snapshots",
@@ -64,7 +64,11 @@ function createCaseSnaps(sid, tid){
                         var $icg = new Image();
                         var title = '';
                         var rect = '';
-                        $ig.src = 'data:image/png;base64,' + data.results.snaps[d]['data'];
+                        var imgdata = data.results.snaps[d]['data'];
+                        if(imgdata === "")
+                            $ig.src = 'static/img/notFound.png';
+                        else
+                            $ig.src = 'data:image/png;base64,' + imgdata;
                         $ig.setAttribute("id","snap"+idx);                        
                         $ig.setAttribute("width",wd+"px");
                         $ig.setAttribute("height",ht+"px");
@@ -120,82 +124,63 @@ function createCaseSnaps(sid, tid){
 			    $('#history_div').carousel({"interval":100000,"pause":"hover"});
 		      }
 		   );
-	}
+}
 
-	function createDetailTable(ids){
-
-	    var $div_detail = $("#cases_div");
-	    var $tb = $('<table>').attr('id', ids).attr('class','table table-striped table-hover');
-	    var $th = '<thead>'+
-		      '<tr>'+
-		      '<th align="left" width="5%">tid</th>'+
-                      '<th align="left" width="15%">TestCase</th>'+
-		      '<th align="left" width="15%">StartTime</th>'+
-		      '<th align="left" width="10%">Result</th>'+
-		      '<th align="left" width="35%">Traceinfo</th>'+
-		      '<th align="left" width="10%">Log</th>'+
+function createDetailTable(ids){
+    var $div_detail = $("#cases_div");
+    var $tb = $('<table>').attr('id', ids).attr('class','table table-striped table-hover');
+    var $th = '<thead>'+
+              '<tr>'+
+	      '<th align="left" width="5%">tid</th>'+
+              '<th align="left" width="15%">TestCase</th>'+
+	      '<th align="left" width="15%">StartTime</th>'+
+	      '<th align="left" width="10%">Result</th>'+
+	      '<th align="left" width="35%">Traceinfo</th>'+
+	      '<th align="left" width="10%">Log</th>'+
 		      '<th align="left" width="10%">snaps</th>'+
 		      '</tr>'+
 		      '</thead>';
-	    var $tbody = '<tbody></tbody>';
-	    $tb.append($th);
-	    $tb.append($tbody);
-	    $div_detail.html($tb);
-	}
+    var $tbody = '<tbody></tbody>';
+    $tb.append($th);
+    $tb.append($tbody);
+    $div_detail.html($tb);
+}
 
-	//for fail and error popup link
-	function showTestDetail(div_id){
+var ws = undefined;
+function showSnapDiv(sid) {
+    $("#history_div").hide();
+    $("#snap_div").show();
+    createSnapshotDiv(sid);
+}
 
-	    var details_div = document.getElementById(div_id)
-	    var displayState = details_div.style.display
+function showHistoryDiv(sid, tid) { 
+    $("#history_div").show();
+    $("#snap_div").hide();
+    createCaseSnaps(sid, tid);
+}
 
-	    if (displayState != 'block' ) {
-		displayState = 'block'
-		details_div.style.display = 'block'
-	    }
+function createSnapshotDiv(sid) {
+    var zoom = 1;
+    if(ws !== undefined)  ws.close();
+    var wd = parseInt(_appglobal.deviceinfo['width']) >> zoom;
+    var ht = parseInt(_appglobal.deviceinfo['height']) >> zoom;
+    $('#snap_div').dialog({
+			title:"case real-time snap",
+		        height: ht+120,
+			width: wd+40,
+		        resizable:false,
+		        modal: true});
+    ws = getWebsocket("/test/session/"+sid+"/screen");
+    var c=document.getElementById("snapCanvas");
+    var cxt=c.getContext("2d");
 
-	    else {
-		details_div.style.display = 'none'
-	    }
-	}
+    ws.onopen = function() {
+        ws.send('sync:ok');
+    };
 
-	var curSid = "";
-	var ws = undefined;
-
-	function showSnapDiv(sid) {
-	    $("#history_div").hide();
-	    $("#snap_div").show();
-	    createSnapshotDiv(sid);
-	}
-
-	function showHistoryDiv(sid, tid) { 
-	    $("#history_div").show();
-	    $("#snap_div").hide();
-	    createCaseSnaps(sid, tid);
-	}
-
-	function createSnapshotDiv(sid) {
-
-	    if(ws !== undefined)  ws.close();
-	    var wd = parseInt(_appglobal.deviceinfo['width'])/2;
-	    var ht = parseInt(_appglobal.deviceinfo['height'])/2;
-	    $('#snap_div').dialog({
-				    title:"case real-time snap",
-				    height: ht+120,
-				    width: wd+40,
-				    resizable:false,
-				    modal: true});
-	    ws = getWebsocket("/test/session/"+sid+"/screen");
-	    var c=document.getElementById("snapCanvas");
-	    var cxt=c.getContext("2d");
-
-	    ws.onopen = function() {
-		ws.send('sync:ok');
-	    };
-
-	    ws.onmessage = function (evt) {
-		var data = evt.data;
-		if (data.indexOf('snapsize:') >= 0 ) {
+    ws.onmessage = function (evt) {
+	var data = evt.data;
+	if (data.indexOf('snapsize:') >= 0 ) {
             data = data.substr('snapsize:'.length);
             data = JSON.parse(data);
             c.setAttribute('width', wd + 'px');
@@ -214,23 +199,19 @@ function createCaseSnaps(sid, tid){
     }
 }
 
-function processCasesData(data) {
-    var datacases = data.results.cases;
+function sortTestCases(data) {
+    var datacases = data;
     if(datacases !== undefined) {
         datacases.sort(function(a,b){ 
            return parseInt(b['tid']) - parseInt(a['tid']) ; 
         });
     }
     return datacases;
-  
 }
 
 function fillDetailTable(data, ids, tag){
-
     var detail_table = $("#"+ids+" > tbody");
-
-    data = processCasesData(data);
-
+    data = sortTestCases(data);
     if($("#"+ids).length > 0){ 
         $("#"+ids+ " tr:gt(0)").remove(); //delete table content
         for (var i in data){
@@ -243,9 +224,9 @@ function fillDetailTable(data, ids, tag){
             cresult = citem['result'];
             ctraceinfo = citem['traceinfo'];
 
-            if(cresult=='') cresult='running';
-            if(cname=='') cname='missed';
-            if(ctime=='') ctime='missed';
+            if(cresult == '') cresult = 'running';
+            if(cname == '') cname = 'missed';
+            if(ctime == '') ctime = 'missed';
 
             if(tag !== 'all' && tag !== cresult) continue;
             casename = cname;
@@ -257,11 +238,7 @@ function fillDetailTable(data, ids, tag){
                                         "<td>"+ctime+"</td>"+
                                         "<td><font color=\"red\">"+cresult+"<font></td>"+
                                         "<td>"+
-                                        //"<a onfocus=\"this.blur();\" href=\"javascript:showTestDetail('div_"+ids+"_"+i+"')\">"+"detail"+"</a>"+
                                         "<div id='div_"+ids+"_"+i+"'class=\"popup_window\">" + 
-                                        //"<div style=\"text-align: right; color:red;cursor:pointer\">"+
-                                        //"<a onfocus=\"this.blur();\" onclick=\"document.getElementById('div_"+ids+"_"+i+"').style.display ='none' \"> [x] </a>"+
-                                        //"</div>" +
                                         ctraceinfo+"</div>"+
                                         "</td>"+
                                         "<td><a href=\""+WebServerURL+"/test/caseresult/"+csid+"/"+ctid+"/log\">log</a> </td>"+
@@ -269,23 +246,16 @@ function fillDetailTable(data, ids, tag){
                                         "</tr>");
 
             } else if(cresult=='error') {
-
                 detail_table.append("<tr id=\""+trId+"\">"+
                                      "<td>"+ctid+"</td>"+
                                      "<td>"+casename+"</td>"+
                                      "<td>"+ctime+"</td>"+
                                      "<td><font color=\"red\">"+cresult+"<font></td>"+
                                      "<td>"+
-                                     //"<a onfocus=\"this.blur();\" href=\"javascript:showTestDetail('div_"+ids+"_"+i+"')\">"+"detail"+"</a>"+
-                                     "<div id='div_"+ids+"_"+i+"'class=\"popup_window\">"+
-                                     //"<div style=\"text-align: right; color:red;cursor:pointer\">"+
-                                     //"<a onfocus=\"this.blur();\" onclick=\"document.getElementById('div_"+ids+"_"+i+"').style.display ='none' \"> [x] </a>"+"</div>"+
-                                     ctraceinfo+"</div>"+
+                                     "<div id='div_"+ids+"_"+i+"'class=\"popup_window\">"+ctraceinfo+"</div>"+
                                      "</td>"+
                                      "<td></td>"+
                                      "<td></td>"+
-                                     //"<td><a href=\""+WebServerURL+"/test/caseresult/"+csid+"/"+ctid+"/log\">log</a> </td>"+
-                                     //"<td><a id=\"f_"+ctid+"_"+i+"\" href=\"javascript:showHistoryDiv('"+csid+"','"+ctid+"');\">snapshot</a></td>"+
                                      "</tr>");
 
            } else if (cresult == 'running' || cresult == 'pass'){
@@ -313,53 +283,31 @@ function fillDetailTable(data, ids, tag){
             } 
         }
     }
-
     TablePage('#'+ids, 20, 20);
 }
 
-function arrayUnique(data){  
-    data = data || [];  
-    var a = {};  
-    for (var i=0; i<data.length; i++) {  
-        var v = data[i];  
-        if (typeof(a[v]) == 'undefined'){  
-            a[v] = 1;  
-        }  
-    }
-
-    data.length=0;  
-    for (var i in a){  
-           data[data.length] = i;  
-    }
-    return data;  
-}  
-
 function createAllTestList(key) {
-      var allTableId = 'alltable_' + key;
       invokeWebApi('/test/caseresult/'+key,
                    {},
                    function(data){
-                       createDeviceInfo(data);
+                       _appglobal.deviceinfo = data.results.deviceinfo;
+                       _appglobal.deviceinfo.deviceid = data.results.deviceid;
+                       _appglobal.caseslist = data.results.cases;
+                       createDeviceInfo(_appglobal.deviceinfo);
+
                        if(data['results'] !== undefined && data['results']['endtime'] !== 'N/A') {
                            createHistoryCaseSummary(data);
-                           createDetailTable(allTableId);
-                           fillDetailTable(data,allTableId,'all');                
+                           createDetailTable('table_all_' + key);
+                           fillDetailTable(_appglobal.caseslist,'table_all_' + key,'all');                
                        } else {
                            createLiveCaseSummary(data);
-                           createDetailTable(allTableId);
-                           fillDetailTable(data,allTableId,'all');           
-                           setTimeout("createAllTestList(\""+key+"\")",60000);
+                           createDetailTable('table_all_' + key);
+                           fillDetailTable(_appglobal.caseslist,'table_all_' + key,'all');
+                           setTimeout("createAllTestList(\""+key+"\")", 60000);
                        }
-
                   });
 }
-
 function createDeviceInfo(data) {
-
-    data = data.results;
-    _appglobal.deviceinfo = data.deviceinfo;
-    
-    $('#device_div').html('');
     var $dev_table = $('<table>').attr('class','table table-bordered');
     var $th = '<thead><tr><th>device</th><th>product</th><th>build</th><th>width</th><th>height</th></tr></thead>';
     var $tbody = '<tbody></tbody>';
@@ -369,12 +317,11 @@ function createDeviceInfo(data) {
 
     $tr = "<tr>"+     
           "<td>"+data.deviceid+"</td>"+ 
-          "<td>"+data.deviceinfo.product+"</td>"+    
-          "<td>"+data.deviceinfo.revision+"</td>"+
-          "<td>"+data.deviceinfo.width+"</td>"+
-          "<td>"+data.deviceinfo.height+"</td>"+          
+          "<td>"+data.product+"</td>"+    
+          "<td>"+data.revision+"</td>"+
+          "<td>"+data.width+"</td>"+
+          "<td>"+data.height+"</td>"+          
           "</tr>";
-
     $dev_table.append($tr);
 }
 
@@ -403,13 +350,12 @@ function createLiveCaseSummary(data) {
 }
 
 function createHistoryCaseSummary(data) {
-
     data = data['results'];
     var key = data['sid'];
-    var allId = "o_"+key;
-    var failId = 'fail_'+key;
-    var passId = 'pass_'+key;
-    var errorId = 'error_'+key;
+    var alllink = "o_"+key;
+    var faillink = 'fail_'+key;
+    var passlink = 'pass_'+key;
+    var errorlink = 'error_'+key;
     $('#summary_div').html('');
     var $summary_table = $('<table>').attr('class','table table-bordered').attr('id','stable'+key);
     var $th = '<thead><tr><th>planname</th><th>owner</th><th>statrtime</th><th>runtime</th><th>all</th><th>pass</th><th>fail</th><th>error</th></tr></thead>';
@@ -417,65 +363,37 @@ function createHistoryCaseSummary(data) {
     $('#summary_div').append($summary_table);
     $summary_table.append($th);
     $summary_table.append($tbody);
-
     $tr = "<tr>"+     
           "<td>"+data['planname']+"</td>"+    
           "<td>"+data['user']+"</td>"+
           "<td>"+data['starttime']+"</td>"+
           "<td>"+setRunTime(data['runtime'])+"</td>"+
-          "<td>"+"<a id="+allId+" href=\"javascript:void(0);\">"+data['result']['total']+"</a></td>"+
-          "<td>"+"<a id="+passId+" href=\"javascript:void(0);\">"+data['result']['pass']+"</a></td>"+
-          "<td>"+"<a id="+failId+" href=\"javascript:void(0);\">"+data['result']['fail']+"</a></td>"+
-          "<td>"+"<a id="+errorId+" href=\"javascript:void(0);\">"+data['result']['error']+"</a></td>"+
+          "<td>"+"<a id="+alllink+" href=\"javascript:void(0);\">"+data['result']['total']+"</a></td>"+
+          "<td>"+"<a id="+passlink+" href=\"javascript:void(0);\">"+data['result']['pass']+"</a></td>"+
+          "<td>"+"<a id="+faillink+" href=\"javascript:void(0);\">"+data['result']['fail']+"</a></td>"+
+          "<td>"+"<a id="+errorlink+" href=\"javascript:void(0);\">"+data['result']['error']+"</a></td>"+
           "</tr>";
-
     $summary_table.append($tr);
 
-    $("#"+allId).click(function(){
-        var allTableId = 'alltable_'+key.replace('cycle:','');
+    $("#"+alllink).click(function(){                           
+                           createDetailTable('table_all_' + key);
+                           fillDetailTable(_appglobal.caseslist,'table_all_' + key,'all');
+                      });       
 
-        //get target cycle fail list
-        invokeWebApi('/test/caseresult/'+key,
-                    {},
-                     function(data){
-                        createDetailTable(allTableId);
-                        fillDetailTable(data,allTableId,'all');
-                    });
-    });       
-
-    $("#"+failId).click(function(){
-        var failTableId = 'failtable_'+key.replace('cycle:','');
-
-                    //get target cycle fail list
-        invokeWebApi('/test/caseresult/'+key,
-                      {},
-                      function(data){
-                          createDetailTable(failTableId);
-                          fillDetailTable(data,failTableId,'fail');
-                    });
-
-    });
-
-    $("#"+passId).click(function(){
-          var passTableId = 'passtable_'+key.replace('cycle:','');
-                    
-          invokeWebApi('/test/caseresult/'+key,
-                        {},
-                        function(data){
-                            createDetailTable(passTableId);
-                            fillDetailTable(data,passTableId,'pass');
+    $("#"+faillink).click(function(){
+                           createDetailTable('table_fail_' + key);
+                           fillDetailTable(_appglobal.caseslist,'table_fail_' + key,'fail');
                       });
-    });
 
-    $("#"+errorId).click(function(){
-          var errorTableId = 'errortable_'+key.replace('cycle:','');
-          invokeWebApi('/test/caseresult/'+key,
-                        {},
-                        function(data){
-                            createDetailTable(errorTableId);
-                            fillDetailTable(data,errorTableId,'error');
-                      });
-    });
+    $("#"+passlink).click(function(){
+                           createDetailTable('table_pass_' + key);
+                           fillDetailTable(_appglobal.caseslist, 'table_pass_' + key, 'pass');
+                        });
+
+    $("#"+errorlink).click(function(){
+                           createDetailTable('table_error_' + key);
+                           fillDetailTable(_appglobal.caseslist, 'table_error_' + key, 'error');
+                        });
 }
 
 function deleteSessionById(sid) {

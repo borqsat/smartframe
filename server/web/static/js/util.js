@@ -4,27 +4,27 @@ var SocketURL = "ws://192.168.7.212:8082";
 //    $.getJSON(WebServerURL+cmd+"?callback=?", jdata, call);
 //}
 var ajaxstart=function() {
-		var winWidth=0;
-		var winHeight=0;
+     var winWidth=0;
+     var winHeight=0;
 		//获取窗口宽度	
-	    if(window.innerWidth) winWidth = window.innerWidth;	
-	    else if((document.body) && (document.body.clientWidth))	winWidth = document.body.clientWidth;
+     if(window.innerWidth) winWidth = window.innerWidth;	
+     else if((document.body) && (document.body.clientWidth))	winWidth = document.body.clientWidth;
+	 
+     //获取窗口高度
+     if(window.innerHeight) winHeight = window.innerHeight;	
+     else if((document.body) && (document.body.clientHeight)) winHeight = document.body.clientHeight;
 	
-	    //获取窗口高度
-	    if(window.innerHeight) winHeight = window.innerHeight;	
-	    else if((document.body) && (document.body.clientHeight)) winHeight = document.body.clientHeight;
-	
-	    //通过深入Document内部对body进行检测，获取窗口大小
-	    if(document.documentElement && document.documentElement.clientHeight && document.documentElement.clientWidth) {
+     //通过深入Document内部对body进行检测，获取窗口大小
+     if(document.documentElement && document.documentElement.clientHeight && document.documentElement.clientWidth) {
 		   winHeight = document.documentElement.clientHeight;
 		   winWidth = document.documentElement.clientWidth;
-	    }
+     }
 
-        if(document.getElementById('img') !== undefined && document.getElementById('img') !== null ) {
+     if(document.getElementById('img') !== undefined && document.getElementById('img') !== null ) {
 	        document.getElementById('img').style.left=""+(winWidth/2-70)+"px";
 	        document.getElementById('img').style.top=""+(winHeight/2)+"px";
 	        document.getElementById('img').innerHTML = "<a><img style='BORDER:none' src='static/img/loading.gif'></a>";   	
-        }	    		    
+     }	    		    
 }; 
 
 var ajaxend = function(){
@@ -39,10 +39,10 @@ var invokeWebApi = function(apiUrl,dataj,render) {
     var options = {}; 
     var funok=function(data) {
         if(data['results'] === undefined) {
-           if(data['errors'] !== undefined)
+           if(data['errors'] !== undefined) {
               alert(data['errors']['msg']);
-           else
-              alert("Web server error code!");
+              if(data['errors']['code'] === '01') window.location = "login.html";
+           } else alert("Web server occurr unexpected error!");
            ajaxend();
         } else {
            render(data);
@@ -74,10 +74,10 @@ var invokeWebApiEx = function(apiUrl,datap,render) {
  
     var funok=function(data) {
         if(data['results'] === undefined) {
-           if(data['errors'] !== undefined)
+           if(data['errors'] !== undefined){
               alert(data['errors']['msg']);
-           else
-              alert("Web server Internal error!");
+              if(data['errors']['code'] === '01') window.location = "login.html";
+           } else alert("Web server Internal error!");
            ajaxend();
         } else {
            render(data);
@@ -107,9 +107,9 @@ function getWebsocket(subcmd){
 }
 
 function logout(){
-     $.cookie('ticket', '', { expires: -1 });
-     $.cookie('loginname', '', { expires: -1 });
-     window.location = "login.html"
+    $.cookie('ticket', '', { expires: -1 });
+    $.cookie('loginname', '', { expires: -1 });
+    window.location = "login.html";
 }
 
 function getRequestParam(src,name){
