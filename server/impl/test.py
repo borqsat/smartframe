@@ -39,18 +39,24 @@ def getTestSessionList(token):
     else:
         return {'errors':{'code':'01','msg':'Invalid token.'}}
 
-def getTestSessionInfo(token, sid):
-    ret = store.validToken(token)
-    if ret.has_key('uid'):
-        uid = ret['uid']
-    else:
-        uid = '00001'
-
-    rdata = store.readTestSessionInfo(sid, uid)
+def getTestSessionInfoEx(sid):
+    rdata = store.readTestSessionInfo(sid, '00001')
     if not rdata is None :
         return {'results':rdata}
     else:
         return {'errors':{'code':404,'msg':'None reuslt.'}}
+
+def getTestSessionInfo(token, sid):
+    ret = store.validToken(token)
+    if ret.has_key('uid'):
+        uid = ret['uid']
+        rdata = store.readTestSessionInfo(sid, uid)
+        if not rdata is None :
+            return {'results':rdata}
+        else:
+            return {'errors':{'code':404,'msg':'None reuslt.'}}
+    else:
+        return {'errors':{'code':'01','msg':'Invalid token.'}}
 
 def createCaseResult(token,sid,tid,casename,starttime):
     store.createTestCaseResult(sid, tid, casename, starttime)
@@ -91,7 +97,7 @@ def getTestCaseSnaps(token, sid, tid):
     else:
         return {'errors':{'code':404,'msg':'None reuslt.'}}
 
-def getTestSessionSnaps(token, sid):
+def getTestLiveSnaps(sid):
     imgBuffer = store.readTestLiveSnaps(sid)
     if not imgBuffer is None:
         return imgBuffer

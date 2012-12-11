@@ -95,7 +95,7 @@ function createCaseSnaps(sid, tid){
                             //$snapli.append($igdiv);
                             $icgdiv.attr('style','float:left');
                             $igdiv.attr('style','float:right');
-                            $snapli.attr('class','active item');                                                 
+                            $snapli.attr('class','item active');                                                 
                         } else {
                             $ig.setAttribute('class','thumbnail');
                             title = data.results.snaps[d]['title']
@@ -121,7 +121,7 @@ function createCaseSnaps(sid, tid){
                            $snaplist.append($snapli);
                            //$snapli.append($snaptitle);
 			}
-			    $('#history_div').carousel({"interval":100000,"pause":"hover"});
+			    $('#history_div').carousel({"interval":100000});
 		      }
 		   );
 }
@@ -137,9 +137,9 @@ function createDetailTable(ids){
 	      '<th align="left" width="10%">Result</th>'+
 	      '<th align="left" width="35%">Traceinfo</th>'+
 	      '<th align="left" width="10%">Log</th>'+
-		      '<th align="left" width="10%">snaps</th>'+
-		      '</tr>'+
-		      '</thead>';
+	      '<th align="left" width="10%">snaps</th>'+
+	      '</tr>'+
+	      '</thead>';
     var $tbody = '<tbody></tbody>';
     $tb.append($th);
     $tb.append($tbody);
@@ -162,6 +162,12 @@ function showHistoryDiv(sid, tid) {
 function createSnapshotDiv(sid) {
     var zoom = 1;
     if(ws !== undefined)  ws.close();
+    ws = getWebsocket("/test/session/"+sid+"/screen");
+    if(ws === null) {
+        alert('Your browser don\'t support Websocket connection!');
+        return;
+    }
+
     var wd = parseInt(_appglobal.deviceinfo['width']) >> zoom;
     var ht = parseInt(_appglobal.deviceinfo['height']) >> zoom;
     $('#snap_div').dialog({
@@ -170,13 +176,12 @@ function createSnapshotDiv(sid) {
 			width: wd+40,
 		        resizable:false,
 		        modal: true});
-    ws = getWebsocket("/test/session/"+sid+"/screen");
     var c=document.getElementById("snapCanvas");
     var cxt=c.getContext("2d");
 
     ws.onopen = function() {
         ws.send('sync:ok');
-    };
+    }
 
     ws.onmessage = function (evt) {
 	var data = evt.data;
@@ -190,7 +195,7 @@ function createSnapshotDiv(sid) {
             doRenderImg(data);
         } 
         ws.send('sync:ok');
-    };
+    }
 
     function doRenderImg(data) {
         var img = new Image();
@@ -210,80 +215,71 @@ function sortTestCases(data) {
 }
 
 function fillDetailTable(data, ids, tag){
-    var detail_table = $("#"+ids+" > tbody");
-    data = sortTestCases(data);
-    if($("#"+ids).length > 0){ 
-        $("#"+ids+ " tr:gt(0)").remove(); //delete table content
-        for (var i in data){
-            var cname,cresult,ctraceinfo,ctid,csid, trId;
-            var citem = data[i];
-            ctid = citem['tid'];
-            csid = citem['sid'];
-            ctime = citem['starttime'];
-            cname = citem['casename'];
-            cresult = citem['result'];
-            ctraceinfo = citem['traceinfo'];
-
-            if(cresult == '') cresult = 'running';
-            if(cname == '') cname = 'missed';
-            if(ctime == '') ctime = 'missed';
-
-            if(tag !== 'all' && tag !== cresult) continue;
-            casename = cname;
-            trId="#"+ids+"_"+i;
-            if(cresult=='fail'){
-                detail_table.append("<tr id=\""+trId+"\">"+
+    var detail_table = $("#"+ids+" > tbody").html('');
+    var tablerows = '';
+    for (var i = 0; i < data.length; i++){
+         var citem = data[i];
+         var ctid = citem['tid'];
+         var csid = citem['sid'];
+         var ctime = citem['starttime'];
+         var cname = citem['casename'];
+         var cresult = citem['result'];
+         var ctraceinfo = citem['traceinfo'];
+         if(cresult == '') cresult = 'running';
+         if(tag !== 'all' && tag !== cresult) continue;
+         var trId = "tr_"+ctid;
+         if(cresult === 'fail'){
+                tablerows += "<tr id=\""+trId+"\">"+
                                         "<td>"+ctid+"</td>"+    
-                                        "<td>"+casename+"</td>"+              
+                                        "<td>"+cname+"</td>"+              
                                         "<td>"+ctime+"</td>"+
                                         "<td><font color=\"red\">"+cresult+"<font></td>"+
                                         "<td>"+
-                                        "<div id='div_"+ids+"_"+i+"'class=\"popup_window\">" + 
-                                        ctraceinfo+"</div>"+
+                                        "<div>"+ctraceinfo+"</div>"+
                                         "</td>"+
                                         "<td><a href=\""+WebServerURL+"/test/caseresult/"+csid+"/"+ctid+"/log\">log</a> </td>"+
-                                        "<td><a id=\"f_"+ctid+"_"+i+"\" href=\"javascript:showHistoryDiv('"+csid+"','"+ctid+"');\">snapshot</a></td>"+
-                                        "</tr>");
+                                        "<td><a href=\"javascript:showHistoryDiv('"+csid+"','"+ctid+"');\">snapshot</a></td>"+
+                                        "</tr>";
 
-            } else if(cresult=='error') {
-                detail_table.append("<tr id=\""+trId+"\">"+
+         } else if (cresult === 'error') {
+                tablerows += "<tr id=\""+trId+"\">"+
                                      "<td>"+ctid+"</td>"+
-                                     "<td>"+casename+"</td>"+
+                                     "<td>"+cname+"</td>"+
                                      "<td>"+ctime+"</td>"+
                                      "<td><font color=\"red\">"+cresult+"<font></td>"+
                                      "<td>"+
-                                     "<div id='div_"+ids+"_"+i+"'class=\"popup_window\">"+ctraceinfo+"</div>"+
+                                     "<div>"+ctraceinfo+"</div>"+
                                      "</td>"+
                                      "<td></td>"+
                                      "<td></td>"+
-                                     "</tr>");
+                                     "</tr>";
 
-           } else if (cresult == 'running' || cresult == 'pass'){
+         } else if (cresult === 'running' || cresult === 'pass'){
                  if (cresult == 'running'){
-                    detail_table.append("<tr id=\""+trId+"\">"+
+                    tablerows += "<tr id=\""+trId+"\">"+
                                         "<td>"+ctid+"</td>"+
-                                        "<td>"+casename+"</td>"+
+                                        "<td>"+cname+"</td>"+
                                         "<td>"+ctime+"</td>"+
-                                        "<td> <img src=\"static/img/running1.gif\" alt=\"running\" /> </td>"+
-                                        "<td>"+ctraceinfo+"</td>"+
-                                        "<td> </td>"+
-                                        "<td> </td>"+
-                                        "</tr>");     
+                                        "<td><img src=\"static/img/running1.gif\" alt=\"running\"/></td>"+
+                                        "<td></td>"+
+                                        "<td></td>"+
+                                        "<td></td>"+
+                                        "</tr>";     
                  } else {    
-                    detail_table.append("<tr id=\""+trId+"\">"+
+                    tablerows += "<tr id=\""+trId+"\">"+
                                         "<td>"+ctid+"</td>"+
-                                        "<td>"+casename+"</td>"+
+                                        "<td>"+cname+"</td>"+
                                         "<td>"+ctime+"</td>"+
                                         "<td>"+cresult+"</td>"+
-                                        "<td>"+ctraceinfo+"</td>"+
-                                        "<td> </td>"+
-                                        "<td> </td>"+
-                                        "</tr>");
+                                        "<td></td>"+
+                                        "<td></td>"+
+                                        "<td></td>"+
+                                        "</tr>";
                  }    
-            } 
-        }
+          } 
     }
-    TablePage('#'+ids, 20, 20);
+    detail_table.append(tablerows);
+    TablePage('#'+ids, 100, 20);
 }
 
 function createAllTestList(key) {
@@ -292,9 +288,8 @@ function createAllTestList(key) {
                    function(data){
                        _appglobal.deviceinfo = data.results.deviceinfo;
                        _appglobal.deviceinfo.deviceid = data.results.deviceid;
-                       _appglobal.caseslist = data.results.cases;
+                       _appglobal.caseslist = sortTestCases(data.results.cases);
                        createDeviceInfo(_appglobal.deviceinfo);
-
                        if(data['results'] !== undefined && data['results']['endtime'] !== 'N/A') {
                            createHistoryCaseSummary(data);
                            createDetailTable('table_all_' + key);
@@ -311,7 +306,7 @@ function createDeviceInfo(data) {
     var $dev_table = $('<table>').attr('class','table table-bordered');
     var $th = '<thead><tr><th>device</th><th>product</th><th>build</th><th>width</th><th>height</th></tr></thead>';
     var $tbody = '<tbody></tbody>';
-    $('#device_div').append($dev_table);
+    $('#device_div').html('').append($dev_table);
     $dev_table.append($th);
     $dev_table.append($tbody);
 
@@ -358,7 +353,16 @@ function createHistoryCaseSummary(data) {
     var errorlink = 'error_'+key;
     $('#summary_div').html('');
     var $summary_table = $('<table>').attr('class','table table-bordered').attr('id','stable'+key);
-    var $th = '<thead><tr><th>planname</th><th>owner</th><th>statrtime</th><th>runtime</th><th>all</th><th>pass</th><th>fail</th><th>error</th></tr></thead>';
+    var $th = '<thead><tr>'+
+              '<th>planname</th>'+
+              '<th>owner</th>'+
+              '<th>statrtime</th>'+
+              '<th>runtime</th>'+
+              '<th>all</th>'+
+              '<th>pass</th>'+
+              '<th>fail</th>'+
+              '<th>error</th>'+
+              '</tr></thead>';
     var $tbody = '<tbody></tbody>';
     $('#summary_div').append($summary_table);
     $summary_table.append($th);

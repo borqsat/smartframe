@@ -16,30 +16,34 @@ DATE_FORMAT_STR1 = "%Y-%m-%d %H:%M:%S"
 DATE_FORMAT_STR = "%Y.%m.%d-%H.%M.%S"
 IDLE_TIME_OUT = 1800
 
-def datetimeSpan(time1, time2):
-    d1 = datetime.strptime(time1, DATE_FORMAT_STR)
-    d2 = datetime.strptime(time2, DATE_FORMAT_STR)
-    delta = d2 - d1
-    span = delta.days*86400 + delta.seconds
-    return span
+def getMongoDB(connstr,replica):
+    conn = ReplicaSetConnection(connstr, replicaSet=replica)
+    conn.read_preference = ReadPreference.SECONDARY_PREFERRED
+    db = conn.smartServer
+    return db
 
-class dbStore(object):
+def getGridFS(connstr,replica):
+    conn = ReplicaSetConnection(connstr, replicaSet=replica)
+    conn.read_preference = ReadPreference.SECONDARY_PREFERRED
+    fs = gridfs.GridFS(conn.smartFiles, collection='fs')
+    return fs 
+    
+def getMemcache(connstr,debugOn):
+    mc = memcache.Client([connstr], debug=debugOn)
+    return mc
+
+class testStore(object):
     """
     Class dbStore provides the access to MongoDB DataBase
     """
-    def __init__(self, dbserver, dbport, mcserver, mcport):
+    def __init__(self, db, fs, mem):
         """
         do the database instance init works
         """
         print 'init db store class!!!'
-        #self.db = Connection(dbserver, dbport)['smartServer']
-        #self.fs = gridfs.GridFS(Connection(dbserver, dbport)['smartFiles'], collection='fs')
-        conn = ReplicaSetConnection("192.168.5.60:27017,192.168.7.52:27017,192.168.7.210:27017", replicaSet='ats_rs')
-        conn.read_preference = ReadPreference.SECONDARY_PREFERRED
-        self.db = conn['smartServer']
-        self.fs = gridfs.GridFS(conn['smartFiles'], collection='fs')
-        connstr = '%s:%s' % (mcserver, mcport)
-        self.mc = memcache.Client([connstr], debug=0)
+        self.db = db
+        self.fs = fs
+        self.mc = mem
         self.snapqueue = {}
 
     def counter(self, ctype):  
@@ -123,6 +127,9 @@ class dbStore(object):
         else:
             return {'token':token,'uid':uid}
 
+    def deleteToken(self,token):
+        tokens = self.db['token']
+        tokens.remove({'token':token})
 
     def createTestSession(self, sid, uid, planname, starttime, deviceid, devinfo):
         """
@@ -321,6 +328,8 @@ class dbStore(object):
         update a test case resut record in database
         If case get failed, write snapshot png files in GridFS
         """
+        timestamp = datetime.now().strftime(DATE_FORMAT_STR1)
+        self.mc.set(sid+'timestamp',timestamp)
         caseresult = self.db['caseresult']
         session = self.db['session']
         status = status.lower()
@@ -368,6 +377,8 @@ class dbStore(object):
         """
         if self.mc:
             self.mc.set(sid+'snap', snapfile)
+            timenow = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+            self.mc.set(sid+'snaptime',timenow)
 
         if not (sid+'-'+tid) in self.snapqueue:
             self.snapqueue[sid+'-'+tid] = []
@@ -387,8 +398,10 @@ class dbStore(object):
     
     def readTestLiveSnaps(self,sid):
         result = []
-        rdata = self.mc.get(sid+'snap')
-        result.append(rdata)
+        snap = self.mc.get(sid+'snap')
+        snaptime = self.mc.get(sid+'snaptime')
+        if not snap is None:
+            result.append({'snap':snap, 'snaptime':snaptime})
         return result
 
     def readTestLiveResults(self,sid):
@@ -430,4 +443,9 @@ class dbStore(object):
 
         return {'snaps':snaps, 'checksnap':checksnap}
 
-store = dbStore(dbserver='192.168.7.212', dbport=27017, mcserver='127.0.0.1',mcport='11211')
+
+dbImpl = getMongoDB("192.168.5.60:27017,192.168.7.52:27017,192.168.7.210:27017","ats_rs")
+fsImpl = getGridFS("192.168.5.60:27017,192.168.7.52:27017,192.168.7.210:27017","ats_rs")
+mcImpl = getMemcache("127.0.0.1:11211", 0)
+store = testStore(dbImpl, fsImpl, mcImpl)
+

@@ -1,12 +1,11 @@
-var WebServerURL = "http://"+window.location.host+"/smartquery";
-var SocketURL = "ws://192.168.7.212:8082";
-//function invokeWebApi(cmd, jdata, call){
-//    $.getJSON(WebServerURL+cmd+"?callback=?", jdata, call);
-//}
+var WebServerURL = "http://" + window.location.host + "/smartquery";
+var SocketURL = "ws://ats.borqs.com:81";
+
 var ajaxstart=function() {
      var winWidth=0;
      var winHeight=0;
-		//获取窗口宽度	
+
+     //获取窗口宽度	
      if(window.innerWidth) winWidth = window.innerWidth;	
      else if((document.body) && (document.body.clientWidth))	winWidth = document.body.clientWidth;
 	 
@@ -16,19 +15,19 @@ var ajaxstart=function() {
 	
      //通过深入Document内部对body进行检测，获取窗口大小
      if(document.documentElement && document.documentElement.clientHeight && document.documentElement.clientWidth) {
-		   winHeight = document.documentElement.clientHeight;
-		   winWidth = document.documentElement.clientWidth;
+         winHeight = document.documentElement.clientHeight;
+         winWidth = document.documentElement.clientWidth;
      }
 
      if(document.getElementById('img') !== undefined && document.getElementById('img') !== null ) {
-	        document.getElementById('img').style.left=""+(winWidth/2-70)+"px";
-	        document.getElementById('img').style.top=""+(winHeight/2)+"px";
-	        document.getElementById('img').innerHTML = "<a><img style='BORDER:none' src='static/img/loading.gif'></a>";   	
+	 document.getElementById('img').style.left=""+(winWidth/2-70)+"px";
+	 document.getElementById('img').style.top=""+(winHeight/2)+"px";
+	 document.getElementById('img').innerHTML = "<a><img style='BORDER:none' src='static/img/loading.gif'></a>";   	
      }	    		    
 }; 
 
 var ajaxend = function(){
-	if(document.getElementById('img') !== undefined && document.getElementById('img') !== null )
+    if(document.getElementById('img') !== undefined && document.getElementById('img') !== null )
         document.getElementById('img').innerHTML = '';
 };
 
@@ -103,13 +102,23 @@ var invokeWebApiEx = function(apiUrl,datap,render) {
 }
 
 function getWebsocket(subcmd){
-    return new WebSocket(SocketURL+subcmd);
+    try {
+        var ws = new WebSocket(SocketURL+subcmd);
+        return ws;
+    } catch (ex) {
+        return null;
+    }
 }
 
 function logout(){
-    $.cookie('ticket', '', { expires: -1 });
-    $.cookie('loginname', '', { expires: -1 });
-    window.location = "login.html";
+     //invokeWebApi('/user/logout',
+     //             {},
+     //             function (data){
+                      $.cookie('ticket', '', { expires: -1 });
+                      $.cookie('loginname', '', { expires: -1 });
+                      window.location = "login.html";
+     //             }
+     //            )
 }
 
 function getRequestParam(src,name){
@@ -119,9 +128,9 @@ function getRequestParam(src,name){
     var parami;
     if(params.length>0) {
         if(params.indexOf("&") >=0) {  // >=2 parameters
-                paramList=params.split( "&" );
+            paramList=params.split( "&" );
         } else {                       // 1 parameter
-                paramList[0] = params;
+            paramList[0] = params;
         }
         for(var i=0,listLength = paramList.length;i<listLength;i++) {
             parami = paramList[i].indexOf(name+"=" );

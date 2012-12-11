@@ -66,6 +66,27 @@ def doAuth():
     else:
         return wrapResults({"errors":{"msg":"Invalid params!", "code":"03"}})
 
+@appweb.route('/user/logout',method='GET')
+def doLogout():
+    """
+    URL:/user/auth
+    TYPE:http/POST
+
+    Get access token by username and password
+
+    @type token:string
+    @param token:access token of account
+    @rtype: JSON
+    @return: ok-{'results':{'token':(string)value}}
+             error-{'errors':{'code':0,'msg':(string)info}} 
+    """
+    jsond = request.params
+    if not jsond is None:
+        token = jsond['token']
+        return wrapResults(userLogout(token))
+    else:
+        return wrapResults({"errors":{"msg":"Invalid params!", "code":"03"}})
+
 @appweb.route('/test/session',method='GET')
 def doGetSessionList():
     """

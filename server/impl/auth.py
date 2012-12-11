@@ -47,3 +47,19 @@ def userAuth(appid,user,pswd):
         return {'results':rdata}
     else:
         return {'errors':rdata}
+
+def userLogout(token):
+    """
+    URL:/user/logout
+    TYPE:http/GET
+
+    Logout and drop the token
+
+    @type token:string
+    @param token:the access token of account
+    @rtype: JSON
+    @return: ok-{'results':{'token':(string)token, 'uid':(string)uid} }
+             error-{'errors':{'code':0,'msg':(string)msg}} 
+    """
+    rdata = store.deleteToken(token)
+    return {'results':1}

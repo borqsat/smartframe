@@ -12,17 +12,15 @@ appweb = Bottle()
 wslist = {} 
 @appweb.route('/test/session/<sid>/screen')
 def handle_screen_websocket(sid):
-    print 'handle snapshot request...'
-    token = '1122334455667788'
     wsock = request.environ.get('wsgi.websocket')
     if not wsock:
         abort(400, 'Expected WebSocket request.')
     else:
         if not sid in wslist:
             wslist[sid] = []
-        ret = getTestSessionInfo(token, sid)
+        ret = getTestSessionInfoEx(sid)
         if not ret is None:
-            wslist[sid].append(wsock)
+            wslist[sid].append({'ws':wsock, 'snaptime':''})
             deviceinfo = ret['results']['deviceinfo']
             wsock.send('snapsize:'+json.dumps(deviceinfo))
         else:
@@ -32,41 +30,25 @@ def handle_screen_websocket(sid):
         if len(wslist[sid]) == 0:
             break
         try:
-            snaps = getTestSessionSnaps(token, sid)
+            snaptime = ''
+            snapdata = ''
+            snaps = getTestLiveSnaps(sid)
             lenf = len(snaps)
-            print 'snap:%s' % lenf
-            msgdata = 'nop'
             if lenf > 0:
-                msgdata = 'snapshot:' + base64.encodestring(snaps[lenf-1])
-            gevent.sleep(0.3)
-            for i in wslist[sid]:
+                snapdata = base64.encodestring(snaps[lenf-1]['snap'])
+                snaptime = snaps[lenf-1]['snaptime']
+
+            for ws in wslist[sid]:
                 try:
-                    i.send(msgdata)
+                    #if snaptime != ws['snaptime']:
+                    ws['ws'].send('snapshot:' + snapdata)
+                    #    ws['snaptime'] = snaptime
+                    #else:
+                    #    ws['ws'].send('nop')
                 except:
-                    wslist[sid].remove(i)
-        except WebSocketError:
-            break
+                    wslist[sid].remove(ws)
 
-@appweb.route('/test/session/<sid>/terminal')
-def handle_console_websocket(sid):
-    token = '1122334455667788'
-    wsock = request.environ.get('wsgi.websocket')
-    if not wsock:
-        abort(400, 'Expected WebSocket request.')
-    else:
-        wsock.send('nop')
-
-    print 'start testcase!!!'
-    while True:
-        try:
-            message = wsock.receive()
-            testlive = getTestSessionResults(token, sid)
-            lenf = len(testlive)
-            msgdata = 'nop'
-            if lenf > 0:
-                msgdata = 'caseupdate:' + testlive[lenf-1]
-            time.sleep(1)
-            wsock.send(msgdata)
+            gevent.sleep(0.3)
         except WebSocketError:
             break
 
