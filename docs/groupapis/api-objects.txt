@@ -14,6 +14,7 @@ groupapis.doRemovememberFromGroup	groupapis-module.html#doRemovememberFromGroup
 groupapis.doRegister	groupapis-module.html#doRegister
 groupapis.doAddmemberToGroup	groupapis-module.html#doAddmemberToGroup
 groupapis.doUploadCaseFile	groupapis-module.html#doUploadCaseFile
+groupapis.doUpdateGroupTestSession	groupapis-module.html#doUpdateGroupTestSession
 groupapis.doDeleteGroupTestSession	groupapis-module.html#doDeleteGroupTestSession
 groupapis.doCreateCaseResult	groupapis-module.html#doCreateCaseResult
 groupapis.doUpdateCaseResult	groupapis-module.html#doUpdateCaseResult
