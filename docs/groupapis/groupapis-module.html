@@ -215,7 +215,7 @@
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a href="groupapis-module.html#doRemovememberFromGroup" class="summary-sig-name">doRemovememberFromGroup</a>(<span class="summary-sig-arg">gid</span>)</span><br />
-      URL:/group/&lt;gid&gt;/removemember TYPE:http/POST</td>
+      URL:/group/&lt;gid&gt;/delmember TYPE:http/POST</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="groupapis-pysrc.html#doRemovememberFromGroup">source&nbsp;code</a></span>
             
@@ -250,7 +250,7 @@
         <tr>
           <td><span class="summary-sig"><a href="groupapis-module.html#doCreateGroupTestSession" class="summary-sig-name">doCreateGroupTestSession</a>(<span class="summary-sig-arg">gid</span>,
         <span class="summary-sig-arg">sid</span>)</span><br />
-      URL:/group/&lt;gid&gt;/test/session/&lt;sid&gt;/create TYPE:http/POST</td>
+      URL:/group/&lt;gid&gt;/test/&lt;sid&gt;/create TYPE:http/POST</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="groupapis-pysrc.html#doCreateGroupTestSession">source&nbsp;code</a></span>
             
@@ -269,7 +269,7 @@
           <td><span class="summary-sig"><a href="groupapis-module.html#doCreateCaseResult" class="summary-sig-name">doCreateCaseResult</a>(<span class="summary-sig-arg">gid</span>,
         <span class="summary-sig-arg">sid</span>,
         <span class="summary-sig-arg">tid</span>)</span><br />
-      URL:/group/&lt;gid&gt;/test/session/&lt;sid&gt;:&lt;tid&gt;/create 
+      URL:/group/&lt;gid&gt;/test/&lt;sid&gt;/case/&lt;tid&gt;/create 
       TYPE:http/POST</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="groupapis-pysrc.html#doCreateCaseResult">source&nbsp;code</a></span>
@@ -289,7 +289,7 @@
           <td><span class="summary-sig"><a href="groupapis-module.html#doUpdateCaseResult" class="summary-sig-name">doUpdateCaseResult</a>(<span class="summary-sig-arg">gid</span>,
         <span class="summary-sig-arg">sid</span>,
         <span class="summary-sig-arg">tid</span>)</span><br />
-      URL:/group/&lt;gid&gt;/test/session/&lt;sid&gt;:&lt;tid&gt;/update 
+      URL:/group/&lt;gid&gt;/test/&lt;sid&gt;/case/&lt;tid&gt;/update 
       TYPE:http/POST</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="groupapis-pysrc.html#doUpdateCaseResult">source&nbsp;code</a></span>
@@ -309,7 +309,7 @@
           <td><span class="summary-sig"><a href="groupapis-module.html#doUploadCaseFile" class="summary-sig-name">doUploadCaseFile</a>(<span class="summary-sig-arg">gid</span>,
         <span class="summary-sig-arg">sid</span>,
         <span class="summary-sig-arg">tid</span>)</span><br />
-      URL:/group/&lt;gid&gt;/test/session/&lt;sid&gt;:&lt;tid&gt;/fileupload
+      URL:/group/&lt;gid&gt;/test/&lt;sid&gt;/case/&lt;tid&gt;/fileupload 
       TYPE:http/PUT</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="groupapis-pysrc.html#doUploadCaseFile">source&nbsp;code</a></span>
@@ -328,7 +328,7 @@
         <tr>
           <td><span class="summary-sig"><a href="groupapis-module.html#doUpdateGroupTestSession" class="summary-sig-name">doUpdateGroupTestSession</a>(<span class="summary-sig-arg">gid</span>,
         <span class="summary-sig-arg">sid</span>)</span><br />
-      URL:/group/&lt;gid&gt;/test/session/&lt;sid&gt;/update TYPE:http/POST</td>
+      URL:/group/&lt;gid&gt;/test/&lt;sid&gt;/update TYPE:http/POST</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="groupapis-pysrc.html#doUpdateGroupTestSession">source&nbsp;code</a></span>
             
@@ -346,7 +346,7 @@
         <tr>
           <td><span class="summary-sig"><a href="groupapis-module.html#doDeleteGroupTestSession" class="summary-sig-name">doDeleteGroupTestSession</a>(<span class="summary-sig-arg">gid</span>,
         <span class="summary-sig-arg">sid</span>)</span><br />
-      URL:/group/&lt;gid&gt;/test/session/&lt;sid&gt;/delete TYPE:http/GET</td>
+      URL:/group/&lt;gid&gt;/test/&lt;sid&gt;/delete TYPE:http/GET</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="groupapis-pysrc.html#doDeleteGroupTestSession">source&nbsp;code</a></span>
             
@@ -362,10 +362,11 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="groupapis-module.html#doGetGroupTestSessions" class="summary-sig-name">doGetGroupTestSessions</a>(<span class="summary-sig-arg">gid</span>)</span><br />
-      URL:/group/&lt;gid&gt;/test/session/summary TYPE:http/GET</td>
+          <td><span class="summary-sig"><a href="groupapis-module.html#doGetSessionInfo" class="summary-sig-name">doGetSessionInfo</a>(<span class="summary-sig-arg">gid</span>,
+        <span class="summary-sig-arg">sid</span>)</span><br />
+      URL:/group/&lt;gid&gt;/test/&lt;sid&gt;/results TYPE:http/GET</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="groupapis-pysrc.html#doGetGroupTestSessions">source&nbsp;code</a></span>
+            <span class="codelink"><a href="groupapis-pysrc.html#doGetSessionInfo">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -379,11 +380,10 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="groupapis-module.html#doGetSessionInfo" class="summary-sig-name">doGetSessionInfo</a>(<span class="summary-sig-arg">gid</span>,
-        <span class="summary-sig-arg">sid</span>)</span><br />
-      URL:/group/&lt;gid&gt;/test/session/&lt;sid&gt;/results TYPE:http/GET</td>
+          <td><span class="summary-sig"><a href="groupapis-module.html#doGetGroupTestSessions" class="summary-sig-name">doGetGroupTestSessions</a>(<span class="summary-sig-arg">gid</span>)</span><br />
+      URL:/group/&lt;gid&gt;/testsummary TYPE:http/GET</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="groupapis-pysrc.html#doGetSessionInfo">source&nbsp;code</a></span>
+            <span class="codelink"><a href="groupapis-pysrc.html#doGetGroupTestSessions">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -704,7 +704,7 @@
     </td>
   </tr></table>
   
-  <p>URL:/group/&lt;gid&gt;/removemember TYPE:http/POST</p>
+  <p>URL:/group/&lt;gid&gt;/delmember TYPE:http/POST</p>
   <p>remove members from a group</p>
   <dl class="fields">
     <dt>Parameters:</dt>
@@ -717,7 +717,7 @@
         <dd>ok-{'results':1} error-{'errors':{'code':0,'msg':(string)info}}</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
-        <li><code>@appweb.route('/group/<gid>/removemember', method= 'POST')</code></li>
+        <li><code>@appweb.route('/group/<gid>/delmember', method= 'POST')</code></li>
     </ul></dd>
   </dl>
 </td></tr></table>
@@ -772,8 +772,7 @@
     </td>
   </tr></table>
   
-  <p>URL:/group/&lt;gid&gt;/test/session/&lt;sid&gt;/create 
-  TYPE:http/POST</p>
+  <p>URL:/group/&lt;gid&gt;/test/&lt;sid&gt;/create TYPE:http/POST</p>
   <p>create a test session in group</p>
   <dl class="fields">
     <dt>Parameters:</dt>
@@ -788,7 +787,7 @@
           error-{'errors':{'code':value,'msg':(string)info}}</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
-        <li><code>@appweb.route('/group/<gid>/test/session/<sid>/create', method= 'POST')</code></li>
+        <li><code>@appweb.route('/group/<gid>/test/<sid>/create', method= 'POST')</code></li>
     </ul></dd>
   </dl>
 </td></tr></table>
@@ -809,7 +808,7 @@
     </td>
   </tr></table>
   
-  <p>URL:/group/&lt;gid&gt;/test/session/&lt;sid&gt;:&lt;tid&gt;/create 
+  <p>URL:/group/&lt;gid&gt;/test/&lt;sid&gt;/case/&lt;tid&gt;/create 
   TYPE:http/POST</p>
   <p>Creating a test case result.</p>
   <dl class="fields">
@@ -826,7 +825,7 @@
           error-{'errors':{'code':value,'msg':(string)info}}</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
-        <li><code>@appweb.route('/group/<gid>/test/session/<sid>:<tid>/create', method= 'POST')</code></li>
+        <li><code>@appweb.route('/group/<gid>/test/<sid>/case/<tid>/create', method= 'POST')</code></li>
     </ul></dd>
   </dl>
 </td></tr></table>
@@ -847,7 +846,7 @@
     </td>
   </tr></table>
   
-  <p>URL:/group/&lt;gid&gt;/test/session/&lt;sid&gt;:&lt;tid&gt;/update 
+  <p>URL:/group/&lt;gid&gt;/test/&lt;sid&gt;/case/&lt;tid&gt;/update 
   TYPE:http/POST</p>
   <p>Update the test case result by the tid of test case.</p>
   <dl class="fields">
@@ -864,7 +863,7 @@
           error-{'errors':{'code':value,'msg':(string)info}}</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
-        <li><code>@appweb.route('/group/<gid>/test/session/<sid>:<tid>/update', method= 'POST')</code></li>
+        <li><code>@appweb.route('/group/<gid>/test/<sid>/case/<tid>/update', method= 'POST')</code></li>
     </ul></dd>
   </dl>
 </td></tr></table>
@@ -885,7 +884,7 @@
     </td>
   </tr></table>
   
-  <p>URL:/group/&lt;gid&gt;/test/session/&lt;sid&gt;:&lt;tid&gt;/fileupload
+  <p>URL:/group/&lt;gid&gt;/test/&lt;sid&gt;/case/&lt;tid&gt;/fileupload 
   TYPE:http/PUT</p>
   <p>Update the test case result by the tid of test case.</p>
   <dl class="fields">
@@ -902,7 +901,7 @@
           error-{'errors':{'code':value,'msg':(string)info}}</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
-        <li><code>@appweb.route('/group/<gid>/test/session/<sid>:<tid>/fileupload', method= 'PUT')</code></li>
+        <li><code>@appweb.route('/group/<gid>/test/<sid>/case/<tid>/fileupload', method= 'PUT')</code></li>
     </ul></dd>
   </dl>
 </td></tr></table>
@@ -922,8 +921,7 @@
     </td>
   </tr></table>
   
-  <p>URL:/group/&lt;gid&gt;/test/session/&lt;sid&gt;/update 
-  TYPE:http/POST</p>
+  <p>URL:/group/&lt;gid&gt;/test/&lt;sid&gt;/update TYPE:http/POST</p>
   <p>update a test session in group</p>
   <dl class="fields">
     <dt>Parameters:</dt>
@@ -938,7 +936,7 @@
           error-{'errors':{'code':value,'msg':(string)info}}</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
-        <li><code>@appweb.route('/group/<gid>/test/session/<sid>/update', method= 'POST')</code></li>
+        <li><code>@appweb.route('/group/<gid>/test/<sid>/update', method= 'POST')</code></li>
     </ul></dd>
   </dl>
 </td></tr></table>
@@ -958,8 +956,7 @@
     </td>
   </tr></table>
   
-  <p>URL:/group/&lt;gid&gt;/test/session/&lt;sid&gt;/delete 
-  TYPE:http/GET</p>
+  <p>URL:/group/&lt;gid&gt;/test/&lt;sid&gt;/delete TYPE:http/GET</p>
   <p>delete a test session from group.</p>
   <dl class="fields">
     <dt>Parameters:</dt>
@@ -973,43 +970,7 @@
           error-{'errors':{'code':value,'msg':(string)info}}</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
-        <li><code>@appweb.route('/group/<gid>/test/session/<sid>/delete', method= 'GET')</code></li>
-    </ul></dd>
-  </dl>
-</td></tr></table>
-</div>
-<a name="doGetGroupTestSessions"></a>
-<div>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr><td>
-  <table width="100%" cellpadding="0" cellspacing="0" border="0">
-  <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">doGetGroupTestSessions</span>(<span class="sig-arg">gid</span>)</span>
-  </h3>
-  </td><td align="right" valign="top"
-    ><span class="codelink"><a href="groupapis-pysrc.html#doGetGroupTestSessions">source&nbsp;code</a></span>&nbsp;
-    </td>
-  </tr></table>
-  
-  <p>URL:/group/&lt;gid&gt;/test/session/summary TYPE:http/GET</p>
-  <p>get sessions summary of a group</p>
-  <dl class="fields">
-    <dt>Parameters:</dt>
-    <dd><ul class="nomargin-top">
-        <li><strong class="pname"><code>gid</code></strong> (string) - the id of group</li>
-        <li><strong class="pname"><code>token</code></strong> (string) - the access token</li>
-    </ul></dd>
-    <dt>Returns: JSON</dt>
-        <dd>ok-{'results':{'count':(int)count, 'sessions':[ 
-          {planname':(string)value,'starttime':(string)value, 
-          'result':{'total':(int)value, 'pass':(int)value, 
-          'fail':(int)value, 'error':(int)value}, 
-          'runtime':(string)value},... ] }} 
-          error-{'errors':{'code':value,'msg':(string)info}}</dd>
-    <dt>Decorators:</dt>
-    <dd><ul class="nomargin-top">
-        <li><code>@appweb.route('/group/<gid>/test/session/summary', method= 'GET')</code></li>
+        <li><code>@appweb.route('/group/<gid>/test/<sid>/delete', method= 'GET')</code></li>
     </ul></dd>
   </dl>
 </td></tr></table>
@@ -1029,8 +990,7 @@
     </td>
   </tr></table>
   
-  <p>URL:/group/&lt;gid&gt;/test/session/&lt;sid&gt;/results 
-  TYPE:http/GET</p>
+  <p>URL:/group/&lt;gid&gt;/test/&lt;sid&gt;/results TYPE:http/GET</p>
   <p>Get results of a test session by sid</p>
   <dl class="fields">
     <dt>Parameters:</dt>
@@ -1048,7 +1008,43 @@
           error-{'errors':{'code':value,'msg':(string)info}}</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
-        <li><code>@appweb.route('/group/<gid>/test/session/<sid>/results', method= 'GET')</code></li>
+        <li><code>@appweb.route('/group/<gid>/test/<sid>/results', method= 'GET')</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="doGetGroupTestSessions"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">doGetGroupTestSessions</span>(<span class="sig-arg">gid</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="groupapis-pysrc.html#doGetGroupTestSessions">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>URL:/group/&lt;gid&gt;/testsummary TYPE:http/GET</p>
+  <p>get sessions summary of a group</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>gid</code></strong> (string) - the id of group</li>
+        <li><strong class="pname"><code>token</code></strong> (string) - the access token</li>
+    </ul></dd>
+    <dt>Returns: JSON</dt>
+        <dd>ok-{'results':{'count':(int)count, 'sessions':[ 
+          {planname':(string)value,'starttime':(string)value, 
+          'result':{'total':(int)value, 'pass':(int)value, 
+          'fail':(int)value, 'error':(int)value}, 
+          'runtime':(string)value},... ] }} 
+          error-{'errors':{'code':value,'msg':(string)info}}</dd>
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@appweb.route('/group/<gid>/testsummary', method= 'GET')</code></li>
     </ul></dd>
   </dl>
 </td></tr></table>
@@ -1080,7 +1076,7 @@
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Thu Dec 13 15:50:21 2012
+    Generated by Epydoc 3.0.1 on Fri Dec 14 14:46:58 2012
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
