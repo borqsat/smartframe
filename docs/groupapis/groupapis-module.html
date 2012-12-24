@@ -95,8 +95,25 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="groupapis-module.html#doUpdateUserInfo" class="summary-sig-name">doUpdateUserInfo</a>(<span class="summary-sig-arg">uid</span>)</span><br />
-      URL:/account/&lt;uid&gt;/update TYPE:http/POST</td>
+          <td><span class="summary-sig"><a href="groupapis-module.html#doChangePassword" class="summary-sig-name">doChangePassword</a>()</span><br />
+      URL:/account/change_password TYPE:http/POST</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="groupapis-pysrc.html#doChangePassword">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">JSON</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="groupapis-module.html#doUpdateUserInfo" class="summary-sig-name">doUpdateUserInfo</a>()</span><br />
+      URL:/account/update TYPE:http/POST</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="groupapis-pysrc.html#doUpdateUserInfo">source&nbsp;code</a></span>
             
@@ -112,27 +129,10 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="groupapis-module.html#doGetUserInfo" class="summary-sig-name">doGetUserInfo</a>(<span class="summary-sig-arg">uid</span>)</span><br />
-      URL:/account/&lt;uid&gt;/info TYPE:http/GET</td>
+          <td><span class="summary-sig"><a href="groupapis-module.html#doGetUserInfo" class="summary-sig-name">doGetUserInfo</a>()</span><br />
+      URL:/account/info TYPE:http/GET</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="groupapis-pysrc.html#doGetUserInfo">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">JSON</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a href="groupapis-module.html#doLogin" class="summary-sig-name">doLogin</a>()</span><br />
-      URL:/account/login TYPE:http/POST</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="groupapis-pysrc.html#doLogin">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -150,6 +150,23 @@
       URL:/account/logout TYPE:http/GET</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="groupapis-pysrc.html#doLogout">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">JSON</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="groupapis-module.html#doLogin" class="summary-sig-name">doLogin</a>()</span><br />
+      URL:/account/list TYPE:http/GET</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="groupapis-pysrc.html#doLogin">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -380,6 +397,46 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
+          <td><span class="summary-sig"><a href="groupapis-module.html#doGetCaseResultLog" class="summary-sig-name">doGetCaseResultLog</a>(<span class="summary-sig-arg">gid</span>,
+        <span class="summary-sig-arg">sid</span>,
+        <span class="summary-sig-arg">tid</span>)</span><br />
+      URL:/group/&lt;gid&gt;/test/&lt;sid&gt;/case/&lt;tid&gt;/log 
+      TYPE:http/GET</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="groupapis-pysrc.html#doGetCaseResultLog">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">JSON</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="groupapis-module.html#doGetCaseResultSnapshots" class="summary-sig-name">doGetCaseResultSnapshots</a>(<span class="summary-sig-arg">gid</span>,
+        <span class="summary-sig-arg">sid</span>,
+        <span class="summary-sig-arg">tid</span>)</span><br />
+      URL:/group/&lt;gid&gt;/test/&lt;sid&gt;/case/&lt;tid&gt;/snaps 
+      TYPE:http/GET</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="groupapis-pysrc.html#doGetCaseResultSnapshots">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">JSON</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
           <td><span class="summary-sig"><a href="groupapis-module.html#doGetGroupTestSessions" class="summary-sig-name">doGetGroupTestSessions</a>(<span class="summary-sig-arg">gid</span>)</span><br />
       URL:/group/&lt;gid&gt;/testsummary TYPE:http/GET</td>
           <td align="right" valign="top">
@@ -414,6 +471,34 @@
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
         <a name="appweb"></a><span class="summary-name">appweb</span> = <code title="Bottle()">Bottle()</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="ROLES"></a><span class="summary-name">ROLES</span> = <code title="['system', 'owner', 'admin', 'member']"><code class="variable-group">[</code><code class="variable-quote">'</code><code class="variable-string">system</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">owner</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">admin</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">member</code><code class="variable-quote">'</code><code class="variable-group">]</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="ROLES_IDX"></a><span class="summary-name">ROLES_IDX</span> = <code title="{'admin': 2, 'member': 3, 'owner': 1, 'system': 0}"><code class="variable-group">{</code><code class="variable-quote">'</code><code class="variable-string">admin</code><code class="variable-quote">'</code><code class="variable-op">: </code>2<code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">member</code><code class="variable-quote">'</code><code class="variable-op">: </code>3<code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">owner</code><code class="variable-quote">'</code><code class="variable-op">: </code>1<code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">system</code><code class="variable-quote">'</code><code class="variable-op">: </code>0<code class="variable-group">}</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__package__"></a><span class="summary-name">__package__</span> = <code title="None">None</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="store"></a><span class="summary-name">store</span> = <code title="&lt;impl.dbstore.testStore object at 0x92cb1ac&gt;">&lt;impl.dbstore.testStore object at 0x92cb1ac&gt;</code>
     </td>
   </tr>
 </table>
@@ -459,10 +544,43 @@
           'telephone':(string)telephone, 'company':(string)company}}</li>
     </ul></dd>
     <dt>Returns: JSON</dt>
-        <dd>ok-{'results':1} error-{'errors':{'code':0,'msg':(string)info}}</dd>
+        <dd>ok-{'results':1} 
+          error-{'errors':{'code':(string)code,'msg':(string)info}}</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
         <li><code>@appweb.route('/account/register', method= 'POST')</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="doChangePassword"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">doChangePassword</span>()</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="groupapis-pysrc.html#doChangePassword">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>URL:/account/change_password TYPE:http/POST</p>
+  <p>update the info of user</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>data</code></strong> (JSON) - {'token':(string)token,'oldpassword':(string)oldpassword, 
+          'newpassword':(string)newpassword }</li>
+    </ul></dd>
+    <dt>Returns: JSON</dt>
+        <dd>ok-{'results':1} 
+          error-{'errors':{'code':(string)code,'msg':(string)info}}</dd>
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@appweb.route('/account/change_password', method= 'POST')</code></li>
     </ul></dd>
   </dl>
 </td></tr></table>
@@ -474,15 +592,15 @@
 <tr><td>
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">doUpdateUserInfo</span>(<span class="sig-arg">uid</span>)</span>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">doUpdateUserInfo</span>()</span>
   </h3>
   </td><td align="right" valign="top"
     ><span class="codelink"><a href="groupapis-pysrc.html#doUpdateUserInfo">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
-  <p>URL:/account/&lt;uid&gt;/update TYPE:http/POST</p>
-  <p>update the info for a user</p>
+  <p>URL:/account/update TYPE:http/POST</p>
+  <p>update the info of user</p>
   <dl class="fields">
     <dt>Parameters:</dt>
     <dd><ul class="nomargin-top">
@@ -491,10 +609,11 @@
           'telephone':(string)telephone, 'company':(string)company}}</li>
     </ul></dd>
     <dt>Returns: JSON</dt>
-        <dd>ok-{'results':1} error-{'errors':{'code':0,'msg':(string)info}}</dd>
+        <dd>ok-{'results':1} 
+          error-{'errors':{'code':(string)code,'msg':(string)info}}</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
-        <li><code>@appweb.route('/account/<uid>/update', method= 'POST')</code></li>
+        <li><code>@appweb.route('/account/update', method= 'POST')</code></li>
     </ul></dd>
   </dl>
 </td></tr></table>
@@ -506,14 +625,14 @@
 <tr><td>
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">doGetUserInfo</span>(<span class="sig-arg">uid</span>)</span>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">doGetUserInfo</span>()</span>
   </h3>
   </td><td align="right" valign="top"
     ><span class="codelink"><a href="groupapis-pysrc.html#doGetUserInfo">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
-  <p>URL:/account/&lt;uid&gt;/info TYPE:http/GET</p>
+  <p>URL:/account/info TYPE:http/GET</p>
   <p>Get information of user</p>
   <dl class="fields">
     <dt>Parameters:</dt>
@@ -524,42 +643,10 @@
     <dt>Returns: JSON</dt>
         <dd>ok-{'results':{'username':(string)username,'inGroups':[{'gid':gid1,'groupname':(string)name1},{'gid':gid2,'groupname':(string)name2},...],'info':{'email':(string)email,
           'telephone':(string)telephone, 'company':(string)company}}} 
-          error-{'errors':{'code':0,'msg':(string)info}}</dd>
+          error-{'errors':{'code':(string)code,'msg':(string)info}}</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
-        <li><code>@appweb.route('/account/<uid>/info', method= 'GET')</code></li>
-    </ul></dd>
-  </dl>
-</td></tr></table>
-</div>
-<a name="doLogin"></a>
-<div>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr><td>
-  <table width="100%" cellpadding="0" cellspacing="0" border="0">
-  <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">doLogin</span>()</span>
-  </h3>
-  </td><td align="right" valign="top"
-    ><span class="codelink"><a href="groupapis-pysrc.html#doLogin">source&nbsp;code</a></span>&nbsp;
-    </td>
-  </tr></table>
-  
-  <p>URL:/account/login TYPE:http/POST</p>
-  <p>Get access token by username and password</p>
-  <dl class="fields">
-    <dt>Parameters:</dt>
-    <dd><ul class="nomargin-top">
-        <li><strong class="pname"><code>data</code></strong> (JSON) - {'appid':(int)appid, 'username':(string)username, 
-          'password':(string)password}</li>
-    </ul></dd>
-    <dt>Returns: JSON</dt>
-        <dd>ok-{'results':{'token':(string)value}} 
-          error-{'errors':{'code':0,'msg':(string)info}}</dd>
-    <dt>Decorators:</dt>
-    <dd><ul class="nomargin-top">
-        <li><code>@appweb.route('/account/login', method= 'POST')</code></li>
+        <li><code>@appweb.route('/account/info', method= 'GET')</code></li>
     </ul></dd>
   </dl>
 </td></tr></table>
@@ -586,10 +673,43 @@
         <li><strong class="pname"><code>token</code></strong> (string) - access token of account</li>
     </ul></dd>
     <dt>Returns: JSON</dt>
-        <dd>ok-{'results':1} error-{'errors':{'code':0,'msg':(string)info}}</dd>
+        <dd>ok-{'results':1} 
+          error-{'errors':{'code':(string)code,'msg':(string)info}}</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
         <li><code>@appweb.route('/account/logout', method= 'GET')</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="doLogin"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">doLogin</span>()</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="groupapis-pysrc.html#doLogin">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>URL:/account/list TYPE:http/GET</p>
+  <p>Get access token by username and password</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>data</code></strong> (JSON) - {'token':(string)token}</li>
+    </ul></dd>
+    <dt>Returns: JSON</dt>
+        <dd>ok-{'results':{'count':(int)value, 
+          'users':[{'uid':(string)uid,'username':(string)username},{'uid':(string)uid,'username':(string)username}]}}
+          error-{'errors':{'code':(string)code,'msg':(string)info}}</dd>
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@appweb.route('/account/list', method= 'GET')</code></li>
     </ul></dd>
   </dl>
 </td></tr></table>
@@ -617,7 +737,8 @@
           'groupname':(string)name, 'info':(JSON)info}</li>
     </ul></dd>
     <dt>Returns: JSON</dt>
-        <dd>ok-{'results':1} error-{'errors':{'code':0,'msg':(string)info}}</dd>
+        <dd>ok-{'results':1} 
+          error-{'errors':{'code':(string)code,'msg':(string)info}}</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
         <li><code>@appweb.route('/group/create', method= 'POST')</code></li>
@@ -649,7 +770,8 @@
           'members':[(int)uid1,(int)uid2,(int)uid3 ...]}</li>
     </ul></dd>
     <dt>Returns: JSON</dt>
-        <dd>ok-{'results':1} error-{'errors':{'code':0,'msg':(string)info}}</dd>
+        <dd>ok-{'results':1} 
+          error-{'errors':{'code':(string)code,'msg':(string)info}}</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
         <li><code>@appweb.route('/group/<gid>/addmember', method= 'POST')</code></li>
@@ -682,7 +804,8 @@
           'role':(int)roleId}, ...]}</li>
     </ul></dd>
     <dt>Returns: JSON</dt>
-        <dd>ok-{'results':1} error-{'errors':{'code':0,'msg':(string)info}}</dd>
+        <dd>ok-{'results':1} 
+          error-{'errors':{'code':(string)code,'msg':(string)info}}</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
         <li><code>@appweb.route('/group/<gid>/setmember', method= 'POST')</code></li>
@@ -714,7 +837,8 @@
           (int)uid2, (int)uid3 ...]}</li>
     </ul></dd>
     <dt>Returns: JSON</dt>
-        <dd>ok-{'results':1} error-{'errors':{'code':0,'msg':(string)info}}</dd>
+        <dd>ok-{'results':1} 
+          error-{'errors':{'code':(string)code,'msg':(string)info}}</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
         <li><code>@appweb.route('/group/<gid>/delmember', method= 'POST')</code></li>
@@ -749,7 +873,7 @@
           'members':[{'uid':(int)uid1, 
           'role':(int)roleId1},{'uid':(int)uid2, 
           'role':(int)roleId2},...]}} 
-          error-{'errors':{'code':0,'msg':(string)info}}</dd>
+          error-{'errors':{'code':(string)code,'msg':(string)info}}</dd>
     <dt>Decorators:</dt>
     <dd><ul class="nomargin-top">
         <li><code>@appweb.route('/group/<gid>/info', method= 'GET')</code></li>
@@ -1013,6 +1137,81 @@
   </dl>
 </td></tr></table>
 </div>
+<a name="doGetCaseResultLog"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">doGetCaseResultLog</span>(<span class="sig-arg">gid</span>,
+        <span class="sig-arg">sid</span>,
+        <span class="sig-arg">tid</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="groupapis-pysrc.html#doGetCaseResultLog">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>URL:/group/&lt;gid&gt;/test/&lt;sid&gt;/case/&lt;tid&gt;/log 
+  TYPE:http/GET</p>
+  <p>Get test case log file</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>gid</code></strong> (string) - the id of group</li>
+        <li><strong class="pname"><code>sid</code></strong> (string) - the id of test session</li>
+        <li><strong class="pname"><code>tid</code></strong> (string) - the id of case result</li>
+        <li><strong class="pname"><code>data</code></strong> (JSON) - {'token':(string)value}</li>
+    </ul></dd>
+    <dt>Returns: JSON</dt>
+        <dd>ok error-{'errors':{'code':value,'msg':(string)info}}</dd>
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@appweb.route('/group/<gid>/test/<sid>/case/<tid>/log', method= 'GET')</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="doGetCaseResultSnapshots"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">doGetCaseResultSnapshots</span>(<span class="sig-arg">gid</span>,
+        <span class="sig-arg">sid</span>,
+        <span class="sig-arg">tid</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="groupapis-pysrc.html#doGetCaseResultSnapshots">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>URL:/group/&lt;gid&gt;/test/&lt;sid&gt;/case/&lt;tid&gt;/snaps 
+  TYPE:http/GET</p>
+  <p>Get detail of a test case result by sid&amp;tid</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>gid</code></strong> (string) - the id of group</li>
+        <li><strong class="pname"><code>sid</code></strong> (string) - the id of test session</li>
+        <li><strong class="pname"><code>tid</code></strong> (string) - the id of case result</li>
+        <li><strong class="pname"><code>data</code></strong> (JSON) - {'token':(string)value}</li>
+    </ul></dd>
+    <dt>Returns: JSON</dt>
+        <dd>ok-{'results':{snaps:[{'title':(string)title, 
+          'data':(string)base64Data}, {'title':(string)title, 
+          'data':(string)base64Data}]}} 
+          error-{'errors':{'code':value,'msg':(string)info}}</dd>
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@appweb.route('/group/<gid>/test/<sid>/case/<tid>/snaps', method= 'GET')</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
 <a name="doGetGroupTestSessions"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
@@ -1076,7 +1275,7 @@
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Fri Dec 14 14:46:58 2012
+    Generated by Epydoc 3.0.1 on Mon Dec 24 14:20:30 2012
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
