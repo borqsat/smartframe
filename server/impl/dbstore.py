@@ -8,26 +8,26 @@ from bson.objectid import ObjectId
 from datetime import datetime
 import pymongo
 from pymongo import *
-#from pymongo import ReplicaSetConnection
-#from pymongo.read_preferences import ReadPreference
-#from pymongo import ReadPreference
-#from pymongo.errors import AutoReconnect
+from pymongo import ReplicaSetConnection
+from pymongo.read_preferences import ReadPreference
+from pymongo import ReadPreference
+from pymongo.errors import AutoReconnect
 
 DATE_FORMAT_STR1 = "%Y-%m-%d %H:%M:%S"
 DATE_FORMAT_STR = "%Y.%m.%d-%H.%M.%S"
 IDLE_TIME_OUT = 1800
 
 def getMongoDB(server, port):
-    #conn = ReplicaSetConnection(connstr, replicaSet=replica)
-    #conn.read_preference = ReadPreference.SECONDARY_PREFERRED
-    conn = Connection(server,port)
+    conn = ReplicaSetConnection(connstr, replicaSet=replica)
+    conn.read_preference = ReadPreference.SECONDARY_PREFERRED
+    #conn = Connection(server,port)
     db = conn.smartServer
     return db
 
 def getGridFS(server,port):
-    #conn = ReplicaSetConnection(connstr, replicaSet=replica)
-    #conn.read_preference = ReadPreference.SECONDARY_PREFERRED
-    conn = Connection(server,port)
+    conn = ReplicaSetConnection(connstr, replicaSet=replica)
+    conn.read_preference = ReadPreference.SECONDARY_PREFERRED
+    #conn = Connection(server,port)
     fs = gridfs.GridFS(conn.smartFiles, collection='fs')
     return fs 
     
@@ -587,11 +587,11 @@ class testStore(object):
         return {'snaps':snaps, 'checksnap':checksnap}
 
 
-#dbImpl = getMongoDB("192.168.5.60:27017,192.168.7.52:27017,192.168.7.210:27017","ats_rs")
-#fsImpl = getGridFS("192.168.5.60:27017,192.168.7.52:27017,192.168.7.210:27017","ats_rs")
+dbImpl = getMongoDB("192.168.5.60:27017,192.168.7.52:27017,192.168.5.156:27017","ats_rs")
+fsImpl = getGridFS("192.168.5.60:27017,192.168.7.52:27017,192.168.5.156:27017","ats_rs")
 
-dbImpl = getMongoDB("192.168.7.212",27017)
-fsImpl = getGridFS("192.168.7.212",27017)
+#dbImpl = getMongoDB("192.168.7.212",27017)
+#fsImpl = getGridFS("192.168.7.212",27017)
 
 mcImpl = getMemcache("127.0.0.1:11211", 0)
 store = testStore(dbImpl, fsImpl, mcImpl)
