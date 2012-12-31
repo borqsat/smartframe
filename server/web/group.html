@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>smartServer</title>  
+    <link href="static/css/jquery-ui-1.8.16.custom.css" rel="stylesheet">
+    <link href="static/css/core.css" rel="stylesheet"> 
+    <link href="static/css/bootstrap.css" rel="stylesheet">   
+</head>
+  
+<body  class="page-index full-content">
+
+<div id="surface" class="clearfix" style="height: 786px;">
+    <div id="header">
+        <a title="smartServer" href="index.html" class="header-btn header-logo">
+          <span>SmartServer</span> 
+        </a>
+        <a class="header-btn show-search-btn light-hover js-show-search" href="javascript:void(0);"> 
+          <span class="app-icon light search-icon">Search</span> 
+        </a>
+ 
+        <div id="header-search">
+            <form>
+                <label for="search-text">Global Search</label>
+                <input type="text" value="" spellcheck="false" autocorrect="off" autocomplete="off" id="search-text">
+                <input type="submit" value="Search" id="search-submit">
+                <a href="javascript:void(0);" class="header-btn header-search js-search-submit">
+                   <span class="app-icon light search-icon"></span> 
+                </a> 
+           </form>
+        </div>
+        <div>
+            <a title="Everything else. Support, how-tos, documentation, and apps" href="" class="header-btn header-help"> 
+               <span class="app-icon light manual-icon"></span> 
+               <span class="header-btn-text">Help</span> 
+            </a> 
+        </div>
+
+        <div class="header-user">
+            <a href="javascript:void(0);" class="header-auth member js-open-header-member-menu"> 
+              <img width="30" height="30" title="" alt="" src="http://storage.aliyun.com/wutong-data/system/1_S.jpg" class="member-avatar">        
+            </a>
+       </div>
+    </div>
+
+
+    <div class="clearfix" id="content">
+        <div class="board-wrapper disabled-list-guide">
+            <div class="clearfix" id="board-header"> 
+                <a title="Open the board menu." class="board-name js-board-title js-open-board-menu-title" href="">
+                    <span class="app-icon org-icon"></span>
+                    <span class="text" id="group-name"> </span> 
+                </a>   
+            </div>
+
+            <div class="board-widgets">   
+                <div class="board-widget board-widget-members clearfix"> 
+                    <div name="showSidebarMembers" class="board-widget-title"> 
+                        <h3>Members</h3>
+                    </div>
+                    <div class="board-widget-content"> 
+                        <div class="board-widget-members js-list-board-members  assignable-members  clearfix">
+                            <ul id="group-members"></ul>
+                        </div>  
+                        <a class="button-link js-open-manage-board-members" id="add-member"> 
+                            <span class="app-icon small-icon member-icon"></span> Add Members… 
+                        </a>  
+                     </div>
+                </div>
+            </div>
+
+            <div id="board" class="clearfix">       
+                <div id="session-div">
+                    <div>
+                        <div id="summary_div" style="width:50%;float:left"></div>
+                        <div id="device_div" style="width:50%;float:left"></div>
+                    </div>
+
+                    <div style="margin-left:0">
+                        <div id="rtcases_div"></div>
+                        <div id="cases_div"></div>     
+                        <div id="history_div" class="carousel slide" style="display:none">
+                            <!-- Carousel items -->
+                            <div id="img_list" class="carousel-inner"></div>
+                             <!-- Carousel nav -->
+                            <a class="carousel-control left" href="#history_div" data-slide="prev">&lsaquo;</a>
+                            <a class="carousel-control right" href="#history_div" data-slide="next">&rsaquo;</a>
+                        </div>            
+            
+                        <div id="snap_div" style="display:none">
+                        <canvas id="snapCanvas" border="1px"></canvas>
+                        </div>                  
+                    </div>
+                </div>
+
+
+                <div id="group-div">
+                    <ul class="nav nav-tabs">
+                       <li id="tabrun" class="active"><a href="javascript:viewRun();">Running</a></li>
+                       <li id="tabstop"><a href="javascript:viewStop();">Stopped</a></li>
+                    </ul>
+                    <div id="run_cycle_panel"></div>
+                    <div id="stop_cycle_panel" style="display:none"></div>
+                </div>
+
+            </div> 
+        </div> 
+    </div>
+</div>
+
+<div id="dialog-user" title="Add new Member" style="display:none">
+     <div class="content clearfix" style="">
+        <form>
+            <label for="name">UserName</label>
+            <select id='name'></select>
+            <label for="role">UserRole</label>
+            <select id='role'>
+                <option value='admin'>admin</option>
+                <option value='member'>member</option>
+            </select>
+        </form>
+      </div>
+</div>
+<div id="progress-img" style="position:absolute;z-index:1999;"></div>
+
+</body>
+    <!-- global jquery.js -->
+    <script type="text/javascript" src="static/js/jquery-1.7.2.min.js"></script>
+    <script type="text/javascript" src="static/js/jquery.cookie.js"></script>   
+    <script type="text/javascript" src="static/js/jquery-ui.js"></script>    
+    <script type="text/javascript" src="static/js/json2.js"></script>
+    <script type="text/javascript" src="static/js/bootstrap.js"></script>
+    <script type="text/javascript" src="static/js/underscore-min.js"></script>
+    <script type="text/javascript" src="static/js/backbone.js"></script>
+    <script type="text/javascript" src="static/js/util.js"></script>
+    <script type="text/javascript" src="static/js/tablepage.js"></script>
+    <script type="text/javascript" src="static/js/group.js"></script>
+</html>

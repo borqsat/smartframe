@@ -1,0 +1,48 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8"> 
+	<meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,user-scalable=no"> 
+	<title>Verify Email</title> 
+	<link rel="stylesheet" href="static/css/core.css">
+  </head>
+
+  <body class="account-page">
+
+  <div id="surface">
+    <div class="account-header">
+      <span><h2>smartServer</h2></span>
+    </div>
+    <div id="content-view" class="account-content clearfix">
+
+      <form novalidate="" class="clearfix">
+        <h2> Account Email Verification page</h2>
+        <span id="verifyinfo"></span>
+        <a href="login.html">Back to Login Page</a>        
+      </form>
+    </div>
+   </div>
+  <script type="text/javascript" src="static/js/jquery-1.7.2.min.js"></script>
+  <script type="text/javascript" src="static/js/jquery.cookie.js"></script>  
+  <script type="text/javascript" src="static/js/json2.js"></script>
+  <script type="text/javascript" src="static/js/util.js"></script> 
+  <script type="text/javascript">
+      $(function(){
+            var token = getRequestParam(window.location.href,'token');       
+            invokeWebApiEx("/account/active", 
+                            {"token": token},
+                            function(data) {
+                                var datac = data.results;
+                                if(datac !== undefined) {
+                                   $('#verifyinfo').html('<p class="confirm">Active username successfully!</p>')
+                                } else {
+                                   $('#verifyinfo').html('<p class="error">Active username failed!</p>')
+                                }
+                            }
+                          );
+      })
+  </script>
+
+</body>
+
+</html>
