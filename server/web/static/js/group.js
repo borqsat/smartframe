@@ -1,15 +1,18 @@
 function showGroupInfo(id) {
       invokeWebApi('/group/'+id+'/info',
-                 prepareData({}),
-                 function(data){
-                    data = data.results;
-                    if(data === undefined) return;
-                    $('#group-name').html(data['groupname']);         
-                    var $groupprf = $('#group-members').html('');
-                    $.each(data['members'],function(i, o) {
-                          $groupprf.append('<li>' + o['username'] +  '</li>')
-                    })
-                 })
+                   prepareData({}),
+                   function(data){
+                       data = data.results;
+                       if(data === undefined) return;
+                       $('#group-name').html(data['groupname']);         
+                       var $groupprf = $('#group-members').html('');
+                       var members = data['members'];
+                       _appglobal.members = [];
+                       $.each(members,function(i, o) {
+                           _appglobal.members.push(o['username']);
+                           $groupprf.append('<li>' + o['username'] +  '</li>')
+                       })
+                   })
       $('#dialog-user')
                       .dialog({
                           resizable:false,
@@ -42,8 +45,10 @@ function showGroupInfo(id) {
                         data = data.results;
                         $('#dialog-user #name').html('');
                         var users = data['users'];
+                        var userlist = [];
                         $.each(users, function(i, o) {
-                            $('#dialog-user #name').append('<option value="'+o['uid']+'">' + o['username']+ '</option>')
+                            if(_appglobal.members.indexOf(o['username']) < 0)
+                                $('#dialog-user #name').append('<option value="'+o['uid']+'">' + o['username']+ '</option>')
                         })                        
                         $("#dialog-user").dialog("open");
                       })
@@ -474,7 +479,7 @@ function createLiveCaseSummary(data) {
           "<td>"+data['tester']+"</td>"+
           "<td>"+data['starttime']+"</td>"+
           "<td>"+setRunTime(data['runtime'])+"</td>"+
-          "<td><a id="+oId+">livesnaps</a></td>"+
+          "<td><a id="+oId+" href=\"javascript:void(0)\">livesnaps</a></td>"+
           "</tr>";
     $summary_table.append($tr);
     $('#'+oId).click(function() {

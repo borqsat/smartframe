@@ -17,14 +17,14 @@ DATE_FORMAT_STR1 = "%Y-%m-%d %H:%M:%S"
 DATE_FORMAT_STR = "%Y.%m.%d-%H.%M.%S"
 IDLE_TIME_OUT = 1800
 
-def getMongoDB(server, port):
+def getMongoDB(connstr,replica):
     conn = ReplicaSetConnection(connstr, replicaSet=replica)
     conn.read_preference = ReadPreference.SECONDARY_PREFERRED
     #conn = Connection(server,port)
     db = conn.smartServer
     return db
 
-def getGridFS(server,port):
+def getGridFS(connstr,replica):
     conn = ReplicaSetConnection(connstr, replicaSet=replica)
     conn.read_preference = ReadPreference.SECONDARY_PREFERRED
     #conn = Connection(server,port)
@@ -228,7 +228,10 @@ class testStore(object):
 
     def userExists(self,username,password):
         users = self._db['users']
-        rdata = users.find_one({'username':username,'password':password})
+        if '@' in username:
+            rdata = users.find_one({'info.email':username,'password':password})
+        else:
+            rdata = users.find_one({'username':username,'password':password})
         if not rdata is None:
             return rdata['uid']
         else:

@@ -20,7 +20,7 @@ def sendVerifyMail(receiver,user,token):
     msg = msg+'\r\nThis mail send from smartServer automatically, do not reply this mail directly.\r\n'
     msg = msg+'\r\nYour account \"%s\" has been initialized.\r\n' % (user)
     msg = msg+'\r\nPlease verify your current email via the url as below.\r\n'    
-    msg = msg+'\r\nsmart Server: http://192.168.5.216/smartserver/verify.html?token=%s\r\n' % (token)
+    msg = msg+'\r\nsmart Server: http://ats.borqs.com/smartserver/verify.html?token=%s\r\n' % (token)
     msg = msg+'\r\nBest Regards!\r\n'
     msg = msg+'smartServer Admin\r\n'
 

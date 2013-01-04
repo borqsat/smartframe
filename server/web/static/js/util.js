@@ -1,5 +1,5 @@
-var apiBaseURL = "/smartserver/api";
-var SocketURL  = "ws://192.168.5.216:8082";
+var apiBaseURL = "/smartapi";
+var SocketURL  = "ws://ats.borqs.com:81";
 var _appglobal = function () {};
 
 var _ajaxstart=function() {
