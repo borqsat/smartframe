@@ -4,13 +4,14 @@ function showGroupInfo(id) {
                    function(data){
                        data = data.results;
                        if(data === undefined) return;
+                       $('#group-name').parent().attr('href','#/group/'+id);
                        $('#group-name').html(data['groupname']);         
                        var $groupprf = $('#group-members').html('');
                        var members = data['members'];
                        _appglobal.members = [];
                        $.each(members,function(i, o) {
                            _appglobal.members.push(o['username']);
-                           $groupprf.append('<li>' + o['username'] +  '</li>')
+                           $groupprf.append('<li>' + o['username'] + '('+ o['role'] + ')</li>')
                        })
                    })
       $('#dialog-user')
@@ -59,8 +60,11 @@ function showTestSummary(id) {
     $('#session-div').tab();
     invokeWebApi('/group/'+id+'/testsummary',
                  prepareData({}),
-                 renderTestSessionView
-                 );
+                 function(data) {
+                     renderTestSessionView(data);
+                     _appglobal.t2 = setTimeout("showTestSummary(\""+id+"\")",60000);
+                 }
+                );
 }
 
 function viewRun(){
@@ -83,8 +87,8 @@ function deleteSessionById(gid,sid) {
     if(confirm('Confirm to delete this session?')) {
         invokeWebApi('/group/'+gid+'/test/'+sid+'/delete',
                     prepareData({}),
-                    function(data){ 
-                       createSessionList();
+                    function(data){
+                       showSessionInfo(_appglobal.gid,_appglobal.sid); 
                     });
     }
 }
@@ -115,14 +119,14 @@ function renderTestSessionDiv(div_id, test_session){
     test_session.sort(function(a,b){return b._id - a._id});
     for(var k = 0; k < test_session.length;k++){
             var value = test_session[k];
-            var key = value._id;
+            var key = value.id;
             var allId = "all_"+key;
             var failId = 'fail_'+key;
             var passId = 'pass_'+key;
             var errorId = 'error_'+key;
             if($("#"+allId).length <= 0){
                     $tr = "<tr>"+
-                      "<td><a href=\"#session/"+value.sid+"\">"+key+"</a></td>"+
+                      "<td><a href=\"#/group/"+value.gid+"/session/"+value.sid+"\">"+key+"</a></td>"+
                       "<td>"+value.deviceinfo.product+"</td>"+      
                       "<td>"+value.deviceinfo.revision+"</td>"+
                       "<td>"+value.deviceid+"</td>"+
@@ -170,7 +174,7 @@ function renderCaseSnaps(gid, sid, tid){
     var wd = parseInt(_appglobal.deviceinfo['width']) >> zoom;
     var ht = parseInt(_appglobal.deviceinfo['height']) >> zoom;
     $('#history_div').dialog({title:"case snapshots",
-                              height: ht + 160,
+                              height: ht + 120,
                               width: 2*wd + 80,
                               resizable:false,
                               modal: true});
@@ -260,16 +264,16 @@ function renderCaseSnaps(gid, sid, tid){
 
 function createDetailTable(ids){
     var $div_detail = $("#cases_div");
-    var $tb = $('<table>').attr('id', ids).attr('class','table table-striped table-hover');
+    var $tb = $('<table>').attr('id', ids).attr('class','table table-striped table-hover').attr('style','table-layout:fixed;word-wrap:break-word;');
     var $th = '<thead>'+
               '<tr>'+
 	      '<th align="left" width="5%">tid</th>'+
-              '<th align="left" width="15%">TestCase</th>'+
+              '<th align="left" width="24%">TestCase</th>'+
 	      '<th align="left" width="15%">StartTime</th>'+
-	      '<th align="left" width="10%">Result</th>'+
-	      '<th align="left" width="35%">Traceinfo</th>'+
-	      '<th align="left" width="10%">Log</th>'+
-	      '<th align="left" width="10%">snaps</th>'+
+	      '<th align="left" width="6%">Result</th>'+
+	      '<th align="left" width="40%">Traceinfo</th>'+
+	      '<th align="left" width="5%">Log</th>'+
+	      '<th align="left" width="5%">snaps</th>'+
 	      '</tr>'+
 	      '</thead>';
     var $tbody = '<tbody></tbody>';
@@ -369,10 +373,10 @@ function fillDetailTable(data, ids, tag){
                                         "<td>"+ctime+"</td>"+
                                         "<td><font color=\"red\">"+cresult+"<font></td>"+
                                         "<td>"+
-                                        "<div>"+ctraceinfo+"</div>"+
+                                        "\""+ctraceinfo+"\""+
                                         "</td>"+
                                         "<td><a href=\""+apiBaseURL+"/group/"+cgid+"/test/"+csid+"/case/"+ctid+"/log\">log</a> </td>"+
-                                        "<td><a href=\"javascript:showHistoryDiv('"+cgid+"','"+csid+"','"+ctid+"');\">snapshot</a></td>"+
+                                        "<td><a href=\"javascript:showHistoryDiv('"+cgid+"','"+csid+"','"+ctid+"');\">snaps</a></td>"+
                                         "</tr>";
 
          } else if (cresult === 'error') {
@@ -382,7 +386,7 @@ function fillDetailTable(data, ids, tag){
                                      "<td>"+ctime+"</td>"+
                                      "<td><font color=\"red\">"+cresult+"<font></td>"+
                                      "<td>"+
-                                     "<div>"+ctraceinfo+"</div>"+
+                                     "\""+ctraceinfo+"\""+
                                      "</td>"+
                                      "<td></td>"+
                                      "<td></td>"+
@@ -424,6 +428,9 @@ function showSessionInfo(gid,sid) {
                        _appglobal.deviceinfo.deviceid = data.results.deviceid;
                        _appglobal.caseslist = sortTestCases(data.results.cases);
                        createDeviceInfo(_appglobal.deviceinfo);
+                       //$('#session-name').show();
+                       $('#session-name').parent().attr('href','#/group/'+gid+'/session/'+sid);
+                       $('#session-name').html('test:'+data.results['id']);
                        if(data['results'] !== undefined && data['results']['endtime'] !== 'N/A') {
                            createHistoryCaseSummary(data);
                            createDetailTable('table_all_' + sid);
@@ -432,7 +439,7 @@ function showSessionInfo(gid,sid) {
                            createLiveCaseSummary(data);
                            createDetailTable('table_all_' + sid);
                            fillDetailTable(_appglobal.caseslist,'table_all_' + sid,'all');
-                           //setTimeout("createAllTestList(\""+key+"\")", 60000);
+                           _appglobal.t1 = setTimeout("showSessionInfo(\""+gid+"\",\""+sid+"\")", 60000);
                        }
                   });
 }
@@ -545,24 +552,31 @@ function createHistoryCaseSummary(data) {
 
 var AppRouter = Backbone.Router.extend({
     routes: {
-        "":"showGroupView",
-        "session/:sid" : "showSessionView",
+        "group/:gid":"showGroupView",
+        "group/:gid/session/:sid" : "showSessionView",
     },
-    showGroupView: function(){
+    showGroupView: function(gid){
         checkLogIn();
-        _appglobal.gid = getRequestParam(window.location.href,'group'); 
         $('#group-div').show();
         $('#session-div').hide();
-        showGroupInfo(_appglobal.gid);
-        showTestSummary(_appglobal.gid);
+        $('#session-name').hide();
+        _appglobal.gid = gid;
+        if(_appglobal.t1 !== undefined) clearTimeout(_appglobal.t1);
+        if(_appglobal.t2 !== undefined) clearTimeout(_appglobal.t2);
+        showGroupInfo(gid);
+        showTestSummary(gid);
     },
-    showSessionView: function(sid){
-        checkLogIn();
-        _appglobal.gid = getRequestParam(window.location.href,'group');   
+    showSessionView: function(gid,sid){
+        checkLogIn();   
         $('#group-div').hide();
         $('#session-div').show();
-        showGroupInfo(_appglobal.gid);
-        showSessionInfo(_appglobal.gid,sid);
+        $('#session-name').show();
+        _appglobal.gid = gid;
+        _appglobal.sid = sid;
+        if(_appglobal.t1 !== undefined) clearTimeout(_appglobal.t1);
+        if(_appglobal.t2 !== undefined) clearTimeout(_appglobal.t2);
+        showGroupInfo(gid);
+        showSessionInfo(gid,sid);
     }
 });
 var index_router = new AppRouter;

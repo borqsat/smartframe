@@ -14,10 +14,7 @@
 <div id="surface" class="clearfix" style="height: 786px;">
     <div id="header">
         <a title="smartServer" href="index.html" class="header-btn header-logo">
-          <span>SmartServer</span> 
-        </a>
-        <a class="header-btn show-search-btn light-hover js-show-search" href="javascript:void(0);"> 
-          <span class="app-icon light search-icon">Search</span> 
+           <img src="static/img/logo-h.png" heigth="30px" alt="smart server">
         </a>
  
         <div id="header-search">
@@ -49,10 +46,13 @@
     <div class="clearfix" id="content">
         <div class="board-wrapper disabled-list-guide">
             <div class="clearfix" id="board-header"> 
-                <a title="Open the board menu." class="board-name js-board-title js-open-board-menu-title" href="">
+                <a title="Reopen the group." class="board-name js-board-title js-open-board-menu-title" href="">
                     <span class="app-icon org-icon"></span>
-                    <span class="text" id="group-name"> </span> 
+                    <span class="text" id="group-name"></span>
                 </a>   
+                <a title="This test session within the group" class="board-name org-name js-org-name" href="">
+                   <span id="session-name"></span>
+                </a>
             </div>
 
             <div class="board-widgets">   
@@ -65,7 +65,8 @@
                             <ul id="group-members"></ul>
                         </div>  
                         <a class="button-link js-open-manage-board-members" id="add-member"> 
-                            <span class="app-icon small-icon member-icon"></span> Add Members… 
+                            <span class="app-icon small-icon member-icon"></span>
+                            <span> Add Members… </span>
                         </a>  
                      </div>
                 </div>
@@ -74,13 +75,13 @@
             <div id="board" class="clearfix">       
                 <div id="session-div">
                     <div>
-                        <div id="summary_div" style="width:50%;float:left"></div>
-                        <div id="device_div" style="width:50%;float:left"></div>
+                        <div id="summary_div" style="width:55%;float:left"></div>
+                        <div id="device_div" style="width:45%;float:left"></div>
                     </div>
 
                     <div style="margin-left:0">
-                        <div id="rtcases_div"></div>
-                        <div id="cases_div"></div>     
+                        <!--div id="rtcases_div"></div-->
+                        <div id="cases_div"></div>
                         <div id="history_div" class="carousel slide" style="display:none">
                             <!-- Carousel items -->
                             <div id="img_list" class="carousel-inner"></div>
@@ -117,8 +118,8 @@
             <select id='name'></select>
             <label for="role">UserRole</label>
             <select id='role'>
-                <option value='admin'>admin</option>
                 <option value='member'>member</option>
+                <option value='admin'>admin</option>
             </select>
         </form>
       </div>

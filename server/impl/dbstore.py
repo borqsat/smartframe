@@ -122,7 +122,7 @@ class testStore(object):
         m = hashlib.md5()
         m.update(str(uuid.uuid1()))
         token = m.hexdigest()
-        tokens.insert({'uid':uid,'appid':'00','token':token,'expires':'300000'})
+        tokens.insert({'uid':uid,'appid':'02','token':token,'expires':'300000'})
         return {'uid':uid,'token':token}
 
     def createGroup(self,groupname,info):
@@ -195,19 +195,27 @@ class testStore(object):
     def userInfo(self,uid):
         baseinfo = {}
         ingroups = []
+        intests = []
         groupname = 'N/A'
         users = self._db['users']
         groups = self._db['groups']
-        retData = users.find({'uid':uid})
-        for t in retData:
+        retuser = users.find_one({'uid':uid})
+        if not retuser is None:
+            uid = retuser['uid']
             members = self._db['group_members']
             retgroup = members.find({'uid':uid})
             for d in retgroup:
-                retname = groups.find({'gid':d['gid']})
-                for k in retname:
-                    groupname = k['groupname']
-                ingroups.append({'gid':d['gid'],'groupname':groupname,'role':d['role']})  
-            result = {'uid':t['uid'],'username':t['username'],'info':t['info'], 'inGroups':ingroups}
+                retname = groups.find_one({'gid':d['gid']})
+                if not retname is None: groupname = retname['groupname']
+                ingroups.append({'gid': d['gid'],'groupname':groupname,'role':d['role']})  
+
+            sessions = self._db['testsessions']
+            rettests = sessions.find({'tester':uid})
+            for d in rettests:
+                retname = groups.find_one({'gid':d['gid']})
+                if not retname is None:groupname = retname['groupname']
+                intests.append({'sessionid':d['id'],'sid':d['sid'],'groupname':groupname,'gid':d['gid']})
+            result = {'uid':retuser['uid'],'username':retuser['username'],'info':retuser['info'], 'inGroups':ingroups,'inTests':intests}
         return result
 
     def userChangePassword(self,uid,oldpassword,newpassword):
@@ -292,20 +300,10 @@ class testStore(object):
         """
         write a test session record in database
         """
-        _id = self.counter('group'+gid)
-        session = self._db['testsessions']
-        session.insert({'_id':_id,
-                       'gid':gid,
-                       'sid':sid,
-                       'tester':uid,
-                       'planname':planname,
-                       'starttime':starttime,
-                       'endtime': 'N/A', 
-                       'runtime': 0,
-                       'summary':{'total':0,'pass':0,'fail':0,'error':0},
-                       'deviceid':deviceid,
-                       'deviceinfo':devinfo
-                      });
+        vid = self.counter('group'+gid)
+        sessions = self._db['testsessions']
+        if deviceid is None:deviceid = 'N/A'
+        sessions.insert({'id':vid,'gid':gid,'sid':sid,'tester':uid,'planname':planname,'starttime':starttime,'endtime': 'N/A', 'runtime': 0,'summary':{'total':0,'pass':0,'fail':0,'error':0},'deviceid':deviceid,'deviceinfo':devinfo});
 
     def updateTestSession(self,gid,sid,endtime):
         """
@@ -350,11 +348,10 @@ class testStore(object):
                 if idletime >= IDLE_TIME_OUT:
                     d['endtime'] = 'idle'
 
-            rrdata = users.find({'uid':d['tester']})
-            for dd in rrdata:
-                user = dd['username']
+            retuser = users.find_one({'uid':d['tester']})
+            if not retuser is None: user = retuser['username']
 
-            lists.append({'_id':d['_id'],
+            lists.append({'id':d['id'],
                          'sid':d['sid'],
                          'gid':d['gid'],
                          'tester':user,
@@ -399,7 +396,7 @@ class testStore(object):
             for dd in rrdata:
                 user = dd['username']
 
-            result = {'_id':d['_id'],
+            result = {'id':d['id'],
                       'gid':d['gid'],        
                       'sid':d['sid'],
                       'tester':user,

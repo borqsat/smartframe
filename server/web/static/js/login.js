@@ -31,7 +31,7 @@ var AppRouter = Backbone.Router.extend({
                                   var username = $('#username').val();
                                   var password = $('#password').val();
                                   if(username === '' || password === '') {
-                                      $('#warning').html('<p class="error">The username & password can\'t be null.</p>');
+                                      $('#warning').html('<p class="error">The username,password can\'t be null.</p>');
                                       return;
                                   }
                                   $.cookie('password', password, { expires: 7 });
@@ -49,16 +49,24 @@ var AppRouter = Backbone.Router.extend({
                                  var email = $('#regemail').val();                              
                                  var password = $('#regpassword').val();
                                  var username = $('#regusername').val();
+                                 var phone = $('#regphone').val();
+                                 var company = $('#regcompany').val();
+                                 var pattern = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9_-])+/;
+                                 $('#regwarning').html('');
                                  if(email === '' || username === '' || password === '') {
-                                      $('#regwarning').html('<p class="error">The email& username & password can\'t be null.</p>');
-                                      return;
-                                  }
+                                     $('#regwarning').html('<p class="error">The email, username, password can\'t be null.</p>');
+                                     return;
+                                 }
+                                 /*if(email.search(pattern) < 0) {
+                                     $('#regwarning').html('<p class="error">Invalid format for email.</p>');
+                                     return;
+                                 } */
                                  invokeWebApiEx("/account/register",
                                                 { 
                                                 "username":username,
                                                 "password":password,
                                                 "appid":"01",
-                                                "info":{"email":email,"phone":"N/A","company":"N/A"}
+                                                "info":{"email":email, "phone":phone, "company":company}
                                                 },
                                                 afterRegister
                                   );

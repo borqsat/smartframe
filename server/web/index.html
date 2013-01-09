@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta content="maximum-scale=1.0,width=device-width,initial-scale=1.0,user-scalable=0" name="viewport">
-    <title>smartServer</title> 
+    <title>SmartAT</title> 
     <link href="static/css/bootstrap.css" rel="stylesheet"> 
     <link href="static/css/jquery-ui-1.8.16.custom.css" rel="stylesheet">   
     <link href="static/css/core.css" rel="stylesheet">
@@ -15,12 +15,8 @@
 
 <div id="header">
   <a title="smartServer" href="index.html" class="header-btn header-logo">
-      <span>SmartServer</span> 
+      <img src="static/img/logo-h.png" height="30px" alt="smart server"> 
   </a>
-  <a class="header-btn show-search-btn light-hover js-show-search" href="javascript:void(0);"> 
-      <span class="app-icon light search-icon">Search</span> 
-  </a> 
- 
   <div id="header-search">
     <form>
       <label for="search-text">Global Search</label>
@@ -50,7 +46,7 @@
 <div style="margin-top: 40px;" class="member-detail-modal">
 
  <div class="window-main-col clearfix">
-     <div>
+     <div id="group-div">
         <div class="window-module"> 
             <div class="window-module-title"> 
                <span class="app-icon window-module-title-icon org-icon"> </span>
@@ -60,8 +56,18 @@
                </span> 
             </div>
             <ul id="user-groups" class="boards-list bold-list gutter js-list-boards"></ul> 
-       </div> 
-     </div>
+        </div>
+    </div>
+
+    <div id="session-div">         
+        <div class="window-module">
+            <div class="window-module-title">
+               <span class="app-icon window-module-title-icon board-icon"> </span>
+               <h3>My Tests</h3>
+            </div>
+            <ul id="user-tests" class="boards-list bold-list gutter js-list-boards"></ul>
+        </div>
+    </div>
 </div>
 
 <div class="window-sidebar"> 
@@ -75,9 +81,8 @@
   <hr>
 
   <ul class="sidebar-nav">
-      <li> <a href="" class="js-member-boards active">Groups</a> </li>
-      <li> <a href="#showTests" class="js-member-profile">Tests</a> </li>
-      <li> <a href="#showActivities" class="js-member-profile">Activities</a> </li>
+      <li><a href="" class="js-member-groups">Groups</a> </li>
+      <li><a href="#showTests" class="js-member-tests">Tests</a> </li>
   </ul>
 
   <hr style="margin: 8px 0;"> 

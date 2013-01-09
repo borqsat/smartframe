@@ -11,14 +11,14 @@
 
   <div id="surface">
     <div class="account-header">
-      <span><h2>smartServer</h2></span>
+      <img src="static/img/logo-s.png" alt="smart server">
     </div>
     <div id="content-view" class="account-content clearfix">
 
       <form novalidate="" class="clearfix">
-        <h2> Account Email Verification page</h2>
-        <span id="verifyinfo"></span>
-        <a href="login.html">Back to Login Page</a>        
+         <h2>Email Verification page</h2>
+         <span id="verifyinfo"></span>
+         <a href="login.html">Back to Login Page</a>        
       </form>
     </div>
    </div>
@@ -34,9 +34,9 @@
                             function(data) {
                                 var datac = data.results;
                                 if(datac !== undefined) {
-                                   $('#verifyinfo').html('<p class="confirm">Active username successfully!</p>')
+                                    $('#verifyinfo').html('<p class="confirm">Your Email verified successfully!</p>')
                                 } else {
-                                   $('#verifyinfo').html('<p class="error">Active username failed!</p>')
+                                    $('#verifyinfo').html('<p class="error">Your Email verfied failed!</p>')
                                 }
                             }
                           );

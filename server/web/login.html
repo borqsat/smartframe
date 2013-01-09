@@ -3,7 +3,7 @@
     <head>
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8"> 
 	<meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,user-scalable=no"> 
-	<title>Login SmartServer</title> 
+	<title>Login SmartAT</title> 
 	<link rel="stylesheet" href="static/css/core.css">    
   </head>
 
@@ -11,7 +11,7 @@
 
   <div id="surface">
     <div class="account-header">
-      <span><h2>SmartServer</h2></span>
+      <img src="static/img/logo-s.png" alt="smart server">
     </div>
 
     <div id="login-view" class="account-content clearfix" style="display:none">
@@ -22,7 +22,7 @@
         <input type="email" autofocus="" autocapitalize="off" spellcheck="false" autocorrect="off" autocomplete="off" tabindex="1" value="" id="username" name="username">
 
         <label for="password">Password</label>
-        <input type="password" tabindex="2" id="password" name="password">
+        <input type="password" tabindex="2" id="password" name="password" onkeydown="if(event.keyCode==13){btnlogin.click()}">
 
         <a tabindex="4" style="margin: 10px 0 0;" class="quiet right" href="#forgot">Forgot your password?</a>
         <input type="button" tabindex="3" value="Log In" class="primary" id="btnlogin">
@@ -55,7 +55,8 @@
           <input type="button" tabindex="6" value="Register" class="primary" id="btnsignup">
 
           <p class="quiet clear">
-             <a href=""><strong>Already own an Account.</strong></a>
+              Already have an account.
+             <a href=""><strong>Login</strong></a>
           </p>
       </form>
     </div>
