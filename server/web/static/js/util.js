@@ -46,7 +46,7 @@ var invokeWebApi = function(apiUrl,dataj,render) {
         if(data['results'] === undefined) {
            if(data['errors'] !== undefined) {
               alert(data['errors']['msg']);
-              if(data['errors']['code'] === '01') window.location = "login.html";
+              if(data['errors']['code'] === '01') window.location = "./login.html";
            } else alert("Web server occurr unexpected error!");
            _ajaxend();
         } else {
@@ -108,7 +108,7 @@ var invokeWebApiEx = function(apiUrl,datap,render) {
 
 function checkLogIn() {
     if($.cookie('ticket') === undefined || $.cookie('ticket') === null) {
-        window.location = "login.html";
+        window.location = "./login.html";
     }
 }
 
@@ -118,7 +118,7 @@ function logout(){
                   function (data){
                         $.cookie('ticket', '', { expires: -1 });
                         $.cookie('loginname', '', { expires: -1 });
-                        window.location = "login.html";
+                        window.location = "./login.html";
                   }
                 )
 }
