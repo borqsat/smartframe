@@ -1,15 +1,14 @@
 from gevent import monkey; monkey.patch_all()
-from bottle import request, response, Bottle, abort
+from bottle import request, response, Bottle
 from gevent.pywsgi import WSGIServer
 from impl.test import *
 from impl.account import *
 from impl.group import *
-import json, base64, time
 import smtplib
 
 appweb = Bottle()
 
-def sendVerifyMail(receiver,user,token):
+def sendVerifyMail(receiver, user, token):
     sender   = 'borqsat@borqs.com'  
     subject  = 'Please active your account from SmartAT'
     mailuser = 'borqsat@borqs.com'
@@ -59,7 +58,52 @@ def sendInviteMail(receiver, user, group, token):
         print e
     smtp.quit()
 
+def err(code='500', msg='Unknown error!'):
+    """
+    generate error message.
+    """
+    return {'errors': {'code': code, 'msg': msg}}
+
+# decorator to check if the request has a content-type not in *types.
+# if no, then return error message.
+# **It must be put after other bottle decorators, like route.**
+def content_type(*types):
+    def content_type_wrapper(fn):
+        def wrapper(*args, **kwargs):
+            if request.headers.get('Content-type') not in types:
+                return err(code='500', msg='Invalid content-type header!')
+            else:
+                return fn(*args, **kwargs)
+        return wrapper
+    return content_type_wrapper
+
+# decorator to check if the request contrains a valid token. The token param may be in query, form or json
+# If yes, put the uid in the **kwargs
+# **It must be put after other bottle decorators, like route.**
+def logined(fn):
+    def wrapper(*args, **kwargs):
+        uid = None
+        if request.params and 'token' in request.params:
+            # get token from params and then get uid
+            uid = getUserId(request.params['token'])
+        elif uid is None and request.json and 'token' in request.json:
+            # get token from request.json and then get uid
+            uid = getUserId(request.json['token'])
+        else:
+            # No token param.
+            return err('03', 'The API needs valid token parameter. No token provided in the request!')
+
+        if uid is None:
+            # if the uid is None, then we return an error message.
+            return err('01', 'Invalid token!')
+        else:
+            # else we add uid to kwargs and then invoke fn
+            kwargs['uid'] = uid
+            return fn(*args, **kwargs)
+    return wrapper
+
 @appweb.route('/account/register',method='POST')
+@content_type('application/json')
 def doRegister():
     """
     URL:/account/register
@@ -73,25 +117,19 @@ def doRegister():
     @return: ok-{'results':1}
              error-{'errors':{'code':(string)code,'msg':(string)info}} 
     """
-    content_type = request.headers.get('Content-Type')
-    if not (content_type):
-        return {'errors':{'code':'500', 'msg':'Missing Content-Type'}}
-    else:
-        jsond = request.json
-        if not jsond is None:
-            appid = jsond['appid']
-            username = jsond['username']
-            password = jsond['password']
-            info = jsond['info']
-            ret = userRegister(appid, username, password, info)
-            if ret.has_key('results'):
-                sendVerifyMail(info['email'],username,ret['results']['token'])
-            return ret
-        else:
-            return {'errors':{'msg':'Invalid params!', 'code':'03'}}
+    appid = request.json['appid']
+    username = request.json['username']
+    password = request.json['password']
+    info = request.json['info']
+    ret = userRegister(appid, username, password, info)
+    if ret.has_key('results'):
+        sendVerifyMail(info['email'], username, ret['results']['token'])
+    return ret
 
 @appweb.route('/account/changepasswd',method='POST')
-def doChangePassword():
+@content_type('application/json')
+@logined
+def doChangePassword(uid):
     """
     URL:/account/change_password
     TYPE:http/POST
@@ -104,24 +142,12 @@ def doChangePassword():
     @return: ok-{'results':1}
              error-{'errors':{'code':(string)code,'msg':(string)info}} 
     """
-    content_type = request.headers.get('Content-Type')
-    if not (content_type):
-        return {'errors':{'code':'500', 'msg':'Missing Content-Type'}}
-    else:
-        jsond = request.json
-        if not jsond is None:
-            token = jsond['token']
-            oldpassword = jsond['oldpassword']
-            newpassword = jsond['newpassword']
-            uid = getUserId(token)
-            if uid is None:
-                return {'errors':{'code':'01','msg':'Invalid token.'}}
-            return userChangePassword(uid,oldpassword,newpassword)
-        else:
-            return {'errors':{'msg':'Invalid params!', 'code':'03'}}
+    return userChangePassword(uid, request.json['oldpassword'], request.json['newpassword'])
 
 @appweb.route('/account/update',method='POST')
-def doUpdateUserInfo():
+@content_type('application/json')
+@logined
+def doUpdateUserInfo(uid):
     """
     URL:/account/update
     TYPE:http/POST
@@ -136,22 +162,12 @@ def doUpdateUserInfo():
     @return: ok-{'results':1}
              error-{'errors':{'code':(string)code,'msg':(string)info}} 
     """
-    content_type = request.headers.get('Content-Type')
-    if not (content_type):
-        return {'errors':{'code':'500', 'msg':'Missing Content-Type'}}
-    else:
-        jsond = request.json
-        if not jsond is None:
-            token = jsond['token']
-            info = jsond['info']
-            if uid is None:
-                return {'errors':{'code':'01','msg':'Invalid token.'}}
-            return userUpdateInfo(uid,info)
-        else:
-            return {'errors':{'msg':'Invalid params!', 'code':'03'}}
+    return userUpdateInfo(uid, request.json['info'])
 
 @appweb.route('/account/invite',method='POST')
-def doInviteUser():
+@content_type('application/json')
+@logined
+def doInviteUser(uid):
     """
     URL:/account/invite
     TYPE:http/POST
@@ -164,30 +180,20 @@ def doInviteUser():
     @return: ok-{'results':{'token':(string)token}}
              error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
-    content_type = request.headers.get('Content-Type')
-    if not (content_type):
-        return {'errors':{'code':'500', 'msg':'Missing Content-Type'}}
-    else:
-        jsond = request.json
-        if not jsond is None:
-            appid = jsond['appid']            
-            token = jsond['token']
-            email = jsond['email']
-            username = jsond['username']
-            groupname = jsond['groupname']            
-            gid = jsond['gid']
-            uid = getUserId(token)
-            if uid is None:
-                return {'errors':{'code':'01','msg':'Invalid token.'}}
-            rdata = inviteUser(appid,email,gid,uid)
-            if rdata.has_key('results'):
-                sendInviteMail(email, username, groupname, ret['results']['token'])
-            return rdata
-        else:
-            return {'errors':{'msg':'Invalid params!', 'code':'03'}}
+    appid = request.json['appid']
+    email = request.json['email']
+    username = request.json['username']
+    groupname = request.json['groupname']
+    gid = request.json['gid']
+    rdata = inviteUser(appid, email, gid, uid)
+    if rdata.has_key('results'):
+        sendInviteMail(email, username, groupname, rdata['results']['token'])
+    return rdata
 
 @appweb.route('/account/active',method='POST')
-def doActiveUser():
+@content_type('application/json')
+@logined
+def doActiveUser(uid):
     """
     URL:/account/active
     TYPE:http/POST
@@ -200,24 +206,14 @@ def doActiveUser():
     @return: ok-{'results':{'uid':(string)uid}}
              error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
-    content_type = request.headers.get('Content-Type')
-    if not (content_type):
-        return {'errors':{'code':'500', 'msg':'Missing Content-Type'}}
-    else:
-        jsond = request.json
-        if not jsond is None:
-            token = jsond['token']
-            uid = getUserId(token)
-            if uid is None:
-                return {'errors':{'code':'01','msg':'Invalid token.'}}
-            rdata = activeUser(uid)
-            userLogout(token)
-            return rdata
-        else:
-            return {'errors':{'msg':'Invalid params!', 'code':'03'}}
+    token = request.json['token']
+    rdata = activeUser(uid)
+    userLogout(token)
+    return rdata
 
 @appweb.route('/account/info',method='GET')
-def doGetUserInfo():
+@logined
+def doGetUserInfo(uid):
     """
     URL:/account/info
     TYPE:http/GET
@@ -232,17 +228,10 @@ def doGetUserInfo():
     @return: ok-{'results':{'username':(string)username,'inGroups':[{'gid':gid1,'groupname':(string)name1},{'gid':gid2,'groupname':(string)name2},...],'info':{'email':(string)email, 'telephone':(string)telephone, 'company':(string)company}}}
              error-{'errors':{'code':(string)code,'msg':(string)info}} 
     """
-    jsond = request.params
-    if not jsond is None:
-        token = jsond['token']
-        uid = getUserId(token)
-        if uid is None:
-            return {'errors':{'code':'01','msg':'Invalid token.'}}
-        return getUserInfo(uid)
-    else:
-        return {'errors':{'msg':'Invalid params!', 'code':'03'}}
+    return getUserInfo(uid)
 
 @appweb.route('/account/login',method='POST')
+@content_type('application/json')
 def doLogin():
     """
     URL:/account/login
@@ -256,21 +245,15 @@ def doLogin():
     @return: ok-{'results':{'token':(string)value}}
              error-{'errors':{'code':(string)code,'msg':(string)info}} 
     """
-    content_type = request.headers.get('Content-Type')
-    if not (content_type):
-        return {'errors':{'msg':'Missing Content-Type','code':'500'}}
-    else:
-        jsond = request.json
-        if not jsond is None:
-            appid = jsond['appid']
-            username = jsond['username']
-            password = jsond['password']
-            return userLogin(appid,username,password)
-        else:
-            return {'errors':{'msg':'Invalid params!','code':'03'}}
+    jsond = request.json
+    appid = jsond['appid']
+    username = jsond['username']
+    password = jsond['password']
+    return userLogin(appid, username, password)
 
 @appweb.route('/account/logout',method='GET')
-def doLogout():
+@logined
+def doLogout(uid):
     """
     URL:/account/logout
     TYPE:http/GET
@@ -283,15 +266,11 @@ def doLogout():
     @return: ok-{'results':1}
              error-{'errors':{'code':(string)code,'msg':(string)info}} 
     """
-    jsond = request.params
-    if not jsond is None:
-        token = jsond['token']
-        return userLogout(token)
-    else:
-        return {'errors':{'msg':'Invalid params!', 'code':'03'}}
+    return userLogout(request.params['token'])
 
 @appweb.route('/account/list',method='GET')
-def doLogin():
+@logined
+def accountlist(uid):
     """
     URL:/account/list
     TYPE:http/GET
@@ -304,18 +283,12 @@ def doLogin():
     @return: ok-{'results':{'count':(int)value, 'users':[{'uid':(string)uid,'username':(string)username},{'uid':(string)uid,'username':(string)username}]}}
              error-{'errors':{'code':(string)code,'msg':(string)info}} 
     """
-    jsond = request.params
-    if not jsond is None:
-        token = jsond['token']
-        uid = getUserId(token)
-        if uid is None:
-            return {'errors':{'code':'01','msg':'Invalid token.'}} 
-        return getUserList()
-    else:
-        return {'errors':{'msg':'Invalid params!', 'code':'03'}}
+    return getUserList()
 
 @appweb.route('/group/create',method='POST')
-def doCreateGroup():
+@content_type('application/json')
+@logined
+def doCreateGroup(uid):
     """
     URL:/group/create
     TYPE:http/POST
@@ -328,24 +301,12 @@ def doCreateGroup():
     @return: ok-{'results':1}
              error-{'errors':{'code':(string)code,'msg':(string)info}} 
     """
-    content_type = request.headers.get('Content-Type')
-    if not (content_type):
-        return {'errors':{'msg':'Missing Content-Type','code':'500'}}
-    else:
-        jsond = request.json
-        if not jsond is None:
-            token = jsond['token']
-            groupname = jsond['groupname']
-            info = jsond['info']
-            uid = getUserId(token)
-            if uid is None:
-                return {'errors':{'code':'01','msg':'Invalid token.'}}      
-            return createGroup(uid,groupname,info)
-        else:
-            return {'errors':{'msg':'Invalid params!','code':'03'}}
+    return createGroup(uid, request.json['groupname'], request.json['info'])
 
 @appweb.route('/group/<gid>/addmember',method='POST')
-def doAddmemberToGroup(gid):
+@content_type('application/json')
+@logined
+def doAddmemberToGroup(gid, uid):
     """
     URL:/group/<gid>/addmember
     TYPE:http/POST
@@ -360,23 +321,12 @@ def doAddmemberToGroup(gid):
     @return: ok-{'results':1}
              error-{'errors':{'code':(string)code,'msg':(string)info}} 
     """
-    content_type = request.headers.get('Content-Type')
-    if not (content_type):
-        return {'errors':{'msg':'Missing Content-Type','code':'500'}}
-    else:
-        jsond = request.json
-        if not jsond is None:
-            token = jsond['token'] 
-            members = jsond['members']
-            uid = getUserId(token)
-            if uid is None:
-                return {'errors':{'code':'01','msg':'Invalid token.'}}
-            return addGroupMembers(uid,gid,members)
-        else:
-            return {'errors':{'msg':'Invalid params!','code':'03'}}
+    return addGroupMembers(uid, gid, request.json['members'])
 
 @appweb.route('/group/<gid>/setmember',method='POST')
-def doSetmemberInGroup(gid):
+@content_type('application/json')
+@logined
+def doSetmemberInGroup(gid, uid):
     """
     URL:/group/<gid>/setmember
     TYPE:http/POST
@@ -391,23 +341,12 @@ def doSetmemberInGroup(gid):
     @return: ok-{'results':1}
              error-{'errors':{'code':(string)code,'msg':(string)info}} 
     """
-    content_type = request.headers.get('Content-Type')
-    if not (content_type):
-        return {'errors':{'msg':'Missing Content-Type','code':'500'}}
-    else:
-        jsond = request.json
-        if not jsond is None:
-            token = jsond['token'] 
-            members = jsond['members']
-            uid = getUserId(token)
-            if uid is None:
-                return {'errors':{'code':'01','msg':'Invalid token.'}}
-            return setGroupMembers(uid,gid,members)
-        else:
-            return {'errors':{'msg':'Invalid params!','code':'03'}}
+    return setGroupMembers(uid, gid, request.json['members'])
 
 @appweb.route('/group/<gid>/delmember',method='POST')
-def doRemovememberFromGroup(gid):
+@content_type('application/json')
+@logined
+def doRemovememberFromGroup(gid, uid):
     """
     URL:/group/<gid>/delmember
     TYPE:http/POST
@@ -422,23 +361,13 @@ def doRemovememberFromGroup(gid):
     @return: ok-{'results':1}
              error-{'errors':{'code':(string)code,'msg':(string)info}} 
     """
-    content_type = request.headers.get('Content-Type')
-    if not (content_type):
-        return {'errors':{'msg':'Missing Content-Type','code':'500'}}
-    else:
-        jsond = request.json
-        if not jsond is None:
-            token = jsond['token'] 
-            members = jsond['members']
-            uid = getUserId(token)
-            if uid is None:
-                return {'errors':{'code':'01','msg':'Invalid token.'}}
-            return delGroupMembers(uid,gid,members)
-        else:
-            return {'errors':{'msg':'Invalid params!','code':'03'}}
+    #TODO we should check if the uid has the permission to perform the operation
+    #including all operations below related with group...
+    return delGroupMembers(uid, gid, request.json['members'])
 
 @appweb.route('/group/<gid>/info',method='GET')
-def doGetGroupInfo(gid):
+@logined
+def doGetGroupInfo(gid, uid):
     """
     URL:/group/<gid>/info
     TYPE:http/GET
@@ -453,18 +382,12 @@ def doGetGroupInfo(gid):
     @return: ok-{'results':{'groupname'(string)groupname, 'members':[{'uid':(int)uid1, 'role':(int)roleId1},{'uid':(int)uid2, 'role':(int)roleId2},...]}}
              error-{'errors':{'code':(string)code,'msg':(string)info}} 
     """
-    jsond = request.params
-    if not jsond is None:
-        token = jsond['token']
-        uid = getUserId(token)
-        if uid is None:
-            return {'errors':{'code':'01','msg':'Invalid token.'}}
-        return getGroupInfo(uid, gid)
-    else:
-        return {'errors':{'msg':'Invalid params!', 'code':'03'}}
+    return getGroupInfo(uid, gid)
 
 @appweb.route('/group/<gid>/test/<sid>/create',method='POST')
-def doCreateGroupTestSession(gid, sid):
+@content_type('application/json')
+@logined
+def doCreateGroupTestSession(gid, sid, uid):
     """
     URL:/group/<gid>/test/<sid>/create
     TYPE:http/POST
@@ -481,26 +404,13 @@ def doCreateGroupTestSession(gid, sid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    content_type = request.headers.get('Content-Type')
-    if not (content_type):
-        return {'errors':{'msg':'Missing Content-Type','code':'500'}}
-    else:
-        json = request.json
-        if not json is None:
-            token = json['token']
-            planname = json['planname']  
-            starttime = json['starttime']
-            deviceid = json['deviceid']
-            deviceinfo = json['deviceinfo']
-            uid = getUserId(token)
-            if uid is None:
-                return {'errors':{'code':'01','msg':'Invalid token.'}}
-            return createTestSession(gid, uid, sid, planname, starttime, deviceid, deviceinfo)
-        else:
-            return {'errors':{'msg':'Invalid params!','code':'03'}}
+    return createTestSession(gid, uid, sid, request.json['planname'], request.json['starttime'],
+        request.json['deviceid'], request.json['deviceinfo'])
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/create',method='POST')
-def doCreateCaseResult(gid, sid, tid):
+@content_type('application/json')
+@logined
+def doCreateCaseResult(gid, sid, tid, uid):
     """
     URL:/group/<gid>/test/<sid>/case/<tid>/create
     TYPE:http/POST
@@ -519,24 +429,12 @@ def doCreateCaseResult(gid, sid, tid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    content_type = request.headers.get('Content-Type')
-    if not (content_type):
-        return {'errors':{'code':500, 'msg':'Missing Content-Type'}}
-    else:
-        json = request.json
-        if not json is None:
-            token = json['token']
-            casename = json['casename']
-            starttime = json['starttime']
-            uid = getUserId(token)
-            if uid is None:
-                return {'errors':{'code':'01','msg':'Invalid token.'}}
-            return createCaseResult(gid, sid, tid, casename, starttime)
-        else:
-            return {'errors':{'msg':'Invalid params!','code':'03'}}
+    return createCaseResult(gid, sid, tid, request.json['casename'], request.json['starttime'])
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/update',method='POST')
-def doUpdateCaseResult(gid, sid, tid):
+@content_type('application/json')
+@logined
+def doUpdateCaseResult(gid, sid, tid, uid):
     """
     URL:/group/<gid>/test/<sid>/case/<tid>/update
     TYPE:http/POST
@@ -555,25 +453,12 @@ def doUpdateCaseResult(gid, sid, tid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    content_type = request.headers.get('Content-Type')
-    if not (content_type):
-        return {'errors':{'code':500, 'msg':'Missing Content-Type'}}
-    else:
-        json = request.json
-        if not json is None:
-            token = json['token'] 
-            status = json['result']
-            traceinfo = json['traceinfo']
-            endtime = json['time']
-            uid = getUserId(token)
-            if uid is None:
-                return {'errors':{'code':'01','msg':'Invalid token.'}}
-            return updateCaseResult(gid, sid, tid, status, traceinfo, endtime)
-        else:
-            return {'errors':{'msg':'Invalid params!','code':'03'}}            
+    return updateCaseResult(gid, sid, tid, request.json['result'], request.json['traceinfo'], request.json['time'])
 
-@appweb.route('/group/<gid>/test/<sid>/case/<tid>/fileupload',method='PUT')
-def doUploadCaseFile(gid, sid, tid):
+@appweb.route('/group/<gid>/test/<sid>/case/<tid>/fileupload', method='PUT')
+@content_type('application/json', 'application/zip', 'application/octet-stream')
+@logined
+def doUploadCaseFile(gid, sid, tid, uid):
     """
     URL:/group/<gid>/test/<sid>/case/<tid>/fileupload
     TYPE:http/PUT
@@ -594,28 +479,24 @@ def doUploadCaseFile(gid, sid, tid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    content_type = request.headers.get('Content-Type')
-    ext_type = request.headers.get('Ext-Type')
-    token = request.headers.get('token')
-    if not (token):
-        return {'errors':{'code':500, 'msg':'Missing token'}}
-
-    if not (content_type):
-        return {'errors':{'code':500, 'msg':'Missing Content-Type'}}
-
-    if content_type == 'image/png':
+    contenttype = request.headers.get('Content-Type')
+    if contenttype == 'image/png':
         ftype = 'png'
     else:
         ftype = 'zip'
+
+    xtype = request.headers.get('Ext-Type') or ''
+
+    # TODO we can pass request.body directly to gridfs, instead of reading it and then pass the data.
+    #return uploadCaseResultFile(gid, sid, tid, request.body, ftype, xtype)
     filedata = request.body.read()
-    if not ext_type is None:
-        xtype = ext_type
-    else:
-        xtype = ''
+
     return uploadCaseResultFile(gid, sid, tid, filedata, ftype, xtype)
 
 @appweb.route('/group/<gid>/test/<sid>/update',method='POST')
-def doUpdateGroupTestSession(gid, sid):
+@content_type('application/json')
+@logined
+def doUpdateGroupTestSession(gid, sid, uid):
     """
     URL:/group/<gid>/test/<sid>/update
     TYPE:http/POST
@@ -632,23 +513,11 @@ def doUpdateGroupTestSession(gid, sid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    content_type = request.headers.get('Content-Type')
-    if not (content_type):
-        return {'errors':{'code':500, 'msg':'Missing Content-Type'}}
-    else:
-        json = request.json
-        if not json is None:
-            token = json['token']
-            endtime = json['endtime']
-            uid = getUserId(token)
-            if uid is None:
-                return {'errors':{'code':'01','msg':'Invalid token.'}}
-            return updateTestSession(gid, sid, endtime)
-        else:
-            return {'errors':{'msg':'Invalid params!','code':'03'}}
+    return updateTestSession(gid, sid, request.json['endtime'])
 
 @appweb.route('/group/<gid>/test/<sid>/delete',method='GET')
-def doDeleteGroupTestSession(gid, sid):
+@logined
+def doDeleteGroupTestSession(gid, sid, uid):
     """
     URL:/group/<gid>/test/<sid>/delete
     TYPE:http/GET
@@ -665,18 +534,12 @@ def doDeleteGroupTestSession(gid, sid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    jsond = request.params
-    if not jsond is None:
-        token = jsond['token']
-        uid = getUserId(token)
-        if uid is None:
-            return {'errors':{'code':'01','msg':'Invalid token.'}}
-        return deleteTestSession(gid, sid)
-    else:
-        return {'errors':{'msg':'Invalid params!','code':'03'}}
+    #TODO we should check if the uid has the permission to perform the operation
+    return deleteTestSession(gid, sid)
 
 @appweb.route('/group/<gid>/test/<sid>/results',method='GET')
-def doGetSessionInfo(gid,sid):
+@logined
+def doGetSessionInfo(gid, sid, uid):
     """
     URL:/group/<gid>/test/<sid>/results
     TYPE:http/GET
@@ -693,18 +556,11 @@ def doGetSessionInfo(gid,sid):
     @return:ok-{'results':{'count':(int)count, 'paging':{'pageSize':(int)pageSize,'totalPage':(int)totalPage,'curPage':(int)curPage },'cases':[{'casename':(string)casename, 'starttime':(string)}, 'result':(pass,fail,error), 'log':(string)logfileKey, snaps':[]...]}}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    jsond = request.params
-    if not jsond is None:
-        token = jsond['token']
-        uid = getUserId(token)
-        if uid is None:
-            return {'errors':{'code':'01','msg':'Invalid token.'}}
-        return getTestSessionInfo(gid,sid)
-    else:
-        return {"errors":{"msg":"Invalid params!", "code":"03"}}
+    return getTestSessionInfo(gid, sid)
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/log',method='GET')
-def doGetCaseResultLog(gid, sid, tid):
+@logined
+def doGetCaseResultLog(gid, sid, tid, uid):
     """
     URL:/group/<gid>/test/<sid>/case/<tid>/log
     TYPE:http/GET
@@ -723,18 +579,19 @@ def doGetCaseResultLog(gid, sid, tid):
     @return:ok
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    jsond = request.params
-    if not jsond is None:
-        #token = jsond['token']
-        filename = 'log-%s-%s.zip' % (sid,tid)
-        response.set_header('Content-Type','application/x-download')
-        response.set_header('Content-Disposition','attachment; filename='+filename,True)
-        return getTestCaseLog(gid, sid, tid)
+    data = getTestCaseLog(gid, sid, tid)
+    if type(data) is type({}):
+        # if the type of data is a dict, then we got error...
+        return data
     else:
-        return {"errors":{"msg":"Invalid params!", "code":"03"}}
+        filename = 'log-%s-%s.zip' % (sid, tid)
+        response.set_header('Content-Type', 'application/x-download')
+        response.set_header('Content-Disposition', 'attachment; filename=' + filename, True)
+        return data
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/snaps',method='GET')
-def doGetCaseResultSnapshots(gid, sid, tid):
+@logined
+def doGetCaseResultSnapshots(gid, sid, tid, uid):
     """
     URL:/group/<gid>/test/<sid>/case/<tid>/snaps
     TYPE:http/GET
@@ -753,14 +610,11 @@ def doGetCaseResultSnapshots(gid, sid, tid):
     @return:ok-{'results':{snaps:[{'title':(string)title, 'data':(string)base64Data}, {'title':(string)title, 'data':(string)base64Data}]}}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    jsond = request.params
-    if not jsond is None:
-        return getTestCaseSnaps(gid,sid,tid)
-    else:
-        return {"errors":{"msg":"Invalid params!", "code":"03"}}
+    return getTestCaseSnaps(gid, sid, tid)
 
 @appweb.route('/group/<gid>/testsummary',method='GET')
-def doGetGroupTestSessions(gid):
+@logined
+def doGetGroupTestSessions(gid, uid):
     """
     URL:/group/<gid>/testsummary
     TYPE:http/GET
@@ -775,15 +629,7 @@ def doGetGroupTestSessions(gid):
     @return:ok-{'results':{'count':(int)count, 'sessions':[ {planname':(string)value,'starttime':(string)value, 'result':{'total':(int)value, 'pass':(int)value, 'fail':(int)value, 'error':(int)value}, 'runtime':(string)value},... ] }}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    jsond = request.params
-    if not jsond is None:
-        token = jsond['token']
-        uid = getUserId(token)
-        if uid is None:
-            return {'errors':{'code':'01','msg':'Invalid token.'}}
-        return getTestSessionList(gid)
-    else:
-        return {"errors":{"msg":"Invalid params!", "code":"03"}}
+    return getTestSessionList(gid)
 
 if __name__ == '__main__':
     print 'WebServer Serving on 8080...'
