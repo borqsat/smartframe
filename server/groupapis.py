@@ -70,10 +70,10 @@ def err(code='500', msg='Unknown error!'):
 def content_type(*types):
     def content_type_wrapper(fn):
         def wrapper(*args, **kwargs):
-            if request.headers.get('Content-type') not in types:
-                return err(code='500', msg='Invalid content-type header!')
-            else:
-                return fn(*args, **kwargs)
+            for t in types:
+                if t.lower() in request.content_type:
+                    return fn(*args, **kwargs)
+            return err(code='500', msg='Invalid content-type header!')
         return wrapper
     return content_type_wrapper
 
@@ -91,7 +91,7 @@ def logined(fn):
             uid = getUserId(request.json['token'])
         else:
             # No token param.
-            return err('03', 'The API needs valid token parameter. No token provided in the request!')
+            return err('03', 'The API needs a valid "token" parameter. No token provided in the request!')
 
         if uid is None:
             # if the uid is None, then we return an error message.
@@ -206,9 +206,8 @@ def doActiveUser(uid):
     @return: ok-{'results':{'uid':(string)uid}}
              error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
-    token = request.json['token']
     rdata = activeUser(uid)
-    userLogout(token)
+    userLogout(request.json['token'])
     return rdata
 
 @appweb.route('/account/info',method='GET')
@@ -245,11 +244,7 @@ def doLogin():
     @return: ok-{'results':{'token':(string)value}}
              error-{'errors':{'code':(string)code,'msg':(string)info}} 
     """
-    jsond = request.json
-    appid = jsond['appid']
-    username = jsond['username']
-    password = jsond['password']
-    return userLogin(appid, username, password)
+    return userLogin(request.json['appid'], request.json['username'], request.json['password'])
 
 @appweb.route('/account/logout',method='GET')
 @logined
@@ -479,19 +474,14 @@ def doUploadCaseFile(gid, sid, tid, uid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    contenttype = request.headers.get('Content-Type')
-    if contenttype == 'image/png':
+    if 'image/png' in request.content_type:
         ftype = 'png'
     else:
         ftype = 'zip'
 
     xtype = request.headers.get('Ext-Type') or ''
 
-    # TODO we can pass request.body directly to gridfs, instead of reading it and then pass the data.
-    #return uploadCaseResultFile(gid, sid, tid, request.body, ftype, xtype)
-    filedata = request.body.read()
-
-    return uploadCaseResultFile(gid, sid, tid, filedata, ftype, xtype)
+    return uploadCaseResultFile(gid, sid, tid, request.body, ftype, xtype)
 
 @appweb.route('/group/<gid>/test/<sid>/update',method='POST')
 @content_type('application/json')
