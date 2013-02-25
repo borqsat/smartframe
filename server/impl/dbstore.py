@@ -528,7 +528,8 @@ class testStore(object):
         """
         add snapshot png in image buffer
         """
-        self.setCache(str('sid:'+sid+':snap'), snapfile)
+        self.setCache(str('sid:'+sid+':snap'), snapfile.read())
+        snapfile.seek(0) # seek to head of the file
         timenow = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
         self.setCache(str('sid:'+sid+':snaptime'),timenow)
 
