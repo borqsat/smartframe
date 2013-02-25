@@ -5,6 +5,8 @@ from impl.test import *
 from impl.account import *
 from impl.group import *
 import smtplib
+import inspect
+import functools
 
 appweb = Bottle()
 
@@ -64,46 +66,98 @@ def err(code='500', msg='Unknown error!'):
     """
     return {'errors': {'code': code, 'msg': msg}}
 
-# decorator to check if the request has a content-type not in *types.
+# Plugin to check if the request has a content-type not in *types.
 # if no, then return error message.
-# **It must be put after other bottle decorators, like route.**
-def content_type(*types):
-    def content_type_wrapper(fn):
+class ContentTypePlugin(object):
+    '''This plugin checks the content-type of the request'''
+    name = 'content-type'
+    api = 2
+
+    def setup(self, app):
+        ''' Make sure that other installed plugins don't affect the same
+            keyword argument.'''
+        for other in app.plugins:
+            if not isinstance(other, ContentTypePlugin): continue
+            raise PluginError("Found another Content-Type plugin with "\
+                "conflicting settings (non-unique keyword).")
+
+    def apply(self, callback, route):
+        contenttypes = route.config.get('content_type', [])
+        if not isinstance(contenttypes, list): contenttypes = [contenttypes]
+
+        if len(contenttypes) is 0: return callback # content-type not specified
+
         def wrapper(*args, **kwargs):
-            for t in types:
+            for t in contenttypes:
                 if t.lower() in request.content_type:
-                    return fn(*args, **kwargs)
+                    return callback(*args, **kwargs)
+
             return err(code='500', msg='Invalid content-type header!')
+
         return wrapper
-    return content_type_wrapper
 
-# decorator to check if the request contrains a valid token. The token param may be in query, form or json
+contenttype_plugin = ContentTypePlugin()
+appweb.install(contenttype_plugin)
+
+# Plugin to check if the request contrains a valid token. The token param may be in query, form or json
 # If yes, put the uid in the **kwargs
-# **It must be put after other bottle decorators, like route.**
-def logined(fn):
-    def wrapper(*args, **kwargs):
-        uid = None
-        if request.params and 'token' in request.params:
-            # get token from params and then get uid
-            uid = getUserId(request.params['token'])
-        elif uid is None and request.json and 'token' in request.json:
-            # get token from request.json and then get uid
-            uid = getUserId(request.json['token'])
-        else:
-            # No token param.
-            return err('03', 'The API needs a valid "token" parameter. No token provided in the request!')
+class LoginPlugin(object):
+    '''This plugin gets the token param in query string or json body, and check if the token is valid.
+    If yes, pass the token or uid to the callback keywords, depending on the original callback accepts
+    'uid' or 'token' keyword. '''
+    name = 'login'
+    api = 2
 
-        if uid is None:
-            # if the uid is None, then we return an error message.
-            return err('01', 'Invalid token!')
-        else:
-            # else we add uid to kwargs and then invoke fn
-            kwargs['uid'] = uid
-            return fn(*args, **kwargs)
-    return wrapper
+    def __init__(self, login=True):
+        self.login = login
 
-@appweb.route('/account/register',method='POST')
-@content_type('application/json')
+    def setup(self, app):
+        ''' Make sure that other installed plugins don't affect the same
+            keyword argument.'''
+        for other in app.plugins:
+            if not isinstance(other, LoginPlugin): continue
+            raise PluginError("Found another login plugin with "\
+                "conflicting settings (non-unique keyword).")
+
+    def apply(self, callback, route):
+        # Test if the original callback accepts a 'uid' or 'token' keyword.
+        args = inspect.getargspec(route.callback)[0]
+        has_uid = 'uid' in args
+        has_token = 'token' in args
+        # return original callback if login is False
+        login = route.config.get('login', self.login)
+        #if login=False and callback don't has 'uid' and 'token' keyword,
+        #don't check whether the token is logined.
+        if not (login or has_uid or has_token) : return callback
+
+        def wrapper(*args, **kwargs):
+            uid = None
+            if request.params and 'token' in request.params:
+                # get token from params and then get uid
+                token = request.params['token']
+                uid = getUserId(token)
+            elif uid is None and request.json and 'token' in request.json:
+                # get token from request.json and then get uid
+                token = request.json['token']
+                uid = getUserId(token)
+            else:
+                # No token param.
+                return err('03', 'The API needs a valid "token" parameter. No token provided in the request!')
+
+            if uid is None: # if the uid is None, then we return an error message.
+                return err('01', 'Invalid token!')
+            else: # pass uid/token to callback
+                if has_uid: kwargs['uid'] = uid
+                if has_token: kwargs['token'] = token
+                return callback(*args, **kwargs)
+
+        # Replace the route callback with the wrapped one.
+        return wrapper
+
+login_plugin = LoginPlugin(login=True) # login is required by default
+appweb.install(login_plugin)
+
+@appweb.route('/account/register', method='POST', content_type='application/json', login=False)
 def doRegister():
     """
     URL:/account/register
@@ -126,9 +180,7 @@ def doRegister():
         sendVerifyMail(info['email'], username, ret['results']['token'])
     return ret
 
-@appweb.route('/account/changepasswd',method='POST')
-@content_type('application/json')
-@logined
+@appweb.route('/account/changepasswd', method='POST', content_type='application/json')
 def doChangePassword(uid):
     """
     URL:/account/change_password
@@ -144,9 +196,7 @@ def doChangePassword(uid):
     """
     return userChangePassword(uid, request.json['oldpassword'], request.json['newpassword'])
 
-@appweb.route('/account/update',method='POST')
-@content_type('application/json')
-@logined
+@appweb.route('/account/update', method='POST', content_type='application/json')
 def doUpdateUserInfo(uid):
     """
     URL:/account/update
@@ -164,9 +214,7 @@ def doUpdateUserInfo(uid):
     """
     return userUpdateInfo(uid, request.json['info'])
 
-@appweb.route('/account/invite',method='POST')
-@content_type('application/json')
-@logined
+@appweb.route('/account/invite', method='POST', content_type='application/json')
 def doInviteUser(uid):
     """
     URL:/account/invite
@@ -190,9 +238,7 @@ def doInviteUser(uid):
         sendInviteMail(email, username, groupname, rdata['results']['token'])
     return rdata
 
-@appweb.route('/account/active',method='POST')
-@content_type('application/json')
-@logined
+@appweb.route('/account/active', method='POST', content_type='application/json')
 def doActiveUser(uid):
     """
     URL:/account/active
@@ -210,8 +256,7 @@ def doActiveUser(uid):
     userLogout(request.json['token'])
     return rdata
 
-@appweb.route('/account/info',method='GET')
-@logined
+@appweb.route('/account/info', method='GET')
 def doGetUserInfo(uid):
     """
     URL:/account/info
@@ -229,8 +274,7 @@ def doGetUserInfo(uid):
     """
     return getUserInfo(uid)
 
-@appweb.route('/account/login',method='POST')
-@content_type('application/json')
+@appweb.route('/account/login', method='POST', content_type='application/json', login=False)
 def doLogin():
     """
     URL:/account/login
@@ -246,8 +290,7 @@ def doLogin():
     """
     return userLogin(request.json['appid'], request.json['username'], request.json['password'])
 
-@appweb.route('/account/logout',method='GET')
-@logined
+@appweb.route('/account/logout', method='GET')
 def doLogout(uid):
     """
     URL:/account/logout
@@ -263,8 +306,7 @@ def doLogout(uid):
     """
     return userLogout(request.params['token'])
 
-@appweb.route('/account/list',method='GET')
-@logined
+@appweb.route('/account/list', method='GET')
 def accountlist(uid):
     """
     URL:/account/list
@@ -280,9 +322,7 @@ def accountlist(uid):
     """
     return getUserList()
 
-@appweb.route('/group/create',method='POST')
-@content_type('application/json')
-@logined
+@appweb.route('/group/create', method='POST', content_type='application/json')
 def doCreateGroup(uid):
     """
     URL:/group/create
@@ -298,9 +338,7 @@ def doCreateGroup(uid):
     """
     return createGroup(uid, request.json['groupname'], request.json['info'])
 
-@appweb.route('/group/<gid>/addmember',method='POST')
-@content_type('application/json')
-@logined
+@appweb.route('/group/<gid>/addmember', method='POST', content_type='application/json')
 def doAddmemberToGroup(gid, uid):
     """
     URL:/group/<gid>/addmember
@@ -318,9 +356,7 @@ def doAddmemberToGroup(gid, uid):
     """
     return addGroupMembers(uid, gid, request.json['members'])
 
-@appweb.route('/group/<gid>/setmember',method='POST')
-@content_type('application/json')
-@logined
+@appweb.route('/group/<gid>/setmember',method='POST', content_type='application/json')
 def doSetmemberInGroup(gid, uid):
     """
     URL:/group/<gid>/setmember
@@ -338,9 +374,7 @@ def doSetmemberInGroup(gid, uid):
     """
     return setGroupMembers(uid, gid, request.json['members'])
 
-@appweb.route('/group/<gid>/delmember',method='POST')
-@content_type('application/json')
-@logined
+@appweb.route('/group/<gid>/delmember', method='POST', content_type='application/json')
 def doRemovememberFromGroup(gid, uid):
     """
     URL:/group/<gid>/delmember
@@ -360,8 +394,7 @@ def doRemovememberFromGroup(gid, uid):
     #including all operations below related with group...
     return delGroupMembers(uid, gid, request.json['members'])
 
-@appweb.route('/group/<gid>/info',method='GET')
-@logined
+@appweb.route('/group/<gid>/info', method='GET')
 def doGetGroupInfo(gid, uid):
     """
     URL:/group/<gid>/info
@@ -379,9 +412,7 @@ def doGetGroupInfo(gid, uid):
     """
     return getGroupInfo(uid, gid)
 
-@appweb.route('/group/<gid>/test/<sid>/create',method='POST')
-@content_type('application/json')
-@logined
+@appweb.route('/group/<gid>/test/<sid>/create', method='POST', content_type='application/json')
 def doCreateGroupTestSession(gid, sid, uid):
     """
     URL:/group/<gid>/test/<sid>/create
@@ -402,9 +433,7 @@ def doCreateGroupTestSession(gid, sid, uid):
     return createTestSession(gid, uid, sid, request.json['planname'], request.json['starttime'],
         request.json['deviceid'], request.json['deviceinfo'])
 
-@appweb.route('/group/<gid>/test/<sid>/case/<tid>/create',method='POST')
-@content_type('application/json')
-@logined
+@appweb.route('/group/<gid>/test/<sid>/case/<tid>/create', method='POST', content_type='application/json')
 def doCreateCaseResult(gid, sid, tid, uid):
     """
     URL:/group/<gid>/test/<sid>/case/<tid>/create
@@ -426,9 +455,7 @@ def doCreateCaseResult(gid, sid, tid, uid):
     """
     return createCaseResult(gid, sid, tid, request.json['casename'], request.json['starttime'])
 
-@appweb.route('/group/<gid>/test/<sid>/case/<tid>/update',method='POST')
-@content_type('application/json')
-@logined
+@appweb.route('/group/<gid>/test/<sid>/case/<tid>/update', method='POST', content_type='application/json')
 def doUpdateCaseResult(gid, sid, tid, uid):
     """
     URL:/group/<gid>/test/<sid>/case/<tid>/update
@@ -450,9 +477,7 @@ def doUpdateCaseResult(gid, sid, tid, uid):
     """
     return updateCaseResult(gid, sid, tid, request.json['result'], request.json['traceinfo'], request.json['time'])
 
-@appweb.route('/group/<gid>/test/<sid>/case/<tid>/fileupload', method='PUT')
-@content_type('application/json', 'application/zip', 'application/octet-stream')
-@logined
+@appweb.route('/group/<gid>/test/<sid>/case/<tid>/fileupload', method='PUT', content_type=['application/json', 'application/zip', 'application/octet-stream'])
 def doUploadCaseFile(gid, sid, tid, uid):
     """
     URL:/group/<gid>/test/<sid>/case/<tid>/fileupload
@@ -483,9 +508,7 @@ def doUploadCaseFile(gid, sid, tid, uid):
 
     return uploadCaseResultFile(gid, sid, tid, request.body, ftype, xtype)
 
-@appweb.route('/group/<gid>/test/<sid>/update',method='POST')
-@content_type('application/json')
-@logined
+@appweb.route('/group/<gid>/test/<sid>/update', method='POST', content_type='application/json')
 def doUpdateGroupTestSession(gid, sid, uid):
     """
     URL:/group/<gid>/test/<sid>/update
@@ -505,8 +528,7 @@ def doUpdateGroupTestSession(gid, sid, uid):
     """
     return updateTestSession(gid, sid, request.json['endtime'])
 
-@appweb.route('/group/<gid>/test/<sid>/delete',method='GET')
-@logined
+@appweb.route('/group/<gid>/test/<sid>/delete', method='GET')
 def doDeleteGroupTestSession(gid, sid, uid):
     """
     URL:/group/<gid>/test/<sid>/delete
@@ -527,8 +549,7 @@ def doDeleteGroupTestSession(gid, sid, uid):
     #TODO we should check if the uid has the permission to perform the operation
     return deleteTestSession(gid, sid)
 
-@appweb.route('/group/<gid>/test/<sid>/results',method='GET')
-@logined
+@appweb.route('/group/<gid>/test/<sid>/results', method='GET')
 def doGetSessionInfo(gid, sid, uid):
     """
     URL:/group/<gid>/test/<sid>/results
@@ -548,8 +569,7 @@ def doGetSessionInfo(gid, sid, uid):
     """
     return getTestSessionInfo(gid, sid)
 
-@appweb.route('/group/<gid>/test/<sid>/case/<tid>/log',method='GET')
-@logined
+@appweb.route('/group/<gid>/test/<sid>/case/<tid>/log', method='GET')
 def doGetCaseResultLog(gid, sid, tid, uid):
     """
     URL:/group/<gid>/test/<sid>/case/<tid>/log
@@ -579,8 +599,7 @@ def doGetCaseResultLog(gid, sid, tid, uid):
         response.set_header('Content-Disposition', 'attachment; filename=' + filename, True)
         return data
 
-@appweb.route('/group/<gid>/test/<sid>/case/<tid>/snaps',method='GET')
-@logined
+@appweb.route('/group/<gid>/test/<sid>/case/<tid>/snaps', method='GET')
 def doGetCaseResultSnapshots(gid, sid, tid, uid):
     """
     URL:/group/<gid>/test/<sid>/case/<tid>/snaps
@@ -602,8 +621,7 @@ def doGetCaseResultSnapshots(gid, sid, tid, uid):
     """
     return getTestCaseSnaps(gid, sid, tid)
 
-@appweb.route('/group/<gid>/testsummary',method='GET')
-@logined
+@appweb.route('/group/<gid>/testsummary', method='GET')
 def doGetGroupTestSessions(gid, uid):
     """
     URL:/group/<gid>/testsummary
