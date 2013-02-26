@@ -1,70 +1,73 @@
 from gevent import monkey; monkey.patch_all()
-from bottle import request, response, Bottle
+from bottle import request, response, Bottle, PluginError
 from gevent.pywsgi import WSGIServer
 from impl.test import *
 from impl.account import *
 from impl.group import *
 import smtplib
 import inspect
-import functools
 
 appweb = Bottle()
 
+
 def sendVerifyMail(receiver, user, token):
-    sender   = 'borqsat@borqs.com'  
-    subject  = 'Please active your account from SmartAT'
+    sender = 'borqsat@borqs.com'
+    subject = 'Please active your account from SmartAT'
     mailuser = 'borqsat@borqs.com'
     mailpass = '!QAZ2wsx3edc'
-      
+
     msg = ("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n" % (sender, receiver, subject))
-    msg = msg+'Hi:\r\n'
-    msg = msg+'\r\nThis mail send from smartServer automatically, do not reply this mail directly.\r\n'
-    msg = msg+'\r\nYour account \"%s\" has been initialized.\r\n' % (user)
-    msg = msg+'\r\nPlease verify your current email via the url as below.\r\n'    
-    msg = msg+'\r\nsmart Server: http://ats.borqs.com/smartserver/verify.html?token=%s\r\n' % (token)
-    msg = msg+'\r\nBest Regards!\r\n'
-    msg = msg+'smartServer Admin\r\n'
+    msg = msg + 'Hi:\r\n'
+    msg = msg + '\r\nThis mail send from smartServer automatically, do not reply this mail directly.\r\n'
+    msg = msg + '\r\nYour account \"%s\" has been initialized.\r\n' % (user)
+    msg = msg + '\r\nPlease verify your current email via the url as below.\r\n'
+    msg = msg + '\r\nsmart Server: http://ats.borqs.com/smartserver/verify.html?token=%s\r\n' % (token)
+    msg = msg + '\r\nBest Regards!\r\n'
+    msg = msg + 'smartServer Admin\r\n'
 
     smtp = None
     try:
-        smtp = smtplib.SMTP_SSL()  
+        smtp = smtplib.SMTP_SSL()
         smtp.connect('smtp.bizmail.yahoo.com')
-        smtp.login(mailuser, mailpass)  
-        smtp.sendmail(sender, receiver, msg)       
+        smtp.login(mailuser, mailpass)
+        smtp.sendmail(sender, receiver, msg)
     except Exception, e:
         print e
     smtp.quit()
+
 
 def sendInviteMail(receiver, user, group, token):
-    sender   = 'borqsat@borqs.com'  
-    subject  = 'Please active your account from SmartAT'
+    sender = 'borqsat@borqs.com'
+    subject = 'Please active your account from SmartAT'
     mailuser = 'borqsat@borqs.com'
     mailpass = '!QAZ2wsx3edc'
-      
+
     msg = ("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n" % (sender, receiver, subject))
-    msg = msg+'Hi:\r\n'
-    msg = msg+'\r\nThis mail send from smartServer automatically, do not reply this mail directly.\r\n'
-    msg = msg+'\r\nYour friend \"%s\" invite you to join group [%s].\r\n' % (user, group)
-    msg = msg+'\r\nYou are welcome to signup your own account via the url below.\r\n'    
-    msg = msg+'\r\nsmart Server: http://ats.borqs.com/smartserver/login.html?token=%s\r\n' % (token)
-    msg = msg+'\r\nBest Regards!\r\n'
-    msg = msg+'smartServer Admin\r\n'
+    msg = msg + 'Hi:\r\n'
+    msg = msg + '\r\nThis mail send from smartServer automatically, do not reply this mail directly.\r\n'
+    msg = msg + '\r\nYour friend \"%s\" invite you to join group [%s].\r\n' % (user, group)
+    msg = msg + '\r\nYou are welcome to signup your own account via the url below.\r\n'
+    msg = msg + '\r\nsmart Server: http://ats.borqs.com/smartserver/login.html?token=%s\r\n' % (token)
+    msg = msg + '\r\nBest Regards!\r\n'
+    msg = msg + 'smartServer Admin\r\n'
 
     smtp = None
     try:
-        smtp = smtplib.SMTP_SSL()  
+        smtp = smtplib.SMTP_SSL()
         smtp.connect('smtp.bizmail.yahoo.com')
-        smtp.login(mailuser, mailpass)  
-        smtp.sendmail(sender, receiver, msg)       
+        smtp.login(mailuser, mailpass)
+        smtp.sendmail(sender, receiver, msg)
     except Exception, e:
         print e
     smtp.quit()
+
 
 def err(code='500', msg='Unknown error!'):
     """
     generate error message.
     """
     return {'errors': {'code': code, 'msg': msg}}
+
 
 # Plugin to check if the request has a content-type not in *types.
 # if no, then return error message.
@@ -78,12 +81,13 @@ class ContentTypePlugin(object):
             keyword argument.'''
         for other in app.plugins:
             if not isinstance(other, ContentTypePlugin): continue
-            raise PluginError("Found another Content-Type plugin with "\
-                "conflicting settings (non-unique keyword).")
+            raise PluginError("Found another Content-Type plugin with " \
+                              "conflicting settings (non-unique keyword).")
 
     def apply(self, callback, route):
         contenttypes = route.config.get('content_type', [])
-        if not isinstance(contenttypes, list): contenttypes = [contenttypes]
+        if not isinstance(contenttypes, list):
+            contenttypes = [contenttypes]
 
         if len(contenttypes) is 0: return callback # content-type not specified
 
@@ -239,7 +243,7 @@ def doInviteUser(uid):
     return rdata
 
 @appweb.route('/account/active', method='POST', content_type='application/json')
-def doActiveUser(uid):
+def doActiveUser(uid, token):
     """
     URL:/account/active
     TYPE:http/POST
@@ -253,7 +257,7 @@ def doActiveUser(uid):
              error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
     rdata = activeUser(uid)
-    userLogout(request.json['token'])
+    userLogout(token)
     return rdata
 
 @appweb.route('/account/info', method='GET')
@@ -291,7 +295,7 @@ def doLogin():
     return userLogin(request.json['appid'], request.json['username'], request.json['password'])
 
 @appweb.route('/account/logout', method='GET')
-def doLogout(uid):
+def doLogout(token):
     """
     URL:/account/logout
     TYPE:http/GET
@@ -304,10 +308,10 @@ def doLogout(uid):
     @return: ok-{'results':1}
              error-{'errors':{'code':(string)code,'msg':(string)info}} 
     """
-    return userLogout(request.params['token'])
+    return userLogout(token)
 
 @appweb.route('/account/list', method='GET')
-def accountlist(uid):
+def accountlist():
     """
     URL:/account/list
     TYPE:http/GET
@@ -434,7 +438,7 @@ def doCreateGroupTestSession(gid, sid, uid):
         request.json['deviceid'], request.json['deviceinfo'])
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/create', method='POST', content_type='application/json')
-def doCreateCaseResult(gid, sid, tid, uid):
+def doCreateCaseResult(gid, sid, tid):
     """
     URL:/group/<gid>/test/<sid>/case/<tid>/create
     TYPE:http/POST
@@ -456,7 +460,7 @@ def doCreateCaseResult(gid, sid, tid, uid):
     return createCaseResult(gid, sid, tid, request.json['casename'], request.json['starttime'])
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/update', method='POST', content_type='application/json')
-def doUpdateCaseResult(gid, sid, tid, uid):
+def doUpdateCaseResult(gid, sid, tid):
     """
     URL:/group/<gid>/test/<sid>/case/<tid>/update
     TYPE:http/POST
@@ -478,7 +482,7 @@ def doUpdateCaseResult(gid, sid, tid, uid):
     return updateCaseResult(gid, sid, tid, request.json['result'], request.json['traceinfo'], request.json['time'])
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/fileupload', method='PUT', content_type=['application/json', 'application/zip', 'application/octet-stream'])
-def doUploadCaseFile(gid, sid, tid, uid):
+def doUploadCaseFile(gid, sid, tid):
     """
     URL:/group/<gid>/test/<sid>/case/<tid>/fileupload
     TYPE:http/PUT
@@ -509,7 +513,7 @@ def doUploadCaseFile(gid, sid, tid, uid):
     return uploadCaseResultFile(gid, sid, tid, request.body, ftype, xtype)
 
 @appweb.route('/group/<gid>/test/<sid>/update', method='POST', content_type='application/json')
-def doUpdateGroupTestSession(gid, sid, uid):
+def doUpdateGroupTestSession(gid, sid):
     """
     URL:/group/<gid>/test/<sid>/update
     TYPE:http/POST
@@ -529,7 +533,7 @@ def doUpdateGroupTestSession(gid, sid, uid):
     return updateTestSession(gid, sid, request.json['endtime'])
 
 @appweb.route('/group/<gid>/test/<sid>/delete', method='GET')
-def doDeleteGroupTestSession(gid, sid, uid):
+def doDeleteGroupTestSession(gid, sid):
     """
     URL:/group/<gid>/test/<sid>/delete
     TYPE:http/GET
@@ -550,7 +554,7 @@ def doDeleteGroupTestSession(gid, sid, uid):
     return deleteTestSession(gid, sid)
 
 @appweb.route('/group/<gid>/test/<sid>/results', method='GET')
-def doGetSessionInfo(gid, sid, uid):
+def doGetSessionInfo(gid, sid):
     """
     URL:/group/<gid>/test/<sid>/results
     TYPE:http/GET
@@ -570,7 +574,7 @@ def doGetSessionInfo(gid, sid, uid):
     return getTestSessionInfo(gid, sid)
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/log', method='GET')
-def doGetCaseResultLog(gid, sid, tid, uid):
+def doGetCaseResultLog(gid, sid, tid):
     """
     URL:/group/<gid>/test/<sid>/case/<tid>/log
     TYPE:http/GET
@@ -600,7 +604,7 @@ def doGetCaseResultLog(gid, sid, tid, uid):
         return data
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/snaps', method='GET')
-def doGetCaseResultSnapshots(gid, sid, tid, uid):
+def doGetCaseResultSnapshots(gid, sid, tid):
     """
     URL:/group/<gid>/test/<sid>/case/<tid>/snaps
     TYPE:http/GET
@@ -622,7 +626,7 @@ def doGetCaseResultSnapshots(gid, sid, tid, uid):
     return getTestCaseSnaps(gid, sid, tid)
 
 @appweb.route('/group/<gid>/testsummary', method='GET')
-def doGetGroupTestSessions(gid, uid):
+def doGetGroupTestSessions(gid):
     """
     URL:/group/<gid>/testsummary
     TYPE:http/GET
