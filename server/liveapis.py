@@ -74,7 +74,7 @@ def ws_snapshot(gid, sid, rdb):
             ws.send("Publish message: %s" % msg)
 
     # start to greenlet to process subscribed message async.
-    g = gevent.spawn(redis_sub, ws)
+    g = gevent.spawn(redis_sub)
     while True:
         try:
             message = ws.receive()
