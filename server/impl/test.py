@@ -1,5 +1,5 @@
 from dbstore import store
-
+####3
 def createTestSession(gid, uid, sid, planname,starttime, deviceid, deviceinfo):
     store.createTestSession(gid, sid, uid, planname, starttime, deviceid, deviceinfo)
     return {'results':1}
