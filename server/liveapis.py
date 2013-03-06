@@ -31,23 +31,34 @@ def handle_screen_websocket(gid, sid):
 
     ret = getTestSessionInfo(gid, sid)
     if not ret is None:
-        #wslist[sid].append({'ws':wsock, 'snaptime':''})
+        # wslist[sid].append({'ws':wsock, 'snaptime':''})
         deviceinfo = ret['results']['deviceinfo']
         wsock.send('snapsize:' + json.dumps(deviceinfo))
     else:
         abort(404, 'Request device is invalid.')
 
+    def send_screed():
+        while True:
+            try:
+                snapdata = ''
+                snaps = getTestLiveSnaps(gid, sid)
+                lenf = len(snaps)
+                if lenf > 0:
+                    snapdata = base64.encodestring(snaps[lenf - 1]['snap'])
+                wsock.send('snapshot:' + snapdata)
+                gevent.sleep(0.3)
+            except WebSocketError:
+                break
+    g = gevent.spawn(send_screed)
     while True:
         try:
-            snapdata = ''
-            snaps = getTestLiveSnaps(gid, sid)
-            lenf = len(snaps)
-            if lenf > 0:
-                snapdata = base64.encodestring(snaps[lenf - 1]['snap'])
-            wsock.send('snapshot:' + snapdata)
-            gevent.sleep(0.3)
+            message = wsock.receive()
+            # handle received message from client
+            if message is None:
+                break
         except WebSocketError:
             break
+    g.kill()  # kill redis subscribing process
 
 
 @appws.route('/group/<gid>/test/<sid>/snapshot')
@@ -79,6 +90,8 @@ def ws_snapshot(gid, sid, rdb):
         try:
             message = ws.receive()
             # handle received message from client
+            if message is None:
+                break
             ws.send("The message you got is %s" % message)
         except WebSocketError:
             break
