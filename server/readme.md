@@ -18,10 +18,14 @@
 
 # Run the server
 
-Create a product configure file `product.ini` under current directory firstly,
-and then run below command:
+Before running the server, you must set up `mongodb`, `memcached`, `redis`,
+and update server config file `product.ini`, just like `development.ini`.
+Finally you can execute below command to start the server:
 
     $ python app.py -c product.ini
 
-There is already a development config file `development.ini`, you can modify
-it per your server's confiuration.
+You can add `-d` option to use development options. By default, the server
+will use replicaset when connecting to mongodb. For development purpose, you
+only need to connect to a single mongodb, so you can run command like below:
+
+    $ python app.py -c development.ini -d
