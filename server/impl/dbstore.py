@@ -1,6 +1,6 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-# from pymongo import Connection
 import gridfs
 import memcache
 import hashlib
@@ -10,6 +10,27 @@ from bson.objectid import ObjectId
 from datetime import datetime
 from pymongo import MongoClient, MongoReplicaSetClient
 from pymongo import ReadPreference
+
+from config import config, args
+# TODO need refactoring
+import beaker.cache
+from beaker.util import parse_cache_config_options
+
+mc_url = config.get("memcached", "uri")
+cache = beaker.cache.Cache("memcached", type="ext:memcached",
+                           lock_dir="/tmp/cache/lock",
+                           url=mc_url, expire=600)
+cache_opts = {
+    'cache.lock_dir': '/tmp/cache/lock_memcached',
+    'cache.type': 'ext:memcached',
+    'cache.url': mc_url,
+    'cache.expire': 600,
+    'cache.regions': 'local',
+    'cache.local.lock_dir': '/tmp/cache/lock_local',
+    'cache.local.type': 'memory',
+    'cache.local.expire': '60'
+}
+cm = beaker.cache.CacheManager(**parse_cache_config_options(cache_opts))
 
 DATE_FORMAT_STR1 = "%Y-%m-%d %H:%M:%S"
 DATE_FORMAT_STR = "%Y.%m.%d-%H.%M.%S"
@@ -174,6 +195,8 @@ class testStore(object):
             result = {'gid': t['gid'], 'groupname': t['groupname'], 'info': t['info'], 'members': lstmember}
         return result
 
+    # TODO cache policy...
+    @cm.cache("user_info", expire=60)
     def userInfo(self, uid):
         ingroups = []
         intests = []
@@ -245,6 +268,8 @@ class testStore(object):
         results['users'] = lists
         return results
 
+    # TODO cache policy...
+    @cm.region("local", "user_id")
     def validToken(self, token):
         uid = ''
         username = ''
@@ -580,8 +605,6 @@ class testStore(object):
 
 
 def _getStore():
-    from config import config, args
-
     mongo_uri = config.get("mongodb", "uri")
     replicaset = config.get("mongodb", "replicaSet")
     mongo_client = args.development and MongoClient(mongo_uri) or \
