@@ -99,8 +99,8 @@ def ws_snapshot(gid, sid, rdb):
 
 
 def main():
-    port = config.getint("server:ws", "port")
-    host = config.get("server:ws", "host")
+    port = config.getint("server:web", "port")
+    host = config.get("server:web", "host")
     print 'LiveStream Serving on %s:%d...' % (host, port)
     WSGIServer((host, port), appws, handler_class=WebSocketHandler).serve_forever()
 

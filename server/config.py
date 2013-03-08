@@ -1,31 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from optparse import OptionParser
+import argparse
 import ConfigParser
-import os
 
-
-__all__ = ["config"]
+__all__ = ["config", "args"]
 
 
 def _read_config():
-    usage = "usage: %prog [options]"
-    parser = OptionParser(usage=usage)
-    parser.add_option("-c", "--config", dest="config", type="string",
-                      default="development.ini", help="the configuration FILE.", metavar="FILE")
+    parser = argparse.ArgumentParser(description="Running the stability testing web application.")
+    parser.add_argument("-c", "--config", dest="config", type=file,
+                        default="development.ini", help="the configuration FILE.",
+                        metavar="CONFIG_FILE")
+    parser.add_argument("-d", "--development", dest="development", action="store_true",
+                        help="Using development options.")
 
-    (options, args) = parser.parse_args()
-    if len(args) > 0:
-        parser.error("Invalid arguments.")
+    args = parser.parse_args()
 
-    if not os.path.exists(options.config):
-        parser.error("Config file doesn't exists.")
-
+    print("Using configuration file: %s." % args.config.name)
     config = ConfigParser.ConfigParser()
-    config.read(options.config)
+    config.readfp(args.config)
 
-    return config
+    return config, args
 
-
-config = _read_config()
+config, args = _read_config()

@@ -1,173 +1,23 @@
 from gevent import monkey
 monkey.patch_all()
-from bottle import request, response, Bottle, PluginError
+
+from bottle import request, response, Bottle
 from gevent.pywsgi import WSGIServer
 from impl.test import *
 from impl.account import *
 from impl.group import *
-import smtplib
-import inspect
+
+from sendmail import sendVerifyMail, sendInviteMail
+from plugins import LoginPlugin, ContentTypePlugin
 
 appweb = Bottle()
-
-
-def sendVerifyMail(receiver, user, token):
-    sender = 'borqsat@borqs.com'
-    subject = 'Please active your account from SmartAT'
-    mailuser = 'borqsat@borqs.com'
-    mailpass = '!QAZ2wsx3edc'
-
-    msg = ("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n" % (sender, receiver, subject))
-    msg = msg + 'Hi:\r\n'
-    msg = msg + '\r\nThis mail send from smartServer automatically, do not reply this mail directly.\r\n'
-    msg = msg + '\r\nYour account \"%s\" has been initialized.\r\n' % (user)
-    msg = msg + '\r\nPlease verify your current email via the url as below.\r\n'
-    msg = msg + '\r\nsmart Server: http://ats.borqs.com/smartserver/verify.html?token=%s\r\n' % (token)
-    msg = msg + '\r\nBest Regards!\r\n'
-    msg = msg + 'smartServer Admin\r\n'
-
-    smtp = None
-    try:
-        smtp = smtplib.SMTP_SSL()
-        smtp.connect('smtp.bizmail.yahoo.com')
-        smtp.login(mailuser, mailpass)
-        smtp.sendmail(sender, receiver, msg)
-    except Exception, e:
-        print e
-    smtp.quit()
-
-
-def sendInviteMail(receiver, user, group, token):
-    sender = 'borqsat@borqs.com'
-    subject = 'Please active your account from SmartAT'
-    mailuser = 'borqsat@borqs.com'
-    mailpass = '!QAZ2wsx3edc'
-
-    msg = ("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n" % (sender, receiver, subject))
-    msg = msg + 'Hi:\r\n'
-    msg = msg + '\r\nThis mail send from smartServer automatically, do not reply this mail directly.\r\n'
-    msg = msg + '\r\nYour friend \"%s\" invite you to join group [%s].\r\n' % (user, group)
-    msg = msg + '\r\nYou are welcome to signup your own account via the url below.\r\n'
-    msg = msg + '\r\nsmart Server: http://ats.borqs.com/smartserver/login.html?token=%s\r\n' % (token)
-    msg = msg + '\r\nBest Regards!\r\n'
-    msg = msg + 'smartServer Admin\r\n'
-
-    smtp = None
-    try:
-        smtp = smtplib.SMTP_SSL()
-        smtp.connect('smtp.bizmail.yahoo.com')
-        smtp.login(mailuser, mailpass)
-        smtp.sendmail(sender, receiver, msg)
-    except Exception, e:
-        print e
-    smtp.quit()
-
-
-def err(code='500', msg='Unknown error!'):
-    """
-    generate error message.
-    """
-    return {'errors': {'code': code, 'msg': msg}}
-
-
-# Plugin to check if the request has a content-type not in *types.
-# if no, then return error message.
-class ContentTypePlugin(object):
-    '''This plugin checks the content-type of the request'''
-    name = 'content-type'
-    api = 2
-
-    def setup(self, app):
-        ''' Make sure that other installed plugins don't affect the same
-            keyword argument.'''
-        for other in app.plugins:
-            if not isinstance(other, ContentTypePlugin):
-                continue
-            raise PluginError("Found another Content-Type plugin with "
-                              "conflicting settings (non-unique keyword).")
-
-    def apply(self, callback, route):
-        contenttypes = route.config.get('content_type', [])
-        if not isinstance(contenttypes, list):
-            contenttypes = [contenttypes]
-
-        if len(contenttypes) is 0:
-            return callback  # content-type not specified
-
-        def wrapper(*args, **kwargs):
-            for t in contenttypes:
-                if t.lower() in request.content_type:
-                    return callback(*args, **kwargs)
-
-            return err(code='500', msg='Invalid content-type header!')
-
-        return wrapper
 
 contenttype_plugin = ContentTypePlugin()
 appweb.install(contenttype_plugin)
 
-# Plugin to check if the request contrains a valid token. The token param may be in query, form or json
-# If yes, put the uid in the **kwargs
-
-
-class LoginPlugin(object):
-    '''This plugin gets the token param in query string or json body, and check if the token is valid.
-    If yes, pass the token or uid to the callback keywords, depending on the original callback accepts
-    'uid' or 'token' keyword. '''
-    name = 'login'
-    api = 2
-
-    def __init__(self, login=True):
-        self.login = login
-
-    def setup(self, app):
-        ''' Make sure that other installed plugins don't affect the same
-            keyword argument.'''
-        for other in app.plugins:
-            if not isinstance(other, LoginPlugin):
-                continue
-            raise PluginError("Found another login plugin with "
-                              "conflicting settings (non-unique keyword).")
-
-    def apply(self, callback, route):
-        # Test if the original callback accepts a 'uid' or 'token' keyword.
-        args = inspect.getargspec(route.callback)[0]
-        has_uid = 'uid' in args
-        has_token = 'token' in args
-        # return original callback if login is False
-        login = route.config.get('login', self.login)
-        # if login=False and callback don't has 'uid' and 'token' keyword,
-        # don't check whether the token is logined.
-        if not (login or has_uid or has_token):
-            return callback
-
-        def wrapper(*args, **kwargs):
-            uid = None
-            if request.params and 'token' in request.params:
-                # get token from params and then get uid
-                token = request.params['token']
-                uid = getUserId(token)
-            elif uid is None and request.json and 'token' in request.json:
-                # get token from request.json and then get uid
-                token = request.json['token']
-                uid = getUserId(token)
-            else:
-                # No token param.
-                return err('03', 'The API needs a valid "token" parameter. No token provided in the request!')
-
-            if uid is None:  # if the uid is None, then we return an error message.
-                return err('01', 'Invalid token!')
-            else:  # pass uid/token to callback
-                if has_uid:
-                    kwargs['uid'] = uid
-                if has_token:
-                    kwargs['token'] = token
-                return callback(*args, **kwargs)
-
-        # Replace the route callback with the wrapped one.
-        return wrapper
-
-login_plugin = LoginPlugin(login=True)  # login is required by default
+login_plugin = LoginPlugin(getuserid=getUserId,
+                           request_token_param="token",
+                           login=True)  # login is required by default
 appweb.install(login_plugin)
 
 

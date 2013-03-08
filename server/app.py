@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from gevent import monkey
 monkey.patch_all()  # monkey patch for gevent
 
@@ -6,7 +9,7 @@ from geventwebsocket import WebSocketHandler
 from bottle import Bottle, static_file, redirect
 import os
 
-from config import config  # import db configuration
+from config import config  # import db configuration and arguments
 from liveapis import appws as ws
 from groupapis import appweb as api
 
@@ -32,9 +35,8 @@ app.mount('/smartapi', api)
 def main():
     port = config.getint("server:web", "port")
     host = config.get("server:web", "host")
-    print 'LiveStream Serving on %s:%d...' % (host, port)
+    print 'Smartserver Serving on %s:%d...' % (host, port)
     WSGIServer((host, port), app, handler_class=WebSocketHandler).serve_forever()
 
 if __name__ == '__main__':
-    print os.path.dirname(os.path.abspath(__file__))
     main()
