@@ -1,165 +1,25 @@
-from gevent import monkey; monkey.patch_all()
-from bottle import request, response, Bottle, PluginError
+from gevent import monkey
+monkey.patch_all()
+
+from bottle import request, response, Bottle
 from gevent.pywsgi import WSGIServer
 from impl.test import *
 from impl.account import *
 from impl.group import *
-import smtplib
-import inspect
+
+from sendmail import sendVerifyMail, sendInviteMail
+from plugins import LoginPlugin, ContentTypePlugin
 
 appweb = Bottle()
-
-
-def sendVerifyMail(receiver, user, token):
-    sender = 'borqsat@borqs.com'
-    subject = 'Please active your account from SmartAT'
-    mailuser = 'borqsat@borqs.com'
-    mailpass = '!QAZ2wsx3edc'
-
-    msg = ("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n" % (sender, receiver, subject))
-    msg = msg + 'Hi:\r\n'
-    msg = msg + '\r\nThis mail send from smartServer automatically, do not reply this mail directly.\r\n'
-    msg = msg + '\r\nYour account \"%s\" has been initialized.\r\n' % (user)
-    msg = msg + '\r\nPlease verify your current email via the url as below.\r\n'
-    msg = msg + '\r\nsmart Server: http://ats.borqs.com/smartserver/verify.html?token=%s\r\n' % (token)
-    msg = msg + '\r\nBest Regards!\r\n'
-    msg = msg + 'smartServer Admin\r\n'
-
-    smtp = None
-    try:
-        smtp = smtplib.SMTP_SSL()
-        smtp.connect('smtp.bizmail.yahoo.com')
-        smtp.login(mailuser, mailpass)
-        smtp.sendmail(sender, receiver, msg)
-    except Exception, e:
-        print e
-    smtp.quit()
-
-
-def sendInviteMail(receiver, user, group, token):
-    sender = 'borqsat@borqs.com'
-    subject = 'Please active your account from SmartAT'
-    mailuser = 'borqsat@borqs.com'
-    mailpass = '!QAZ2wsx3edc'
-
-    msg = ("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n" % (sender, receiver, subject))
-    msg = msg + 'Hi:\r\n'
-    msg = msg + '\r\nThis mail send from smartServer automatically, do not reply this mail directly.\r\n'
-    msg = msg + '\r\nYour friend \"%s\" invite you to join group [%s].\r\n' % (user, group)
-    msg = msg + '\r\nYou are welcome to signup your own account via the url below.\r\n'
-    msg = msg + '\r\nsmart Server: http://ats.borqs.com/smartserver/login.html?token=%s\r\n' % (token)
-    msg = msg + '\r\nBest Regards!\r\n'
-    msg = msg + 'smartServer Admin\r\n'
-
-    smtp = None
-    try:
-        smtp = smtplib.SMTP_SSL()
-        smtp.connect('smtp.bizmail.yahoo.com')
-        smtp.login(mailuser, mailpass)
-        smtp.sendmail(sender, receiver, msg)
-    except Exception, e:
-        print e
-    smtp.quit()
-
-
-def err(code='500', msg='Unknown error!'):
-    """
-    generate error message.
-    """
-    return {'errors': {'code': code, 'msg': msg}}
-
-
-# Plugin to check if the request has a content-type not in *types.
-# if no, then return error message.
-class ContentTypePlugin(object):
-    '''This plugin checks the content-type of the request'''
-    name = 'content-type'
-    api = 2
-
-    def setup(self, app):
-        ''' Make sure that other installed plugins don't affect the same
-            keyword argument.'''
-        for other in app.plugins:
-            if not isinstance(other, ContentTypePlugin): continue
-            raise PluginError("Found another Content-Type plugin with " \
-                              "conflicting settings (non-unique keyword).")
-
-    def apply(self, callback, route):
-        contenttypes = route.config.get('content_type', [])
-        if not isinstance(contenttypes, list):
-            contenttypes = [contenttypes]
-
-        if len(contenttypes) is 0: return callback # content-type not specified
-
-        def wrapper(*args, **kwargs):
-            for t in contenttypes:
-                if t.lower() in request.content_type:
-                    return callback(*args, **kwargs)
-
-            return err(code='500', msg='Invalid content-type header!')
-
-        return wrapper
 
 contenttype_plugin = ContentTypePlugin()
 appweb.install(contenttype_plugin)
 
-# Plugin to check if the request contrains a valid token. The token param may be in query, form or json
-# If yes, put the uid in the **kwargs
-class LoginPlugin(object):
-    '''This plugin gets the token param in query string or json body, and check if the token is valid.
-    If yes, pass the token or uid to the callback keywords, depending on the original callback accepts
-    'uid' or 'token' keyword. '''
-    name = 'login'
-    api = 2
-
-    def __init__(self, login=True):
-        self.login = login
-
-    def setup(self, app):
-        ''' Make sure that other installed plugins don't affect the same
-            keyword argument.'''
-        for other in app.plugins:
-            if not isinstance(other, LoginPlugin): continue
-            raise PluginError("Found another login plugin with "\
-                "conflicting settings (non-unique keyword).")
-
-    def apply(self, callback, route):
-        # Test if the original callback accepts a 'uid' or 'token' keyword.
-        args = inspect.getargspec(route.callback)[0]
-        has_uid = 'uid' in args
-        has_token = 'token' in args
-        # return original callback if login is False
-        login = route.config.get('login', self.login)
-        #if login=False and callback don't has 'uid' and 'token' keyword,
-        #don't check whether the token is logined.
-        if not (login or has_uid or has_token) : return callback
-
-        def wrapper(*args, **kwargs):
-            uid = None
-            if request.params and 'token' in request.params:
-                # get token from params and then get uid
-                token = request.params['token']
-                uid = getUserId(token)
-            elif uid is None and request.json and 'token' in request.json:
-                # get token from request.json and then get uid
-                token = request.json['token']
-                uid = getUserId(token)
-            else:
-                # No token param.
-                return err('03', 'The API needs a valid "token" parameter. No token provided in the request!')
-
-            if uid is None: # if the uid is None, then we return an error message.
-                return err('01', 'Invalid token!')
-            else: # pass uid/token to callback
-                if has_uid: kwargs['uid'] = uid
-                if has_token: kwargs['token'] = token
-                return callback(*args, **kwargs)
-
-        # Replace the route callback with the wrapped one.
-        return wrapper
-
-login_plugin = LoginPlugin(login=True) # login is required by default
+login_plugin = LoginPlugin(getuserid=getUserId,
+                           request_token_param="token",
+                           login=True)  # login is required by default
 appweb.install(login_plugin)
+
 
 @appweb.route('/account/register', method='POST', content_type='application/json', login=False)
 def doRegister():
@@ -173,16 +33,17 @@ def doRegister():
     @param data:{'username':(string)username, 'password':(string)password, 'appid':(string)appid,'info':{'email':(string), 'telephone':(string)telephone, 'company':(string)company}}
     @rtype: JSON
     @return: ok-{'results':1}
-             error-{'errors':{'code':(string)code,'msg':(string)info}} 
+             error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
     appid = request.json['appid']
     username = request.json['username']
     password = request.json['password']
     info = request.json['info']
     ret = userRegister(appid, username, password, info)
-    if ret.has_key('results'):
+    if 'results' in ret:
         sendVerifyMail(info['email'], username, ret['results']['token'])
     return ret
+
 
 @appweb.route('/account/changepasswd', method='POST', content_type='application/json')
 def doChangePassword(uid):
@@ -193,12 +54,13 @@ def doChangePassword(uid):
     update the info of user
 
     @type data:JSON
-    @param data:{'token':(string)token,'oldpassword':(string)oldpassword, 'newpassword':(string)newpassword } 
+    @param data:{'token':(string)token,'oldpassword':(string)oldpassword, 'newpassword':(string)newpassword }
     @rtype: JSON
     @return: ok-{'results':1}
-             error-{'errors':{'code':(string)code,'msg':(string)info}} 
+             error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
     return userChangePassword(uid, request.json['oldpassword'], request.json['newpassword'])
+
 
 @appweb.route('/account/update', method='POST', content_type='application/json')
 def doUpdateUserInfo(uid):
@@ -211,12 +73,13 @@ def doUpdateUserInfo(uid):
     @type uid:string
     @param uid:the id of user
     @type data:JSON
-    @param data:{'token':(string)token,'info':{'email':(string), 'telephone':(string)telephone, 'company':(string)company}}  
+    @param data:{'token':(string)token,'info':{'email':(string), 'telephone':(string)telephone, 'company':(string)company}}
     @rtype: JSON
     @return: ok-{'results':1}
-             error-{'errors':{'code':(string)code,'msg':(string)info}} 
+             error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
     return userUpdateInfo(uid, request.json['info'])
+
 
 @appweb.route('/account/invite', method='POST', content_type='application/json')
 def doInviteUser(uid):
@@ -238,9 +101,10 @@ def doInviteUser(uid):
     groupname = request.json['groupname']
     gid = request.json['gid']
     rdata = inviteUser(appid, email, gid, uid)
-    if rdata.has_key('results'):
+    if 'results' in rdata:
         sendInviteMail(email, username, groupname, rdata['results']['token'])
     return rdata
+
 
 @appweb.route('/account/active', method='POST', content_type='application/json')
 def doActiveUser(uid, token):
@@ -260,6 +124,7 @@ def doActiveUser(uid, token):
     userLogout(token)
     return rdata
 
+
 @appweb.route('/account/info', method='GET')
 def doGetUserInfo(uid):
     """
@@ -271,12 +136,13 @@ def doGetUserInfo(uid):
     @type uid:string
     @param uid:the id of user
     @type token:string
-    @param token: the access token 
+    @param token: the access token
     @rtype: JSON
     @return: ok-{'results':{'username':(string)username,'inGroups':[{'gid':gid1,'groupname':(string)name1},{'gid':gid2,'groupname':(string)name2},...],'info':{'email':(string)email, 'telephone':(string)telephone, 'company':(string)company}}}
-             error-{'errors':{'code':(string)code,'msg':(string)info}} 
+             error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
     return getUserInfo(uid)
+
 
 @appweb.route('/account/login', method='POST', content_type='application/json', login=False)
 def doLogin():
@@ -285,14 +151,15 @@ def doLogin():
     TYPE:http/POST
 
     Get access token by username and password
- 
+
     @type data:JSON
     @param data:{'appid':(int)appid, 'username':(string)username, 'password':(string)password}
     @rtype: JSON
     @return: ok-{'results':{'token':(string)value}}
-             error-{'errors':{'code':(string)code,'msg':(string)info}} 
+             error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
     return userLogin(request.json['appid'], request.json['username'], request.json['password'])
+
 
 @appweb.route('/account/logout', method='GET')
 def doLogout(token):
@@ -306,9 +173,10 @@ def doLogout(token):
     @param token:access token of account
     @rtype: JSON
     @return: ok-{'results':1}
-             error-{'errors':{'code':(string)code,'msg':(string)info}} 
+             error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
     return userLogout(token)
+
 
 @appweb.route('/account/list', method='GET')
 def accountlist():
@@ -317,14 +185,15 @@ def accountlist():
     TYPE:http/GET
 
     Get access token by username and password
- 
+
     @type data:JSON
     @param data:{'token':(string)token}
     @rtype: JSON
     @return: ok-{'results':{'count':(int)value, 'users':[{'uid':(string)uid,'username':(string)username},{'uid':(string)uid,'username':(string)username}]}}
-             error-{'errors':{'code':(string)code,'msg':(string)info}} 
+             error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
     return getUserList()
+
 
 @appweb.route('/group/create', method='POST', content_type='application/json')
 def doCreateGroup(uid):
@@ -335,12 +204,13 @@ def doCreateGroup(uid):
     create a new group
 
     @type data:JSON
-    @param data:the info of account {'token':(string)token, 'groupname':(string)name, 'info':(JSON)info} 
+    @param data:the info of account {'token':(string)token, 'groupname':(string)name, 'info':(JSON)info}
     @rtype: JSON
     @return: ok-{'results':1}
-             error-{'errors':{'code':(string)code,'msg':(string)info}} 
+             error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
     return createGroup(uid, request.json['groupname'], request.json['info'])
+
 
 @appweb.route('/group/<gid>/addmember', method='POST', content_type='application/json')
 def doAddmemberToGroup(gid, uid):
@@ -353,14 +223,15 @@ def doAddmemberToGroup(gid, uid):
     @type gid:string
     @param gid:the id of Group
     @type data:JSON
-    @param data:info of member list {'token':(string)token, 'members':[(int)uid1,(int)uid2,(int)uid3 ...]} 
+    @param data:info of member list {'token':(string)token, 'members':[(int)uid1,(int)uid2,(int)uid3 ...]}
     @rtype: JSON
     @return: ok-{'results':1}
-             error-{'errors':{'code':(string)code,'msg':(string)info}} 
+             error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
     return addGroupMembers(uid, gid, request.json['members'])
 
-@appweb.route('/group/<gid>/setmember',method='POST', content_type='application/json')
+
+@appweb.route('/group/<gid>/setmember', method='POST', content_type='application/json')
 def doSetmemberInGroup(gid, uid):
     """
     URL:/group/<gid>/setmember
@@ -371,12 +242,13 @@ def doSetmemberInGroup(gid, uid):
     @type gid:string
     @param gid:the id of Group
     @type data:JSON
-    @param data:info of member list {'token':(string)token, 'members':[{'uid':(int)uid,'role':(int)roleId}, {'uid':(int)uid, 'role':(int)roleId}, ...]} 
+    @param data:info of member list {'token':(string)token, 'members':[{'uid':(int)uid,'role':(int)roleId}, {'uid':(int)uid, 'role':(int)roleId}, ...]}
     @rtype: JSON
     @return: ok-{'results':1}
-             error-{'errors':{'code':(string)code,'msg':(string)info}} 
+             error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
     return setGroupMembers(uid, gid, request.json['members'])
+
 
 @appweb.route('/group/<gid>/delmember', method='POST', content_type='application/json')
 def doRemovememberFromGroup(gid, uid):
@@ -389,14 +261,15 @@ def doRemovememberFromGroup(gid, uid):
     @type gid:string
     @param gid:the id of Group
     @type data:JSON
-    @param data: member list {'token':(string)token, 'members':[(int)uid1, (int)uid2, (int)uid3 ...]} 
+    @param data: member list {'token':(string)token, 'members':[(int)uid1, (int)uid2, (int)uid3 ...]}
     @rtype: JSON
     @return: ok-{'results':1}
-             error-{'errors':{'code':(string)code,'msg':(string)info}} 
+             error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
-    #TODO we should check if the uid has the permission to perform the operation
-    #including all operations below related with group...
+    # TODO we should check if the uid has the permission to perform the operation
+    # including all operations below related with group...
     return delGroupMembers(uid, gid, request.json['members'])
+
 
 @appweb.route('/group/<gid>/info', method='GET')
 def doGetGroupInfo(gid, uid):
@@ -409,12 +282,13 @@ def doGetGroupInfo(gid, uid):
     @type gid:string
     @param gid:the id of Group
     @type token:string
-    @param token:access token of account 
+    @param token:access token of account
     @rtype: JSON
     @return: ok-{'results':{'groupname'(string)groupname, 'members':[{'uid':(int)uid1, 'role':(int)roleId1},{'uid':(int)uid2, 'role':(int)roleId2},...]}}
-             error-{'errors':{'code':(string)code,'msg':(string)info}} 
+             error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
     return getGroupInfo(uid, gid)
+
 
 @appweb.route('/group/<gid>/test/<sid>/create', method='POST', content_type='application/json')
 def doCreateGroupTestSession(gid, sid, uid):
@@ -435,14 +309,15 @@ def doCreateGroupTestSession(gid, sid, uid):
             error-{'errors':{'code':value,'msg':(string)info}}
     """
     return createTestSession(gid, uid, sid, request.json['planname'], request.json['starttime'],
-        request.json['deviceid'], request.json['deviceinfo'])
+                             request.json['deviceid'], request.json['deviceinfo'])
+
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/create', method='POST', content_type='application/json')
 def doCreateCaseResult(gid, sid, tid):
     """
     URL:/group/<gid>/test/<sid>/case/<tid>/create
     TYPE:http/POST
-    
+
     Creating a test case result.
 
     @type gid:string
@@ -458,6 +333,7 @@ def doCreateCaseResult(gid, sid, tid):
             error-{'errors':{'code':value,'msg':(string)info}}
     """
     return createCaseResult(gid, sid, tid, request.json['casename'], request.json['starttime'])
+
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/update', method='POST', content_type='application/json')
 def doUpdateCaseResult(gid, sid, tid):
@@ -481,6 +357,7 @@ def doUpdateCaseResult(gid, sid, tid):
     """
     return updateCaseResult(gid, sid, tid, request.json['result'], request.json['traceinfo'], request.json['time'])
 
+
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/fileupload', method='PUT', content_type=['application/json', 'application/zip', 'application/octet-stream'])
 def doUploadCaseFile(gid, sid, tid):
     """
@@ -498,7 +375,7 @@ def doUploadCaseFile(gid, sid, tid):
     @type data:JSON
     @param data:{'token':(string)value}
     @type fileData:binary stream
-    @param fileData:content of file (logzip/snapshot)    
+    @param fileData:content of file (logzip/snapshot)
     @rtype:JSON
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
@@ -511,6 +388,7 @@ def doUploadCaseFile(gid, sid, tid):
     xtype = request.headers.get('Ext-Type') or ''
 
     return uploadCaseResultFile(gid, sid, tid, request.body, ftype, xtype)
+
 
 @appweb.route('/group/<gid>/test/<sid>/update', method='POST', content_type='application/json')
 def doUpdateGroupTestSession(gid, sid):
@@ -532,6 +410,7 @@ def doUpdateGroupTestSession(gid, sid):
     """
     return updateTestSession(gid, sid, request.json['endtime'])
 
+
 @appweb.route('/group/<gid>/test/<sid>/delete', method='GET')
 def doDeleteGroupTestSession(gid, sid):
     """
@@ -550,8 +429,9 @@ def doDeleteGroupTestSession(gid, sid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    #TODO we should check if the uid has the permission to perform the operation
+    # TODO we should check if the uid has the permission to perform the operation
     return deleteTestSession(gid, sid)
+
 
 @appweb.route('/group/<gid>/test/<sid>/results', method='GET')
 def doGetSessionInfo(gid, sid):
@@ -572,6 +452,7 @@ def doGetSessionInfo(gid, sid):
             error-{'errors':{'code':value,'msg':(string)info}}
     """
     return getTestSessionInfo(gid, sid)
+
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/log', method='GET')
 def doGetCaseResultLog(gid, sid, tid):
@@ -594,7 +475,7 @@ def doGetCaseResultLog(gid, sid, tid):
             error-{'errors':{'code':value,'msg':(string)info}}
     """
     data = getTestCaseLog(gid, sid, tid)
-    if type(data) is type({}):
+    if isinstance(data, type({})):
         # if the type of data is a dict, then we got error...
         return data
     else:
@@ -602,6 +483,7 @@ def doGetCaseResultLog(gid, sid, tid):
         response.set_header('Content-Type', 'application/x-download')
         response.set_header('Content-Disposition', 'attachment; filename=' + filename, True)
         return data
+
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/snaps', method='GET')
 def doGetCaseResultSnapshots(gid, sid, tid):
@@ -624,6 +506,7 @@ def doGetCaseResultSnapshots(gid, sid, tid):
             error-{'errors':{'code':value,'msg':(string)info}}
     """
     return getTestCaseSnaps(gid, sid, tid)
+
 
 @appweb.route('/group/<gid>/testsummary', method='GET')
 def doGetGroupTestSessions(gid):
