@@ -4,7 +4,7 @@
 
     As python gevent needs libevent-dev, so we must install the lib firstly.
 
-        $ sudo apt-get install libevent-dev
+        $ sudo apt-get install python-dev libevent-dev
 
 - Virtual environment
 

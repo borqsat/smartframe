@@ -28,6 +28,7 @@ def after_install(options, home_dir):
     if not os.path.exists(etc):
         os.makedirs(etc)
 
+    subprocess.call(['sudo', 'apt-get', 'install', 'python-dev'])
     subprocess.call(['sudo', 'apt-get', 'install', 'libevent-dev'])
     subprocess.call([join(home_dir, 'bin', 'pip'), 'install', '-r', 'requirements.txt'])
 """
