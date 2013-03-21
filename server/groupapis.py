@@ -13,7 +13,7 @@ from plugins import LoginPlugin, ContentTypePlugin
 appweb = Bottle()
 
 contenttype_plugin = ContentTypePlugin()
-appweb.install(contenttype_plugin)
+#appweb.install(contenttype_plugin)
 
 login_plugin = LoginPlugin(getuserid=getUserId,
                            request_token_param="token",
@@ -452,6 +452,22 @@ def doGetSessionInfo(gid, sid):
             error-{'errors':{'code':value,'msg':(string)info}}
     """
     return getTestSessionInfo(gid, sid)
+
+@appweb.route('/group/<gid>/test/<sid>/poll', method='GET')
+def checkSessionUpdated(gid, sid):
+    tid=request.params.get('tid')
+    if tid is None:
+        return {'error':{'code':0,'msg':'Without tid'}}
+    else:
+        return isSessionUpdated(gid,sid,tid)
+
+@appweb.route('/group/<gid>/test/<sid>/live', method='GET')
+def getSessionLiveData(gid, sid):
+    maxCount=request.params.get('limit')
+    if maxCount is None:
+        return getSessionLive(gid,sid,100)
+    else:
+        return getSessionLive(gid,sid,maxCount)
 
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/log', method='GET')
