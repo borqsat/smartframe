@@ -1,96 +1,73 @@
 from dbstore import store
 
-def createTestSession(token,sid,planname,starttime, deviceid, deviceinfo):
-    ret = store.validToken(token)
-    if ret.has_key('uid'):
-        uid = ret['uid']
-        store.createTestSession(sid, uid, planname, starttime, deviceid, deviceinfo)
-        return {'results':1}
-    else:
-        return {'errors':{'code':'01','msg':'Invalid token.'}}
-
-def updateTestSession(token,sid,endtime):
-    store.updateTestSession(sid, endtime)
+def createTestSession(gid, uid, sid, planname,starttime, deviceid, deviceinfo):
+    store.createTestSession(gid, sid, uid, planname, starttime, deviceid, deviceinfo)
     return {'results':1}
 
-def deleteTestSession(token,sid):
-    store.deleteTestSession(sid)
+def updateTestSession(gid, sid, endtime):
+    store.updateTestSession(gid, sid, endtime)
     return {'results':1}
 
-def getTestSessionList(token):
-    ret = store.validToken(token)
-    if ret.has_key('uid'):
-        uid = ret['uid']
-        rdata = store.readTestSessionList(uid)
-        if not rdata is None :
-            return {'results':rdata}
-        else:
-            return {'errors':{'code':404,'msg':'None reuslt.'}}
-    else:
-        return {'errors':{'code':'01','msg':'Invalid token.'}}
+def deleteTestSession(gid, sid):
+    store.deleteTestSession(gid, sid)
+    return {'results':1}
 
-def getTestSessionInfo(token, sid):
-    ret = store.validToken(token)
-    if ret.has_key('uid'):
-        uid = ret['uid']
-    else:
-        uid = '00001'
-
-    rdata = store.readTestSessionInfo(sid, uid)
+def getTestSessionList(gid):
+    rdata = store.readTestSessionList(gid)
     if not rdata is None :
         return {'results':rdata}
     else:
         return {'errors':{'code':404,'msg':'None reuslt.'}}
 
-def createCaseResult(token,sid,tid,casename,starttime):
-    store.createTestCaseResult(sid, tid, casename, starttime)
-    return {'results':1}
-
-def getTestCaseInfo(token, sid, tid):
-    rdata = store.readTestCaseInfo(sid, tid)
+def getTestSessionInfo(gid, sid):
+    rdata = store.readTestSessionInfo(gid, sid)
     if not rdata is None :
         return {'results':rdata}
     else:
         return {'errors':{'code':404,'msg':'None reuslt.'}}
 
-def updateCaseResult(token,sid, tid,status,traceinfo, endtime):
-    store.updateTestCaseResult(sid, tid, status,traceinfo,endtime)
+def createCaseResult(gid, sid,tid,casename,starttime):
+    store.createTestCaseResult(gid, sid, tid, casename, starttime)
     return {'results':1}
 
-def uploadCaseResultFile(token, sid, tid, rawdata, ftype='png', ctype=''):
+def getTestCaseInfo(gid, sid, tid):
+    rdata = store.readTestCaseInfo(gid, sid, tid)
+    if not rdata is None :
+        return {'results':rdata}
+    else:
+        return {'errors':{'code':404,'msg':'None reuslt.'}}
+
+def updateCaseResult(gid, sid, tid,status,traceinfo, endtime):
+    store.updateTestCaseResult(gid, sid, tid, status,traceinfo,endtime)
+    return {'results':1}
+
+def uploadCaseResultFile(gid, sid, tid, rawdata, ftype='png', ctype=''):
     if ftype == 'png':
-        store.writeTestSnapshot(sid, tid, rawdata, ctype)
+        store.writeTestSnapshot(gid, sid, tid, rawdata, ctype)
         return {'results':1}
     elif ftype == 'zip':
-        store.writeTestLog(sid, tid, rawdata)
+        store.writeTestLog(gid, sid, tid, rawdata)
         return {'results':1}
     else:
         return {'errors':{'code':500,'msg':'Invalid ftype value.'}}
 
-def getTestCaseLog(token, sid, tid):
-    rdata = store.getCaseLog(sid, tid)
+def getTestCaseLog(gid, sid, tid):
+    rdata = store.getCaseLog(gid, sid, tid)
     if not rdata is None :
         return rdata
     else:
         return {'errors':{'code':404,'msg':'None reuslt.'}}
 
-def getTestCaseSnaps(token, sid, tid):
-    rdata = store.readTestHistorySnaps(sid, tid)
+def getTestCaseSnaps(gid, sid, tid):
+    rdata = store.readTestHistorySnaps(gid, sid, tid)
     if not rdata is None:
         return {'results':rdata}
     else:
         return {'errors':{'code':404,'msg':'None reuslt.'}}
 
-def getTestSessionSnaps(token, sid):
-    imgBuffer = store.readTestLiveSnaps(sid)
+def getTestLiveSnaps(gid, sid):
+    imgBuffer = store.readTestLiveSnaps(gid, sid)
     if not imgBuffer is None:
         return imgBuffer
-    else:
-        return []
-
-def getTestSessionResults(token, sid):
-    results = store.readTestLiveResults(sid)
-    if not results is None:
-        return results
     else:
         return []
