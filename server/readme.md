@@ -1,12 +1,13 @@
+For development purpose
+
 # Installation
 
--   libevent-dev
-
-    As python gevent needs libevent-dev, so we must install the lib firstly.
-
-        $ sudo apt-get install python-dev libevent-dev
-
 - Virtual environment
+    
+    If you use Ubuntu10.04, please install libssl-dev, 
+    After installed successfully, build and install python2.7.
+
+        $ sudo apt-get install libssl-dev
 
     Enter the directory, and then run below command:
 
@@ -16,16 +17,37 @@
 
         $ . venv/bin/activate
 
+- Install server tools 
+    
+     Before running the server, you must set up `mongodb`, `memcached`,
+     `redis` on your local PC.
+
+       $ sudo apt-get install mongodb memcached redis-server
+
+
 # Run the server
+  
+- Update config file `development.ini`.
 
-Before running the server, you must set up `mongodb`, `memcached`, `redis`,
-and update server config file `product.ini`, just like `development.ini`.
-Finally you can execute below command to start the server:
+    [redis]
+    host=192.168.1.96  --> set to 127.0.0.1
+    port=6379
+    db=0
 
-    $ python app.py -c product.ini
+    [mongodb]
+    uri=mongodb://192.168.5.60:27017  --> set to mongodb://127.0.0.1:27017
+    replicaSet=ats_rs                 --> remove this ling
 
-You can add `-d` option to use development options. By default, the server
-will use replicaset when connecting to mongodb. For development purpose, you
-only need to connect to a single mongodb, so you can run command like below:
+    [memcached]
+    uri=192.168.7.212:11211           --> set to 127.0.0.1:11211
 
-    $ python app.py -c development.ini -d
+    [server:web]
+    host=localhost
+    port=8080
+
+- Start server
+
+     Run command like below:
+    
+     $ python app.py -c development.ini -d
+

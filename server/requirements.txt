@@ -11,3 +11,4 @@ pymongo==2.4.2
 python-memcached==1.48
 redis==2.7.2
 wsgiref==0.1.2
+beaker=1.6.4
