@@ -290,6 +290,25 @@ def doGetGroupInfo(gid, uid):
     return getGroupInfo(uid, gid)
 
 
+@appweb.route('/group/<gid>/delete', method='GET')
+def doDeleteGroup(gid, uid):
+    """
+    URL:/group/<gid>/delete
+    TYPE:http/GET
+
+    get group profile by id
+
+    @type gid:string
+    @param gid:the id of Group
+    @type token:string
+    @param token:access token of account
+    @rtype: JSON
+    @return: ok-{'results':'OK'}
+             error-{'errors':{'code':(string)code,'msg':(string)info}}
+    """
+    return deleteGroup(gid,uid)
+
+
 @appweb.route('/group/<gid>/test/<sid>/create', method='POST', content_type='application/json')
 def doCreateGroupTestSession(gid, sid, uid):
     """
@@ -453,7 +472,7 @@ def doGetSessionInfo(gid, sid):
     """
     return getTestSessionInfo(gid, sid)
 
-@appweb.route('/group/<gid>/test/<sid>/poll', method='GET')
+@appweb.route('/group/<gid>/test/<sid>/poll',method='GET')
 def checkSessionUpdated(gid, sid):
     tid=request.params.get('tid')
     if tid is None:

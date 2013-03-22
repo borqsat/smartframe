@@ -11,9 +11,9 @@ def updateTestSession(gid, sid, endtime):
 def deleteTestSession(gid, sid):
     store.deleteTestSession(gid, sid)
     return {'results':1}
-    
-def deleteGroup(gid):
-    return store.deleteGroup(gid)
+
+def deleteGroup(gid,uid):
+    return store.deleteGroup(gid,uid)
 
 def getTestSessionList(gid):
     rdata = store.readTestSessionList(gid)

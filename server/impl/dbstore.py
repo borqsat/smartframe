@@ -148,19 +148,27 @@ class testStore(object):
             groups.insert({'gid': gid, 'groupname': groupname, 'info': info})
             return {'gid': gid}
 
-    def deleteGroup(self, gid):
+    def deleteGroup(self, gid,uid):
         '''
         Delete a group and it's data
+        TODO: Maybe a bug: role only exists in group_members?
         '''
-        collections=['groups','group_members','testsessions','testresults']
         group=self._db['groups'].find_one({'gid':gid})
         if group is None:
-            return {'error':{'code':0,'msg':'Invalid gid.'}}
-        else:
-            for collec in collections:
-                self._db[collec].remove({'gid':gid})
-            return {'results':1}
+            return {'error':{'code':0,'msg':'Invalid group.'}}
 
+        gMembers = self._db['group_members']
+        item=gMembers.find_one({'gid':gid,'uid':uid})
+        if item is None:
+            return {'error':{'code':0,'msg':'Permission denial.'}}
+        else:
+            if item['role']>2:
+                return {'error':{'code':0,'msg':'Permission denial.'}}
+
+        collections=['groups','group_members','testsessions','testresults']                
+        for collec in collections:
+            self._db[collec].remove({'gid':gid})
+        return {'results':'OK'}
 
     def addGroupMember(self, gid, uid, role):
         members = self._db['group_members']
