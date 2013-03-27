@@ -1,5 +1,5 @@
 from dbstore import store
-
+####3
 def createTestSession(gid, uid, sid, planname,starttime, deviceid, deviceinfo):
     store.createTestSession(gid, sid, uid, planname, starttime, deviceid, deviceinfo)
     return {'results':1}
@@ -12,19 +12,33 @@ def deleteTestSession(gid, sid):
     store.deleteTestSession(gid, sid)
     return {'results':1}
 
+def deleteGroup(gid,uid):
+    return store.deleteGroup(gid,uid)
+
 def getTestSessionList(gid):
     rdata = store.readTestSessionList(gid)
     if not rdata is None :
         return {'results':rdata}
     else:
-        return {'errors':{'code':404,'msg':'None reuslt.'}}
+        return {'errors':{'code':404,'msg':'None result.'}}
 
 def getTestSessionInfo(gid, sid):
     rdata = store.readTestSessionInfo(gid, sid)
     if not rdata is None :
         return {'results':rdata}
     else:
-        return {'errors':{'code':404,'msg':'None reuslt.'}}
+        return {'errors':{'code':404,'msg':'None result.'}}
+
+def isSessionUpdated(gid,sid,tid):
+    return {'results':store.isSessionUpdated(gid,sid,tid)}
+
+def getSessionLive(gid,sid,maxCount):
+    result=store.getSessionLive(gid,sid,maxCount)
+    if result is None:
+        return {'errors':{'code':404,'msg':'None result.'}}
+    else:
+        return {'results':result}
+
 
 def createCaseResult(gid, sid,tid,casename,starttime):
     store.createTestCaseResult(gid, sid, tid, casename, starttime)

@@ -8,6 +8,7 @@ import uuid
 import base64
 from bson.objectid import ObjectId
 from datetime import datetime
+import pymongo
 from pymongo import MongoClient, MongoReplicaSetClient
 from pymongo import ReadPreference
 
@@ -46,6 +47,7 @@ class testStore(object):
         do the database instance init works
         """
         print 'init db store class!!!'
+        #print db
         self._db = db
         self._fs = fs
         self._mc = mem
@@ -145,6 +147,28 @@ class testStore(object):
             gid = m.hexdigest()
             groups.insert({'gid': gid, 'groupname': groupname, 'info': info})
             return {'gid': gid}
+
+    def deleteGroup(self, gid,uid):
+        '''
+        Delete a group and it's data
+        TODO: Maybe a bug: role only exists in group_members?
+        '''
+        group=self._db['groups'].find_one({'gid':gid})
+        if group is None:
+            return {'error':{'code':0,'msg':'Invalid group.'}}
+
+        gMembers = self._db['group_members']
+        item=gMembers.find_one({'gid':gid,'uid':uid})
+        if item is None:
+            return {'error':{'code':0,'msg':'Permission denial.'}}
+        else:
+            if item['role']>2:
+                return {'error':{'code':0,'msg':'Permission denial.'}}
+
+        collections=['groups','group_members','testsessions','testresults']                
+        for collec in collections:
+            self._db[collec].remove({'gid':gid})
+        return {'results':'OK'}
 
     def addGroupMember(self, gid, uid, role):
         members = self._db['group_members']
@@ -436,12 +460,36 @@ class testStore(object):
         result['cases'] = lists
         return result
 
+    def isSessionUpdated(self,gid,sid,tid):
+        tResult=self._db['testresults']
+        record=tResult.find_one({'gid':gid,'sid':sid,'tid':{'$gt':int(tid)}})
+        if record is None:
+            return 0
+        else:
+            return 1
+
+    def getSessionLive(self,gid,sid,maxCount):
+        tResult=self._db['testresults']
+        spec={'gid':gid,'sid':sid}
+        fields={'_id':False,'gid':False,'sid':False,'log':False,'checksnap':False,'snapshots':False}
+        records=tResult.find(spec=spec,fields=fields,limit=int(maxCount),sort=[('tid',pymongo.DESCENDING)])
+        result=[]
+        for record in records:
+            result.append(record)
+        if len(result)==0:
+            return None
+        else:
+            return result
+
+    def getSessionSummary(self,gid,sid):        
+        pass
+
     def readTestCaseInfo(self, gid, sid, tid):
         """
         read list of test cases records in database
         """
         caseresult = self._db['testresults']
-        ret = caseresult.find({'sid': sid, 'tid': tid})
+        ret = caseresult.find({'sid': sid, 'tid': int(tid)})
         result = None
         for d in ret:
             if not 'result' in d:
@@ -469,7 +517,7 @@ class testStore(object):
         read list of test session records in database
         """
         caseresult = self._db['testresults']
-        ret = caseresult.find({'sid': sid, 'tid': tid})
+        ret = caseresult.find({'sid': sid, 'tid': int(tid)})
         result = None
         logid = None
         for d in ret:
@@ -486,7 +534,7 @@ class testStore(object):
         timestamp = datetime.now().strftime(DATE_FORMAT_STR1)
         self.setCache(str('sid:' + sid + ':uptime'), timestamp)
         caseresult = self._db['testresults']
-        caseresult.insert({'gid': gid, 'sid': sid, 'tid': tid, 'casename': casename, 'log': 'N/A', 'traceinfo':
+        caseresult.insert({'gid': gid, 'sid': sid, 'tid': int(tid), 'casename': casename, 'log': 'N/A', 'traceinfo':
                           'N/A', 'result': 'running', 'starttime': starttime, 'endtime': 'N/A', 'snapshots': []})
         session = self._db['testsessions']
         session.update({'gid': gid, 'sid': sid}, {'$inc': {'summary.total': 1}})
@@ -528,7 +576,7 @@ class testStore(object):
         else:
             session.update({'gid': gid, 'sid': sid}, {'$inc': {'summary.error': 1}, '$set': {'runtime': runtime}})
 
-        caseresult.update({'gid': gid, 'sid': sid, 'tid': tid}, {'$set': {'result': status, 'traceinfo': traceinfo,
+        caseresult.update({'gid': gid, 'sid': sid, 'tid': int(tid)}, {'$set': {'result': status, 'traceinfo': traceinfo,
                           'endtime': endtime, 'snapshots': snapshots}})
 
     def writeTestLog(self, gid, sid, tid, logfile):
@@ -538,7 +586,7 @@ class testStore(object):
         """
         caseresult = self._db['testresults']
         fkey = self.setfile(logfile)
-        caseresult.update({'gid': gid, 'sid': sid, 'tid': tid}, {'$set': {'log': fkey}})
+        caseresult.update({'gid': gid, 'sid': sid, 'tid': int(tid)}, {'$set': {'log': fkey}})
 
     def writeTestSnapshot(self, gid, sid, tid, snapfile, stype):
         """
@@ -559,7 +607,7 @@ class testStore(object):
             sfile = stype[posi + 1:]
             fkey = self.setfile(snapfile)
             if xtype == 'expect':
-                results.update({'gid': gid, 'sid': sid, 'tid': tid}, {'$set': {'checksnap': {'title': sfile, 'fid': fkey}}})
+                results.update({'gid': gid, 'sid': sid, 'tid': int(tid)}, {'$set': {'checksnap': {'title': sfile, 'fid': fkey}}})
             elif xtype == 'current':
                 self._snapqueue[sid + '-' + tid].append({'title': sfile, 'fid': fkey})
         except:
@@ -575,7 +623,7 @@ class testStore(object):
 
     def readTestHistorySnaps(self, gid, sid, tid):
         caseresult = self._db['testresults']
-        ret = caseresult.find({'sid': sid, 'tid': tid})
+        ret = caseresult.find({'sid': sid, 'tid': int(tid)})
         snapids = []
         snaps = []
         checkid = ''
@@ -613,7 +661,10 @@ def _getStore():
 
     mc = memcache.Client(config.get("memcached", "uri").split(','), args.development)
 
-    return testStore(mongo_client.smartServer,
+    # return testStore(mongo_client.smartServer,
+    #                  gridfs.GridFS(mongo_client.smartFiles, collection="fs"),
+    #                  mc)
+    return testStore(mongo_client.smartTest,
                      gridfs.GridFS(mongo_client.smartFiles, collection="fs"),
                      mc)
 
