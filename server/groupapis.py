@@ -482,6 +482,31 @@ def checkSessionUpdated(gid, sid):
 
 @appweb.route('/group/<gid>/test/<sid>/live', method='GET')
 def getSessionLiveData(gid, sid):
+    """
+    URL:/group/<gid>/test/<sid>/live
+    TYPE:http/GET
+
+    Get the latest data of a test session
+
+    @type gid:string
+    @param gid:the id of group
+    @type sid:string
+    @param sid:the id of test session
+    @type token:JSON
+    @param token:the access token
+    @type limit:JSON
+    @param limit:the limit of returned data count
+    @rtype: JSON
+    @return:
+    ok-{'results':
+    {
+    'summary':{'total':(int)n,'pass':(int)n,'fail':(int)n,'error':(int)n},
+    'cases':[{'tid':(int)tid,'casename':(string)casename,'starttime':(string)starttime,'endtime':(string)endtime,'result':(string)result,'traceinfo':(string)traceinfo},...]
+    }
+    }
+    
+    error-{'errors':{'code':value,'msg':(string)info}}
+    """
     maxCount=request.params.get('limit')
     if maxCount is None:
         return getSessionLive(gid,sid,100)

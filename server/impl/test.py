@@ -33,12 +33,7 @@ def isSessionUpdated(gid,sid,tid):
     return {'results':store.isSessionUpdated(gid,sid,tid)}
 
 def getSessionLive(gid,sid,maxCount):
-    result=store.getSessionLive(gid,sid,maxCount)
-    if result is None:
-        return {'errors':{'code':404,'msg':'None result.'}}
-    else:
-        return {'results':result}
-
+    return {'results':store.getSessionLive(gid,sid,maxCount)}
 
 def createCaseResult(gid, sid,tid,casename,starttime):
     store.createTestCaseResult(gid, sid, tid, casename, starttime)

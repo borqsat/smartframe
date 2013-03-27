@@ -469,17 +469,30 @@ class testStore(object):
             return 1
 
     def getSessionLive(self,gid,sid,maxCount):
-        tResult=self._db['testresults']
-        spec={'gid':gid,'sid':sid}
-        fields={'_id':False,'gid':False,'sid':False,'log':False,'checksnap':False,'snapshots':False}
-        records=tResult.find(spec=spec,fields=fields,limit=int(maxCount),sort=[('tid',pymongo.DESCENDING)])
-        result=[]
-        for record in records:
-            result.append(record)
-        if len(result)==0:
-            return None
+        tSession=self._db['testsessions']
+        s=tSession.find_one({'sid':sid})
+        summary={}
+        if s is None:
+            summary['total']=0
+            summary['pass']=0
+            summary['fail']=0
+            summary['error']=0
         else:
-            return result
+            summary=s['summary']
+        
+        tResult=self._db['testresults']
+        specs={'gid':gid,'sid':sid}
+        fields={'_id':False,'gid':False,'sid':False,'log':False,'checksnap':False,'snapshots':False}
+        records=tResult.find(spec=specs,fields=fields,limit=int(maxCount),sort=[('tid',pymongo.DESCENDING)])
+        cases=[]
+        for record in records:
+            cases.append(record)
+        
+        result={}
+        result['summary']=summary
+        result['cases']=cases
+
+        return result
 
     def getSessionSummary(self,gid,sid):        
         pass
