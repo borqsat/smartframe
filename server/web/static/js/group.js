@@ -440,7 +440,7 @@ function pollSessionStatus(gid, sid) {
     invokeWebApi('/group/' + gid + '/test/' + sid + '/poll',
                   prepareData({'tid':_appglobal.tid}),
                   function(data) {
-                      status = data.results;
+                      var status = data.results;
                       if(status > 0) {
                            updateSessionInfo(gid, sid);
                       }
@@ -449,12 +449,13 @@ function pollSessionStatus(gid, sid) {
 
 function updateSessionInfo(gid,sid) {
       invokeWebApi('/group/'+gid+'/test/'+sid+'/live',
-                   prepareData({'limit':100}),
+                   prepareData({'limit':10}),
                    function(data){
-                        summary = data.results.summary;
-                        cases = data.results.cases;
-                        alert(JSON.stringify(cases));
-                        //createSessionSummary(data);
+                        if(data.results === undefined) return;
+                        var summary = data.results.summary;
+                        var caseslist = sortTestCases(data.results.cases);
+                        createDetailTable('table_latest_' + sid);
+                        fillDetailTable(caseslist,'table_latest_' + sid, 'all');
                   });
 }
 
@@ -489,9 +490,8 @@ function createDeviceInfo(data, gid, sid) {
     $dev_table.append($th);
     $dev_table.append($tbody);
     var strid = data.deviceid;
-    if(gid !== '' && sid !== '') {
-       strid = "<a href=javascript:showSnapDiv(\""+gid+"\",\""+sid+"\")'>"+data.deviceid+"</a>";
-    }
+    if(gid !== '' && sid !== '') 
+       strid = "<a href=javascript:showSnapDiv(\""+gid+"\",\""+sid+"\")>"+data.deviceid+"</a>";
     $tr = "<tr>"+     
           "<td>"+strid+"</td>"+ 
           "<td>"+data.product+"</td>"+    
