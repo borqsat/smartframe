@@ -449,7 +449,7 @@ function pollSessionStatus(gid, sid) {
 
 function updateSessionInfo(gid,sid) {
       invokeWebApi('/group/'+gid+'/test/'+sid+'/live',
-                   prepareData({'limit':10}),
+                   prepareData({'limit':100}),
                    function(data){
                         if(data.results === undefined) return;
                         var summary = data.results.summary;

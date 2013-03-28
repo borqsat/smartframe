@@ -461,37 +461,39 @@ class testStore(object):
         return result
 
     def isSessionUpdated(self,gid,sid,tid):
-        tResult=self._db['testresults']
-        record=tResult.find_one({'gid':gid,'sid':sid,'tid':{'$gt':int(tid)}})
+        tResult = self._db['testresults']
+        record = tResult.find_one({'gid':gid,'sid':sid,'tid':{'$gt':int(tid)}})
         if record is None:
             return 0
         else:
             return 1
 
     def getSessionLive(self,gid,sid,maxCount):
-        tSession=self._db['testsessions']
-        s=tSession.find_one({'sid':sid})
-        summary={}
+        tSession = self._db['testsessions']
+        s = tSession.find_one({'sid':sid})
+        summary = {}
+        runtime = 0
         if s is None:
-            summary['total']=0
-            summary['pass']=0
-            summary['fail']=0
-            summary['error']=0
+            summary['total'] = 0
+            summary['pass'] = 0
+            summary['fail'] = 0
+            summary['error'] = 0
         else:
-            summary=s['summary']
+            summary = s['summary']
+            runtime = s['runtime']
         
-        tResult=self._db['testresults']
-        specs={'gid':gid,'sid':sid}
-        fields={'_id':False,'gid':False,'sid':False,'log':False,'checksnap':False,'snapshots':False}
-        records=tResult.find(spec=specs,fields=fields,limit=int(maxCount),sort=[('tid',pymongo.DESCENDING)])
-        cases=[]
+        tResult = self._db['testresults']
+        specs = {'gid':gid,'sid':sid}
+        fields = {'_id':False,'gid':False,'sid':False,'log':False,'checksnap':False,'snapshots':False}
+        records = tResult.find(spec=specs,fields=fields,limit=int(maxCount),sort=[('tid',pymongo.DESCENDING)])
+        cases = []
         for record in records:
             cases.append(record)
         
-        result={}
-        result['summary']=summary
-        result['cases']=cases
-
+        result = {}
+        result['runtime'] = runtime
+        result['summary'] = summary
+        result['cases'] = cases
         return result
 
     def getSessionSummary(self,gid,sid):        
