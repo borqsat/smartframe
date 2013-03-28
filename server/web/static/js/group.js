@@ -102,7 +102,6 @@ function deleteSessionById(gid,sid) {
         invokeWebApi('/group/'+gid+'/test/'+sid+'/delete',
                     prepareData({}),
                     function(data){
-                       //showSessionInfo(_appglobal.gid,_appglobal.sid); 
                        showTestSummary(gid);
                     });
     }
@@ -362,7 +361,9 @@ function sortTestCases(data) {
         datacases.sort(function(a,b){ 
            return parseInt(b['tid']) - parseInt(a['tid']) ; 
         });
-    }
+        _appglobal.tid = datacases[0]['tid'];
+    } else _appglobal.tid = 0;
+
     return datacases;
 }
 
@@ -435,40 +436,64 @@ function fillDetailTable(data, ids, tag){
     TablePage('#'+ids, 100, 20);
 }
 
+function pollSessionStatus(gid, sid) {
+    invokeWebApi('/group/' + gid + '/test/' + sid + '/poll',
+                  prepareData({'tid':_appglobal.tid}),
+                  function(data) {
+                      status = data.results;
+                      if(status > 0) {
+                           updateSessionInfo(gid, sid);
+                      }
+                })
+}
+
+function updateSessionInfo(gid,sid) {
+      invokeWebApi('/group/'+gid+'/test/'+sid+'/live',
+                   prepareData({'limit':100}),
+                   function(data){
+                        summary = data.results.summary;
+                        cases = data.results.cases;
+                        alert(JSON.stringify(cases));
+                        //createSessionSummary(data);
+                  });
+}
+
 function showSessionInfo(gid,sid) {
       invokeWebApi('/group/'+gid+'/test/'+sid+'/results',
                    prepareData({}),
                    function(data){
-                       _appglobal.deviceinfo = data.results.deviceinfo;
-                       _appglobal.deviceinfo.deviceid = data.results.deviceid;
-                       _appglobal.caseslist = sortTestCases(data.results.cases);
-                       createDeviceInfo(_appglobal.deviceinfo);
-                       //$('#session-name').show();
-                       $('#session-name').parent().attr('href','#/group/'+gid+'/session/'+sid);
-                       $('#session-name').html('test:'+data.results['id']);
-                       if(data['results'] !== undefined && data['results']['endtime'] !== 'N/A') {
-                           createHistoryCaseSummary(data);
-                           createDetailTable('table_all_' + sid);
-                           fillDetailTable(_appglobal.caseslist,'table_all_' + sid,'all');                
-                       } else {
-                           createLiveCaseSummary(data);
-                           createDetailTable('table_all_' + sid);
-                           fillDetailTable(_appglobal.caseslist,'table_all_' + sid,'all');
-                           _appglobal.t1 = setTimeout("showSessionInfo(\""+gid+"\",\""+sid+"\")", 60000);
-                       }
+                        _appglobal.deviceinfo = data.results.deviceinfo;
+                        _appglobal.deviceinfo.deviceid = data.results.deviceid;
+                        _appglobal.caseslist = sortTestCases(data.results.cases);
+                  
+                        $('#session-name').parent().attr('href','#/group/'+gid+'/session/'+sid);
+                        $('#session-name').html('session:'+data.results['id']);
+                        createSessionSummary(data);
+                        createDetailTable('table_all_' + sid);
+                        fillDetailTable(_appglobal.caseslist,'table_all_' + sid,'all');
+                        if(data['results'] === undefined || data['results']['endtime'] === 'N/A') {
+                             createDeviceInfo(_appglobal.deviceinfo, gid, sid);
+                            _appglobal.t1 = setInterval("pollSessionStatus(\""+gid+"\",\""+sid+"\")", 10000);
+                        } else {
+                             createDeviceInfo(_appglobal.deviceinfo, '', '');
+                        }
+
                   });
 }
 
-function createDeviceInfo(data) {
+function createDeviceInfo(data, gid, sid) {
     var $dev_table = $('<table>').attr('class','table table-bordered');
     var $th = '<thead><tr><th>device</th><th>product</th><th>build</th><th>width</th><th>height</th></tr></thead>';
     var $tbody = '<tbody></tbody>';
     $('#device_div').html('').append($dev_table);
     $dev_table.append($th);
     $dev_table.append($tbody);
-
+    var strid = data.deviceid;
+    if(gid !== '' && sid !== '') {
+       strid = "<a href=javascript:showSnapDiv(\""+gid+"\",\""+sid+"\")'>"+data.deviceid+"</a>";
+    }
     $tr = "<tr>"+     
-          "<td>"+data.deviceid+"</td>"+ 
+          "<td>"+strid+"</td>"+ 
           "<td>"+data.product+"</td>"+    
           "<td>"+data.revision+"</td>"+
           "<td>"+data.width+"</td>"+
@@ -477,71 +502,8 @@ function createDeviceInfo(data) {
     $dev_table.append($tr);
 }
 
-function createLiveCaseSummary(data) {
-    data = data.results;
-    if(data === undefined) return;
-    $('#summary_div').html('');
-    var sid = data['sid'];
-    var gid = data['gid'];
-    var oId = "o_"+sid;
-    var alllink = "all_"+sid;
-    var faillink = 'fail_'+sid;
-    var passlink = 'pass_'+sid;
-    var errorlink = 'error_'+sid;
-    var $summary_table = $('<table>').attr('class','table table-bordered').attr('id','stable-'+sid);
-    var $th = '<thead><tr>'+
-               '<th>planname</th>'+
-               '<th>tester</th>'+
-               '<th>starttime</th>'+
-               '<th>runtime</th>'+
-               '<th></th>'+
-               '<th>all</th>'+
-               '<th>pass</th>'+
-               '<th>fail</th>'+
-               '<th>error</th>'+
-               '</tr></thead>';
-    var $tbody = '<tbody></tbody>';
-    $('#summary_div').append($summary_table);
-    $summary_table.append($th);
-    $summary_table.append($tbody);
-    $tr = "<tr>"+     
-          "<td>"+data['planname']+"</td>"+    
-          "<td>"+data['tester']+"</td>"+
-          "<td>"+data['starttime']+"</td>"+
-          "<td>"+setRunTime(data['runtime'])+"</td>"+
-          "<td><a id="+oId+" href=\"javascript:void(0)\">livesnaps</a></td>"+
-          "<td>"+"<a id="+alllink+" href=\"javascript:void(0)\" >"+data['summary']['total']+"</a></td>"+
-          "<td>"+"<a id="+passlink+" href=\"javascript:void(0)\" >"+data['summary']['pass']+"</a></td>"+
-          "<td>"+"<a id="+faillink+" href=\"javascript:void(0)\" >"+data['summary']['fail']+"</a></td>"+
-          "<td>"+"<a id="+errorlink+" href=\"javascript:void(0)\" >"+data['summary']['error']+"</a></td>"+
-          "</tr>";
-    $summary_table.append($tr);
-    $('#'+oId).click(function() {
-                           showSnapDiv(gid,sid);
-                      });  
 
-    $("#"+alllink).click(function(){                        
-                           createDetailTable('table_all_' + sid);
-                           fillDetailTable(_appglobal.caseslist,'table_all_' + sid,'all'); 
-                      });   
- 
-    $("#"+faillink).click(function(){
-                           createDetailTable('table_fail_' + sid);
-                           fillDetailTable(_appglobal.caseslist,'table_fail_' + sid,'fail');
-                      });
-
-    $("#"+passlink).click(function(){
-                           createDetailTable('table_pass_' + sid);
-                           fillDetailTable(_appglobal.caseslist, 'table_pass_' + sid, 'pass');
-                        });
-
-    $("#"+errorlink).click(function(){
-                           createDetailTable('table_error_' + sid);
-                           fillDetailTable(_appglobal.caseslist, 'table_error_' + sid, 'error');
-                        }); 
-}
-
-function createHistoryCaseSummary(data) {
+function createSessionSummary(data) {
     data = data['results'];
     var key = data['sid'];
     var alllink = "o_"+key;
@@ -608,7 +570,7 @@ var AppRouter = Backbone.Router.extend({
         $('#session-div').hide();
         $('#session-name').hide();
         _appglobal.gid = gid;
-        if(_appglobal.t1 !== undefined) clearTimeout(_appglobal.t1);
+        if(_appglobal.t1 !== undefined) clearInterval(_appglobal.t1);
         if(_appglobal.t2 !== undefined) clearTimeout(_appglobal.t2);
         showGroupInfo(gid);
         showTestSummary(gid);
@@ -620,7 +582,7 @@ var AppRouter = Backbone.Router.extend({
         $('#session-name').show();
         _appglobal.gid = gid;
         _appglobal.sid = sid;
-        if(_appglobal.t1 !== undefined) clearTimeout(_appglobal.t1);
+        if(_appglobal.t1 !== undefined) clearInterval(_appglobal.t1);
         if(_appglobal.t2 !== undefined) clearTimeout(_appglobal.t2);
         showGroupInfo(gid);
         showSessionInfo(gid,sid);
