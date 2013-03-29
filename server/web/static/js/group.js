@@ -387,6 +387,7 @@ function sortTestCases(data) {
 function fillDetailTable(data, ids, tag){
     var detail_table = $("#"+ids+" > tbody").html('');
     var tablerows = '';
+    var len = data.length;
     for (var i = 0; i < data.length; i++){
          var citem = data[i];
          var cgid = citem['gid'];
@@ -450,7 +451,7 @@ function fillDetailTable(data, ids, tag){
           } 
     }
     detail_table.append(tablerows);
-    TablePage('#'+ids, 100, 20);
+    if(len > 100) TablePage('#'+ids, 100, 20);
 }
 
 function pollSessionStatus(gid, sid) {
@@ -459,7 +460,7 @@ function pollSessionStatus(gid, sid) {
                   function(data) {
                       var status = data.results;
                       if(status > 0) {
-                           updateSessionInfo(gid, sid);
+                           showLiveSessionCases(gid, sid);
                       }
                 })
 }
@@ -482,6 +483,7 @@ function showHistorySessionCases(gid,sid) {
                    function(data){
                         if(data.results === undefined) return;
                         var caseslist = sortTestCases(data.results.cases);
+                        _appglobal.caseslist = caseslist;
                         createDetailTable('cases_div','table_all_' + sid);
                         fillDetailTable(_appglobal.caseslist,'table_all_' + sid,'all'); 
                   });
@@ -497,6 +499,7 @@ function showSessionInfo(gid,sid) {
                         $('#session-name').parent().attr('href','#/group/'+gid+'/session/'+sid);
                         $('#session-name').html('session:'+data.results['id']);
                         if(data['results']['endtime'] === undefined || data['results']['endtime'] === 'N/A') {
+                            
                             viewLatest();
                             createSessionBaseInfo(data, gid, sid);
                             createSessionSummary(data);

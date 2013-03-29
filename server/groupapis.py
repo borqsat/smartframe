@@ -513,6 +513,19 @@ def getSessionLiveData(gid, sid):
     else:
         return getSessionLive(gid,sid,maxCount)
 
+@appweb.route('/group/<gid>/test/<sid>/history', method='GET')
+def getSessionHistoryData(gid, sid):
+    type=request.params.get('type',default='total')
+    page=request.params.get('page',default='1')
+    pagesize=request.params.get('pagesize',default='100')
+    return getSessionHistory(gid,sid,type,int(page),int(pagesize))
+
+@appweb.route('/group/<gid>/test/<sid>/summary', method='GET')
+def doGetSessionSummary(gid, sid):
+    '''
+    Get Session Summary.
+    '''
+    return getSessionSummary(gid,sid)
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/log', method='GET')
 def doGetCaseResultLog(gid, sid, tid):

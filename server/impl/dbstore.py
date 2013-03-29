@@ -220,7 +220,7 @@ class testStore(object):
         return result
 
     # TODO cache policy...
-    @cm.cache("user_info", expire=60)
+    #@cm.cache("user_info", expire=60)
     def userInfo(self, uid):
         ingroups = []
         intests = []
@@ -497,8 +497,52 @@ class testStore(object):
         result['cases'] = cases
         return result
 
-    def getSessionSummary(self,gid,sid):        
-        pass
+    def getSessionAll(self,gid,sid,type='total',page=1,pagesize=100):
+        tSession=self._db['testsessions']
+        s=tSession.find_one({'sid':sid})
+        summary={}
+        if s is None:
+            return None
+
+        summary['count']=s['summary'][type]
+        total=summary['count']
+        if (total%pagesize>0):
+            summary['totalpage']=(total/pagesize+1)
+        else:
+            summary['totalpage']=(total/pagesize)
+        summary['page']=page
+        summary['pagesize']=pagesize        
+        
+        tResult=self._db['testresults']
+        if type == 'total':
+            specs={'sid':sid}            
+        else:    
+            specs={'sid':sid,'result':type}
+        fields={'_id':False,'gid':False,'sid':False,'log':False,'checksnap':False,'snapshots':False}
+        records=tResult.find(spec=specs,fields=fields,skip=int((page-1)*pagesize),limit=int(pagesize),sort=[('tid',pymongo.ASCENDING)])
+        cases=[]
+        for record in records:
+            cases.append(record)
+        
+        result={}
+        result['summary']=summary
+        result['cases']=cases
+
+        return result
+
+    def getSessionSummary(self,gid,sid):
+        tSession=self._db['testsessions']
+        s=tSession.find_one({'sid':sid})
+        if s is None:
+            return None
+        
+        if 'tester' in s:
+            users=self._db['users']
+            u=users.find_one({'uid':s['tester']})
+            if not u is None:
+                s['tester']=u['username']
+        s.pop('_id')
+        return s
 
     def readTestCaseInfo(self, gid, sid, tid):
         """
@@ -673,7 +717,7 @@ def _getStore():
     replicaset = config.get("mongodb", "replicaSet")
     mongo_client = args.development and MongoClient(mongo_uri) or \
         MongoReplicaSetClient(mongo_uri, replicaSet=replicaset,
-                              read_preference=ReadPreference.PRIMARY_PREFERRED)
+                              read_preference=ReadPreference.PRIMARY)
 
     mc = memcache.Client(config.get("memcached", "uri").split(','), args.development)
 
