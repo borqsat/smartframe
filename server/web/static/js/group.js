@@ -464,7 +464,7 @@ function pollSessionStatus(gid, sid) {
                 })
 }
 
-function showLiveSessionInfo(gid,sid) {
+function showLiveSessionCases(gid,sid) {
       invokeWebApi('/group/'+gid+'/test/'+sid+'/live',
                    prepareData({'limit':20}),
                    function(data){
@@ -476,15 +476,14 @@ function showLiveSessionInfo(gid,sid) {
                   });
 }
 
-function showHistorySessionInfo(gid,sid) {
-      invokeWebApi('/group/'+gid+'/test/'+sid+'/history',
-                   prepareData({'pagesize':100, }),
+function showHistorySessionCases(gid,sid) {
+      invokeWebApi('/group/'+gid+'/test/'+sid+'/results',
+                   prepareData({}),
                    function(data){
                         if(data.results === undefined) return;
                         var caseslist = sortTestCases(data.results.cases);
-                        createSessionSummary(data);
-                        createDetailTable('live_cases_div', 'table_latest_' + sid);
-                        fillDetailTable(caseslist,'table_latest_' + sid, 'all');
+                        createDetailTable('cases_div','table_all_' + sid);
+                        fillDetailTable(_appglobal.caseslist,'table_all_' + sid,'all'); 
                   });
 }
 
@@ -495,21 +494,20 @@ function showSessionInfo(gid,sid) {
                    function(data){
                         _appglobal.deviceinfo = data.results.deviceinfo;
                         _appglobal.deviceinfo.deviceid = data.results.deviceid;
-                        _appglobal.caseslist = sortTestCases(data.results.cases);
                         $('#session-name').parent().attr('href','#/group/'+gid+'/session/'+sid);
                         $('#session-name').html('session:'+data.results['id']);
                         if(data['results']['endtime'] === undefined || data['results']['endtime'] === 'N/A') {
                             viewLatest();
                             createSessionBaseInfo(data, gid, sid);
                             createSessionSummary(data);
+                            showLiveSessionCases(gid, sid);
                             _appglobal.t1 = setInterval("pollSessionStatus(\""+gid+"\",\""+sid+"\")", 10000);
                         }
                         else {
                             clearTab();
                             createSessionBaseInfo(data, '', '');
-                            createSessionSummary(data);
-                            createDetailTable('cases_div','table_all_' + sid);
-                            fillDetailTable(_appglobal.caseslist,'table_all_' + sid,'all')          
+                            createSessionSummary(data);   
+                            showHistorySessionCases(gid, sid);    
                         }
                   });
 }
