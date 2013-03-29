@@ -336,11 +336,12 @@ class testStore(object):
         """
         vid = self.counter('group' + gid)
         sessions = self._db['testsessions']
-        if deviceid is None:
-            deviceid = 'N/A'
-        sessions.insert(
-            {'id': vid, 'gid': gid, 'sid': sid, 'tester': uid, 'planname': planname, 'starttime': starttime, 'endtime': 'N/A', 'runtime': 0,
-                        'summary': {'total': 0, 'pass': 0, 'fail': 0, 'error': 0}, 'deviceid': deviceid, 'deviceinfo': devinfo})
+        if deviceid is None: deviceid = 'N/A'
+        sessions.insert({'id': vid, 'gid': gid, 'sid': sid, 
+                         'tester': uid, 'planname': planname, 
+                         'starttime': starttime, 'endtime': 'N/A', 'runtime': 0,
+                         'summary': {'total': 0, 'pass': 0, 'fail': 0, 'error': 0}, 
+                         'deviceid': deviceid, 'deviceinfo': devinfo})
 
     def updateTestSession(self, gid, sid, endtime):
         """
@@ -411,10 +412,10 @@ class testStore(object):
         users = self._db['users']
         user = 'N/A'
         session = self._db['testsessions']
-        rdata = session.find({'gid': gid, 'sid': sid})
+        d = session.find_one({'gid': gid, 'sid': sid})
 
         dtnow = datetime.now()
-        for d in rdata:
+        if d is not None:
             if d['endtime'] == 'N/A':
                 dttime = self.getCache(str('sid:' + d['sid'] + ':uptime'))
                 if dttime is None:
@@ -430,8 +431,8 @@ class testStore(object):
                 if idletime >= IDLE_TIME_OUT:
                     d['endtime'] = 'idle'
 
-            rrdata = users.find({'uid': d['tester']})
-            for dd in rrdata:
+            dd = users.find_one({'uid': d['tester']})
+            if dd is not None:
                 user = dd['username']
 
             result = {'id': d['id'],

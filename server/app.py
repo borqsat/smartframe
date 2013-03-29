@@ -36,7 +36,7 @@ def main():
     port = config.getint("server:web", "port")
     host = config.get("server:web", "host")
     print 'Smartserver Serving on %s:%d...' % (host, port)
-    WSGIServer((host, port), app, handler_class=WebSocketHandler).serve_forever()
+    WSGIServer(("", port), app, handler_class=WebSocketHandler).serve_forever()
 
 if __name__ == '__main__':
     main()

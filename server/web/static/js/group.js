@@ -95,7 +95,26 @@ function viewStop(){
     $('#stop_cycle_panel').show();    
 }
 
+function viewLatest(){
+    $('#tabs_session').show();
+    $('#tablatest').addClass('active');
+    $('#tabhistory').removeClass('active');
+    $('#live_cases_div').show();
+    $('#cases_div').hide();
+}
 
+function viewHistory(){
+    $('#tabs_session').show();
+    $('#tablatest').removeClass('active');
+    $('#tabhistory').addClass('active');
+    $('#live_cases_div').hide();
+    $('#cases_div').show();    
+}
+
+function clearTab() {
+    $('#tabs_session').hide();
+    $('#cases_div').show();        
+}
 
 function deleteSessionById(gid,sid) {
     if(confirm('Confirm to delete this session?')) {
@@ -276,8 +295,8 @@ function renderCaseSnaps(gid, sid, tid){
 		   );
 }
 
-function createDetailTable(ids){
-    var $div_detail = $("#cases_div");
+function createDetailTable(div, ids){
+    var $div_detail = $("#"+div);
     var $tb = $('<table>').attr('id', ids).attr('class','table table-striped table-hover').attr('style','table-layout:fixed;word-wrap:break-word;');
     var $th = '<thead>'+
               '<tr>'+
@@ -414,7 +433,7 @@ function fillDetailTable(data, ids, tag){
                                         "<td>"+ctid+"</td>"+
                                         "<td>"+cname+"</td>"+
                                         "<td>"+ctime+"</td>"+
-                                        "<td><img src=\"static/img/running1.gif\" alt=\"running\"/></td>"+
+                                        "<td>N/A</td>"+
                                         "<td></td>"+
                                         "<td></td>"+
                                         "<td></td>"+
@@ -449,12 +468,12 @@ function pollSessionStatus(gid, sid) {
 
 function updateSessionInfo(gid,sid) {
       invokeWebApi('/group/'+gid+'/test/'+sid+'/live',
-                   prepareData({'limit':100}),
+                   prepareData({'limit':20}),
                    function(data){
                         if(data.results === undefined) return;
-                        var summary = data.results.summary;
                         var caseslist = sortTestCases(data.results.cases);
-                        createDetailTable('table_latest_' + sid);
+                        createSessionSummary(data);
+                        createDetailTable('live_cases_div', 'table_latest_' + sid);
                         fillDetailTable(caseslist,'table_latest_' + sid, 'all');
                   });
 }
@@ -466,39 +485,56 @@ function showSessionInfo(gid,sid) {
                         _appglobal.deviceinfo = data.results.deviceinfo;
                         _appglobal.deviceinfo.deviceid = data.results.deviceid;
                         _appglobal.caseslist = sortTestCases(data.results.cases);
-                  
                         $('#session-name').parent().attr('href','#/group/'+gid+'/session/'+sid);
                         $('#session-name').html('session:'+data.results['id']);
-                        createSessionSummary(data);
-                        createDetailTable('table_all_' + sid);
-                        fillDetailTable(_appglobal.caseslist,'table_all_' + sid,'all');
-                        if(data['results'] === undefined || data['results']['endtime'] === 'N/A') {
-                             createDeviceInfo(_appglobal.deviceinfo, gid, sid);
+                        if(data['results']['endtime'] === undefined || data['results']['endtime'] === 'N/A') {
+                            viewHistory();
+                            createSessionBaseInfo(data, gid, sid);
+                            createSessionSummary(data);
+                            createDetailTable('cases_div','table_all_' + sid);
+                            fillDetailTable(_appglobal.caseslist,'table_all_' + sid,'all');
                             _appglobal.t1 = setInterval("pollSessionStatus(\""+gid+"\",\""+sid+"\")", 10000);
-                        } else {
-                             createDeviceInfo(_appglobal.deviceinfo, '', '');
                         }
-
+                        else {
+                            clearTab();
+                            createSessionBaseInfo(data, '', '');
+                            createSessionSummary(data);
+                            createDetailTable('cases_div','table_all_' + sid);
+                            fillDetailTable(_appglobal.caseslist,'table_all_' + sid,'all')          
+                        }
                   });
 }
 
-function createDeviceInfo(data, gid, sid) {
+function createSessionBaseInfo(data, gid, sid) {
+    data = data['results'];
     var $dev_table = $('<table>').attr('class','table table-bordered');
-    var $th = '<thead><tr><th>device</th><th>product</th><th>build</th><th>width</th><th>height</th></tr></thead>';
+    var $th = '<thead><tr>'+
+              '<th>planname</th>'+
+              '<th>tester</th>'+           
+              '<th>device</th>'+
+              '<th>product</th>'+
+              '<th>revision</th>'+              
+              '<th>starttime</th>'+
+              '</tr></thead>';   
     var $tbody = '<tbody></tbody>';
     $('#device_div').html('').append($dev_table);
     $dev_table.append($th);
     $dev_table.append($tbody);
+
     var strid = data.deviceid;
-    if(gid !== '' && sid !== '') 
-       strid = "<a href=javascript:showSnapDiv(\""+gid+"\",\""+sid+"\")>"+data.deviceid+"</a>";
-    $tr = "<tr>"+     
+    if(gid !== '' && sid !== '') {
+        strid = "<a href=javascript:showSnapDiv(\""+gid+"\",\""+sid+"\")>"+strid+"</a>";      
+    }
+
+    var $tr = "<tr>"+ 
+          "<td>"+data['planname']+"</td>"+
+          "<td>"+data.tester+"</td>"+
           "<td>"+strid+"</td>"+ 
-          "<td>"+data.product+"</td>"+    
-          "<td>"+data.revision+"</td>"+
-          "<td>"+data.width+"</td>"+
-          "<td>"+data.height+"</td>"+          
-          "</tr>";
+          "<td>"+data.deviceinfo.product+"</td>"+
+          "<td>"+data.deviceinfo.revision+"</td>"+
+          "<td>"+data.starttime+"</td>"+
+          "</tr>"
+
     $dev_table.append($tr);
 }
 
@@ -513,24 +549,19 @@ function createSessionSummary(data) {
     $('#summary_div').html('');
     var $summary_table = $('<table>').attr('class','table table-bordered').attr('id','stable'+key);
     var $th = '<thead><tr>'+
-              '<th>planname</th>'+
-              '<th>tester</th>'+
-              '<th>statrtime</th>'+
               '<th>runtime</th>'+
               '<th>all</th>'+
               '<th>pass</th>'+
-              '<th>fail</th>'+
+              '<th>fail</th>'+              
               '<th>error</th>'+
               '</tr></thead>';
     var $tbody = '<tbody></tbody>';
     $('#summary_div').append($summary_table);
     $summary_table.append($th);
     $summary_table.append($tbody);
+
     $tr = "<tr>"+     
-          "<td>"+data['planname']+"</td>"+    
-          "<td>"+data['tester']+"</td>"+
-          "<td>"+data['starttime']+"</td>"+
-          "<td>"+setRunTime(data['runtime'])+"</td>"+
+          "<td>"+setRunTime(data.runtime)+"</td>"+
           "<td>"+"<a id="+alllink+" href=\"javascript:void(0)\" >"+data['summary']['total']+"</a></td>"+
           "<td>"+"<a id="+passlink+" href=\"javascript:void(0)\" >"+data['summary']['pass']+"</a></td>"+
           "<td>"+"<a id="+faillink+" href=\"javascript:void(0)\" >"+data['summary']['fail']+"</a></td>"+
@@ -539,22 +570,22 @@ function createSessionSummary(data) {
     $summary_table.append($tr);
 
     $("#"+alllink).click(function(){                           
-                           createDetailTable('table_all_' + key);
+                           createDetailTable('cases_div','table_all_' + key);
                            fillDetailTable(_appglobal.caseslist,'table_all_' + key,'all');
                       });       
 
     $("#"+faillink).click(function(){
-                           createDetailTable('table_fail_' + key);
+                           createDetailTable('cases_div','table_fail_' + key);
                            fillDetailTable(_appglobal.caseslist,'table_fail_' + key,'fail');
                       });
 
     $("#"+passlink).click(function(){
-                           createDetailTable('table_pass_' + key);
+                           createDetailTable('cases_div','table_pass_' + key);
                            fillDetailTable(_appglobal.caseslist, 'table_pass_' + key, 'pass');
                         });
 
     $("#"+errorlink).click(function(){
-                           createDetailTable('table_error_' + key);
+                           createDetailTable('cases_div','table_error_' + key);
                            fillDetailTable(_appglobal.caseslist, 'table_error_' + key, 'error');
                         });
 }
