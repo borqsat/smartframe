@@ -113,7 +113,7 @@ function viewHistory(){
 
 function clearTab() {
     $('#tabs_session').hide();
-    $('#cases_div').show();        
+    $('#cases_div').show();
 }
 
 function deleteSessionById(gid,sid) {
@@ -298,17 +298,15 @@ function renderCaseSnaps(gid, sid, tid){
 function createDetailTable(div, ids){
     var $div_detail = $("#"+div);
     var $tb = $('<table>').attr('id', ids).attr('class','table table-striped table-hover').attr('style','table-layout:fixed;word-wrap:break-word;');
-    var $th = '<thead>'+
-              '<tr>'+
-	      '<th align="left" width="5%">tid</th>'+
-        '<th align="left" width="24%">TestCase</th>'+
-	      '<th align="left" width="15%">StartTime</th>'+
-	      '<th align="left" width="6%">Result</th>'+
-	      '<th align="left" width="40%">Traceinfo</th>'+
-	      '<th align="left" width="5%">Log</th>'+
-	      '<th align="left" width="5%">snaps</th>'+
-	      '</tr>'+
-	      '</thead>';
+    var $th = '<thead>'+'<tr>'+
+              '<th align="left" width="5%">tid</th>'+
+              '<th align="left" width="24%">TestCase</th>'+
+              '<th align="left" width="15%">StartTime</th>'+
+              '<th align="left" width="6%">Result</th>'+
+              '<th align="left" width="40%">Traceinfo</th>'+
+              '<th align="left" width="5%">Log</th>'+
+              '<th align="left" width="5%">snaps</th>'+
+              '</tr>'+'</thead>';
     var $tbody = '<tbody></tbody>';
     $tb.append($th);
     $tb.append($tbody);
@@ -466,7 +464,7 @@ function pollSessionStatus(gid, sid) {
                 })
 }
 
-function updateSessionInfo(gid,sid) {
+function showLiveSessionInfo(gid,sid) {
       invokeWebApi('/group/'+gid+'/test/'+sid+'/live',
                    prepareData({'limit':20}),
                    function(data){
@@ -478,8 +476,21 @@ function updateSessionInfo(gid,sid) {
                   });
 }
 
+function showHistorySessionInfo(gid,sid) {
+      invokeWebApi('/group/'+gid+'/test/'+sid+'/history',
+                   prepareData({'pagesize':100, }),
+                   function(data){
+                        if(data.results === undefined) return;
+                        var caseslist = sortTestCases(data.results.cases);
+                        createSessionSummary(data);
+                        createDetailTable('live_cases_div', 'table_latest_' + sid);
+                        fillDetailTable(caseslist,'table_latest_' + sid, 'all');
+                  });
+}
+
+
 function showSessionInfo(gid,sid) {
-      invokeWebApi('/group/'+gid+'/test/'+sid+'/results',
+      invokeWebApi('/group/'+gid+'/test/'+sid+'/summary',
                    prepareData({}),
                    function(data){
                         _appglobal.deviceinfo = data.results.deviceinfo;
@@ -488,11 +499,9 @@ function showSessionInfo(gid,sid) {
                         $('#session-name').parent().attr('href','#/group/'+gid+'/session/'+sid);
                         $('#session-name').html('session:'+data.results['id']);
                         if(data['results']['endtime'] === undefined || data['results']['endtime'] === 'N/A') {
-                            viewHistory();
+                            viewLatest();
                             createSessionBaseInfo(data, gid, sid);
                             createSessionSummary(data);
-                            createDetailTable('cases_div','table_all_' + sid);
-                            fillDetailTable(_appglobal.caseslist,'table_all_' + sid,'all');
                             _appglobal.t1 = setInterval("pollSessionStatus(\""+gid+"\",\""+sid+"\")", 10000);
                         }
                         else {
@@ -569,7 +578,7 @@ function createSessionSummary(data) {
           "</tr>";
     $summary_table.append($tr);
 
-    $("#"+alllink).click(function(){                           
+    $("#"+alllink).click(function(){                  
                            createDetailTable('cases_div','table_all_' + key);
                            fillDetailTable(_appglobal.caseslist,'table_all_' + key,'all');
                       });       

@@ -673,7 +673,7 @@ def _getStore():
     replicaset = config.get("mongodb", "replicaSet")
     mongo_client = args.development and MongoClient(mongo_uri) or \
         MongoReplicaSetClient(mongo_uri, replicaSet=replicaset,
-                              read_preference=ReadPreference.SECONDARY_PREFERRED)
+                              read_preference=ReadPreference.PRIMARY_PREFERRED)
 
     mc = memcache.Client(config.get("memcached", "uri").split(','), args.development)
 
