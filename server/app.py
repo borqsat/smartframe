@@ -9,9 +9,9 @@ from geventwebsocket import WebSocketHandler
 from bottle import Bottle, static_file, redirect
 import os
 
-from config import config  # import db configuration and arguments
-from liveapis import appws as ws
-from groupapis import appweb as api
+from smartserver.config import WEB_HOST, WEB_PORT  # import db configuration and arguments
+from smartserver.liveapis import appws as ws
+from smartserver.groupapis import appweb as api
 
 app = Bottle()
 
@@ -33,8 +33,8 @@ app.mount('/smartapi', api)
 
 
 def main():
-    port = config.getint("server:web", "port")
-    host = config.get("server:web", "host")
+    port = WEB_PORT
+    host = WEB_HOST
     print 'Smartserver Serving on %s:%d...' % (host, port)
     WSGIServer((host, port), app, handler_class=WebSocketHandler).serve_forever()
 

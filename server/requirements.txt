@@ -1,3 +1,5 @@
+Beaker==1.6.4
+PIL==1.1.7
 argparse==1.2.1
 bottle==0.11.6
 bottle-extras==0.1.0
@@ -7,8 +9,9 @@ gevent==0.13.8
 gevent-websocket==0.3.6
 greenlet==0.4.0
 gunicorn==0.17.2
+mongoengine==0.7.9
+nose==1.2.1
 pymongo==2.4.2
 python-memcached==1.48
 redis==2.7.2
 wsgiref==0.1.2
-beaker=1.6.4

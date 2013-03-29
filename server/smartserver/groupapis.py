@@ -3,12 +3,12 @@ monkey.patch_all()
 
 from bottle import request, response, Bottle
 from gevent.pywsgi import WSGIServer
-from impl.test import *
-from impl.account import *
-from impl.group import *
 
-from sendmail import sendVerifyMail, sendInviteMail
-from plugins import LoginPlugin, ContentTypePlugin
+from .impl.test import *
+from .impl.account import *
+from .impl.group import *
+from .sendmail import sendVerifyMail, sendInviteMail
+from .plugins import LoginPlugin, ContentTypePlugin
 
 appweb = Bottle()
 

@@ -4,18 +4,18 @@ monkey.patch_all()  # monkey patch for gevent
 import gevent
 from gevent.pywsgi import WSGIServer
 from geventwebsocket import WebSocketHandler, WebSocketError
-from impl.test import getTestSessionInfo, getTestLiveSnaps
 import json
 import base64
 from bottle import request, Bottle, abort
 from bottle_redis import RedisPlugin
 
-from config import config  # import db configuration
+from .impl.test import getTestSessionInfo, getTestLiveSnaps
+from .config import REDIS_HOST, REDIS_PORT, WEB_HOST, WEB_PORT  # import db configuration
 
 appws = Bottle()
-redis_plugin = RedisPlugin(host=config.get('redis', 'host'),
-                           port=config.getint('redis', 'port'),
-                           database=config.getint('redis', 'db'),
+redis_plugin = RedisPlugin(host=REDIS_HOST,
+                           port=REDIS_PORT,
+                           database=0,
                            keyword='rdb')
 appws.install(redis_plugin)  # install redis plugin
 
@@ -99,8 +99,8 @@ def ws_snapshot(gid, sid, rdb):
 
 
 def main():
-    port = config.getint("server:web", "port")
-    host = config.get("server:web", "host")
+    port = WEB_PORT
+    host = WEB_HOST
     print 'LiveStream Serving on %s:%d...' % (host, port)
     WSGIServer((host, port), appws, handler_class=WebSocketHandler).serve_forever()
 
