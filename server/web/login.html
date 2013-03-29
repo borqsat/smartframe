@@ -1,186 +1,77 @@
 <!DOCTYPE HTML>
 <html>
-    <head>   	
-	<meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,user-scalable=no">  	
+    <head>
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8"> 
-	<title>Login SmartServer</title> 
-	<link rel="stylesheet" href="static/css/bootstrap.css">
-	<link rel="stylesheet" href="static/css/bootstrap-responsive.css">
-	<link rel="stylesheet" href="static/css/style.css">
-        <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
-        <!--[if lt IE 9]>
-            <script src="static/js/html5.js"></script>
-        <![endif]-->        
+	<meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,user-scalable=no"> 
+	<title>Login SmartAT</title> 
+	<link rel="stylesheet" href="./static/css/core.css">    
+  </head>
 
-	<script type="text/javascript" src="static/js/jquery-1.7.2.min.js"></script>
-	<script type="text/javascript" src="static/js/jquery.cookie.js"></script>
-	<script type="text/javascript" src="static/js/md5.js"></script>
-	<script type="text/javascript" src="static/js/json2.js"></script>	
-        <script type="text/javascript" src="static/js/util.js"></script> 
-	<script type="text/javascript">	
-             $(function(){
-			$('input.inputText').bind("blur",function(event){
-				if($(this).val()){
-					$(this).next().text("").hide();
-					$(this).css({"background":"#fff"},{"border":"1px solid #ccc"});
-				}
-			}); 
-			$('#password').hide();
-			$('#userId').hide();	
-	        document.getElementById("textuserId").value = "Input UserId";	
-	        document.getElementById("textpassword").value = "Input Password";
-             })
-	     						
-	    function callback(data) {
-                ret = data["results"];
-                if (ret !== undefined && ret["token"] !== undefined) {
-                    $.cookie('ticket', ret["token"], { expires: 7 });
-                    $.cookie('loginname', $('#userId').val(), { expires: 7 });
-                    window.location = "index.html";
-	        } else {
-				$('#password').css({"background":"#FFAFAF"},{"border":"1px solid #ccc"});
-				$('#spanPass').text("Incorrect password!").show();
-				expect = verify();
-			}
-	    }
+  <body class="account-page">
 
-        function verifyFields() {
+  <div id="surface">
+    <div class="account-header">
+      <img src="static/img/logo-s.png" alt="smart server">
+    </div>
 
-            if($('#userId').val() == ""){
-                $('#userId').css({"background":"#FFAFAF"},{"border":"1px solid #ccc"});
-                $('#spanuserId').text('Input UserId').show();
-                return false;
-            }
+    <div id="login-view" class="account-content clearfix" style="display:none">
+      <form novalidate="" class="primary-col clearfix">
+        <h2> Log In </h2>
+        <span id="warning"></span>
+        <label for="username">Email or username</label>
+        <input type="email" autofocus="" autocapitalize="off" spellcheck="false" autocorrect="off" autocomplete="off" tabindex="1" value="" id="username" name="username">
 
-			if($('#password').val() == ""){
-				$('#password').css({"background":"#FFAFAF"},{"border":"1px solid #ccc"});
-				$('#spanPass').text('Input Password').show();
-				return false;
-			}			
+        <label for="password">Password</label>
+        <input type="password" tabindex="2" id="password" name="password" onkeydown="if(event.keyCode==13){btnlogin.click()}">
 
-			return true;
-		}
+        <a tabindex="4" style="margin: 10px 0 0;" class="quiet right" href="#forgot">Forgot your password?</a>
+        <input type="button" tabindex="3" value="Log In" class="primary" id="btnlogin">
 
-		function login() {
-            if (!verifyFields()) return false;
+          <p class="quiet clear">
+            New here? <a href="#signup"><strong>Create an Account.</strong></a>
+          </p>
+      </form>
 
-			var password = $('#password').val();
-			var md5password = hex_md5(password);
-            $.cookie('password', md5password, { expires: 7 });
-			invokeWebApi("/user/auth", {"appid":"01","username": $('#userId').val(), "password": md5password}, callback)
-		}
+      <div class="secondary-col clearfix">
+      	<h2> Start to develop? </h2>
+        <input type="button" class="primary" value="Download SmartRunner" id="btndownload">
+      </div>
+    </div>
 
-        function quickuserIdRegCall(data) {
-            var ret = data["errors"];
-            if(ret !== undefined ) {
-                alert(ret["msg"]);
-            }else alert("Register account successfully!");
-        }
+    <div id="signup-view" class="account-content clearfix" style="display:none">
+      <form novalidate="" class="clearfix">
+          <h2> Register New Account</h2>
+          <span id="regwarning"></span>
+          <label for="regusername">Username<span style="color:red">*</span></label>
+          <input type="text" autofocus="" autocapitalize="off" spellcheck="false" autocorrect="off" autocomplete="off" tabindex="1" value="" id="regusername" name="regusername">
+          <label for="regpassword">Password<span style="color:red">*</span></label>
+          <input type="password" tabindex="2" id="regpassword" name="regpassword">
+          <label for="regemail">Email<span style="color:red">*</span></label>
+          <input type="email" autofocus="" autocapitalize="off" spellcheck="true" autocorrect="off" autocomplete="off" tabindex="3" value="" id="regemail" name="regemail">
+          <label for="regemail">Company</label>
+          <input type="text" autofocus="" autocapitalize="off" spellcheck="true" autocorrect="off" autocomplete="off" tabindex="4" value="" id="regcompany" name="regcompany">
+          <label for="regtelephone">Telephone Number</label>
+          <input type="text" autofocus="" autocapitalize="off" spellcheck="true" autocorrect="off" autocomplete="off" tabindex="4" value="" id="regtelephone" name="regtelephone">
+          <input type="button" tabindex="6" value="Register" class="primary" id="btnsignup">
 
-		function quickRegister() {
-            if (!verifyFields()) return false;
-            password = $('#password').val();
-            invokeWebApi("/user/register",
-                         {
-                          "username":$('#userId').val(),
-                          "password": password,
-                          "appid":"01",
-                          "info":{"phone":"N/A","email":"N/A","company":"N/A"}
-                         },
-                          quickuserIdRegCall
-                        );
-		}
+          <p class="quiet clear">
+              Already have an account.
+             <a href=""><strong>Login</strong></a>
+          </p>
+      </form>
+    </div>
 
-        function onKeyPressed(ev)
-        {
-            if (ev.keyCode == 13) login();
-        }
-
-        function onuserIdfocus(){
-            var value = $('#textuserId').val();
-            if(value != "Input UserId")
-                return;
-            $('#textuserId').hide();
-            $('#userId').show();	
-            $('#userId').focus();
-		}
-
-		function onuserIdblur(){
-			var value = $('#userId').val();
-			if(value!= "") return;
-			$('#textuserId').show();
-			$('#userId').hide();	
-				
-		}
-
-        function ontextpwdfocus(){
-            var value = $('#textpassword').val();			
-            if(value != 'Input Password') 
-                return;
-            $('#textpassword').hide();
-            $('#password').show();	
-            $('#password').focus();
-        }		
-
-		function onpwdblur(){
-			var value = $('#password').val();
-			if(value != "") return;
-			$('#textpassword').show();
-			$('#password').hide();					
-		}
-	</script>
-  </head> 
-  
-  <body>
-
-    <header>
-        <div class="sfContentBlock">
-            <h2>SmartServer</h2>
-       </div>
-   </header>
-
-  <div id="main" >
-	<table align="center">
-		<tr>
-			<td align=right><div class='span6 hideOnPhone' style='margin-top:60px'><img src='static/img/login.jpg' title='Faster,Higher,Stronger.'></div></td>
-			<td><div class='span5' style='margin-top:20px' align=center>
-				<input tabindex="0" type="text" style='height:42px' id="textuserId" onfocus="onuserIdfocus()" />
-				<input type="text" style='height:42px' id="userId" name="username" class="inputText" onkeyup="onKeyPressed(event)" onblur="onuserIdblur()"/>
-				<P><span id='spanuserId' style='display:none'></span></P>
-				<P></P>
-				
-				<input tabindex="0" type="text" style='height:42px' id="textpassword" onfocus="ontextpwdfocus()"/>
-				<input tabindex="1" type="password" style='height:42px' id="password" name="password" onkeyup="onKeyPressed(event)" onblur="onpwdblur()"/>
-				<P><span id='spanPass' style='display:none '></span></P>
-				<P></P>				
-					
-				<div>
-					<div tabindex="2" type="button" id='inputLogin' class="btn btn-primary btn-large" onclick="login()" onkeyup="onKeyPressed(event)"> Login</div>
-					&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-					<div tabindex="3" type="button" id='inputRegister' class="btn btn-primary btn-large" onclick="quickRegister()">Register</div>
-				</div>
-
-				<div>
-				    <a href="static/runner.tar.gz">Download smartRunner</a>
-                                    <span>|</span>
-                                    <a href="mailto:chengtao.liu@borqs.com" id='aContact'>Contact us</a>
-			        </div>
-			</div>
-			</td>
-		</tr>
-	</table>
   </div>
 
-
-    <footer>
-	    <table align="center" style="border: none">
-		       <tr align="center">
-		    	    <td>
-		    		    <address>Copyright &copy; 2007-2012 Borqs.co</address>
-	                </td>
-	          </tr>
-	    </table>             	       	
-	</footer>
+  <script type="text/javascript" src="./static/js/jquery-1.7.2.min.js"></script>
+  <script type="text/javascript" src="./static/js/jquery.cookie.js"></script>  
+  <script type="text/javascript" src="./static/js/jquery-ui.js"></script> 
+  <script type="text/javascript" src="./static/js/json2.js"></script>
+  <script type="text/javascript" src="./static/js/underscore-min.js"></script>     
+  <script type="text/javascript" src="./static/js/backbone.js"></script>
+  <script type="text/javascript" src="./static/js/md5.js"></script>   
+  <script type="text/javascript" src="./static/js/util.js"></script> 
+  <script type="text/javascript" src="./static/js/login.js"></script>   
 </body>
 
 </html>

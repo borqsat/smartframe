@@ -3382,3 +3382,35 @@ a.thumbnail:hover {
 .invisible {
   visibility: hidden;
 }
+.product_nav {
+   margin-top:10px;
+   margin-bottom:15px;
+}
+
+.label {
+   margin-right:15px;
+}
+th {
+   background:#DADADA;
+   border:1px solid #ffffff;
+   font-size:14px;
+}
+.carousel ul {
+  margin: 0;
+}
+
+.thumbnailr {
+  border: 1px solid red;
+}
+
+.thumbnaile {
+  border: 1px solid green;
+}
+
+.prodcut_nav {
+  margin-bottom: 15px;
+}
+.page {
+   background:#DADADA;
+}
+
