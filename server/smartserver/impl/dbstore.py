@@ -8,16 +8,15 @@ import uuid
 import base64
 from bson.objectid import ObjectId
 from datetime import datetime
-import pymongo
 from pymongo import MongoClient, MongoReplicaSetClient
 from pymongo import ReadPreference
 
-from config import config, args
+from ..config import MEMCACHED_URI, MONGODB_URI, MONGODB_REPLICASET
 # TODO need refactoring
 import beaker.cache
 from beaker.util import parse_cache_config_options
 
-mc_url = config.get("memcached", "uri")
+mc_url = MEMCACHED_URI
 cache = beaker.cache.Cache("memcached", type="ext:memcached",
                            lock_dir="/tmp/cache/lock",
                            url=mc_url, expire=600)
@@ -47,7 +46,6 @@ class testStore(object):
         do the database instance init works
         """
         print 'init db store class!!!'
-        #print db
         self._db = db
         self._fs = fs
         self._mc = mem
@@ -713,18 +711,13 @@ class testStore(object):
 
 
 def _getStore():
-    mongo_uri = config.get("mongodb", "uri")
-    replicaset = config.get("mongodb", "replicaSet")
-    mongo_client = args.development and MongoClient(mongo_uri) or \
-        MongoReplicaSetClient(mongo_uri, replicaSet=replicaset,
-                              read_preference=ReadPreference.PRIMARY)
+    mongo_uri = MONGODB_URI
+    replicaset = MONGODB_REPLICASET
+    mongo_client = MONGODB_REPLICASET and MongoReplicaSetClient(mongo_uri, replicaSet=replicaset, read_preference=ReadPreference.SECONDARY_PREFERRED) or MongoClient(mongo_uri)
 
-    mc = memcache.Client(config.get("memcached", "uri").split(','), args.development)
+    mc = memcache.Client(MEMCACHED_URI.split(','))
 
-    # return testStore(mongo_client.smartServer,
-    #                  gridfs.GridFS(mongo_client.smartFiles, collection="fs"),
-    #                  mc)
-    return testStore(mongo_client.smartTest,
+    return testStore(mongo_client.smartServer,
                      gridfs.GridFS(mongo_client.smartFiles, collection="fs"),
                      mc)
 

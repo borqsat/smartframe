@@ -1,5 +1,5 @@
 from dbstore import store
-####3
+
 def createTestSession(gid, uid, sid, planname,starttime, deviceid, deviceinfo):
     store.createTestSession(gid, sid, uid, planname, starttime, deviceid, deviceinfo)
     return {'results':1}
@@ -65,7 +65,6 @@ def updateCaseResult(gid, sid, tid,status,traceinfo, endtime):
     return {'results':1}
 
 def uploadCaseResultFile(gid, sid, tid, rawdata, ftype='png', ctype=''):
-    print "upload file -> %s,%s,%s,%s", (gid, sid, tid, ctype)
     if ftype == 'png':
         store.writeTestSnapshot(gid, sid, tid, rawdata, ctype)
         return {'results':1}
