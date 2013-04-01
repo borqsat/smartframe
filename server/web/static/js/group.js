@@ -498,8 +498,7 @@ function showSessionInfo(gid,sid) {
                         _appglobal.deviceinfo.deviceid = data.results.deviceid;
                         $('#session-name').parent().attr('href','#/group/'+gid+'/session/'+sid);
                         $('#session-name').html('session:'+data.results['id']);
-                        if(data['results']['endtime'] === undefined || data['results']['endtime'] === 'N/A') {
-                            
+                        if(data['results']['endtime'] === undefined || data['results']['endtime'] === 'N/A') {                         
                             viewLatest();
                             createSessionBaseInfo(data, gid, sid);
                             createSessionSummary(data);

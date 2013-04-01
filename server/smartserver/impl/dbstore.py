@@ -713,7 +713,7 @@ class testStore(object):
 def _getStore():
     mongo_uri = MONGODB_URI
     replicaset = MONGODB_REPLICASET
-    mongo_client = MONGODB_REPLICASET and MongoReplicaSetClient(mongo_uri, replicaSet=replicaset, read_preference=ReadPreference.SECONDARY_PREFERRED) or MongoClient(mongo_uri)
+    mongo_client = MONGODB_REPLICASET and MongoReplicaSetClient(mongo_uri, replicaSet=replicaset, read_preference=ReadPreference.PRIMARY) or MongoClient(mongo_uri)
 
     mc = memcache.Client(MEMCACHED_URI.split(','))
 
