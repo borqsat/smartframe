@@ -8,6 +8,7 @@ import uuid
 import base64
 from bson.objectid import ObjectId
 from datetime import datetime
+import pymongo
 from pymongo import MongoClient, MongoReplicaSetClient
 from pymongo import ReadPreference
 
@@ -146,6 +147,28 @@ class testStore(object):
             groups.insert({'gid': gid, 'groupname': groupname, 'info': info})
             return {'gid': gid}
 
+    def deleteGroup(self, gid,uid):
+        '''
+        Delete a group and it's data
+        TODO: Maybe a bug: role only exists in group_members?
+        '''
+        group=self._db['groups'].find_one({'gid':gid})
+        if group is None:
+            return {'error':{'code':0,'msg':'Invalid group.'}}
+
+        gMembers = self._db['group_members']
+        item=gMembers.find_one({'gid':gid,'uid':uid})
+        if item is None:
+            return {'error':{'code':0,'msg':'Permission denial.'}}
+        else:
+            if item['role']>2:
+                return {'error':{'code':0,'msg':'Permission denial.'}}
+
+        collections=['groups','group_members','testsessions','testresults']                
+        for collec in collections:
+            self._db[collec].remove({'gid':gid})
+        return {'results':'OK'}
+
     def addGroupMember(self, gid, uid, role):
         members = self._db['group_members']
         vrole = None
@@ -196,7 +219,7 @@ class testStore(object):
         return result
 
     # TODO cache policy...
-    @cm.cache("user_info", expire=60)
+    #@cm.cache("user_info", expire=60)
     def userInfo(self, uid):
         ingroups = []
         intests = []
@@ -312,11 +335,12 @@ class testStore(object):
         """
         vid = self.counter('group' + gid)
         sessions = self._db['testsessions']
-        if deviceid is None:
-            deviceid = 'N/A'
-        sessions.insert(
-            {'id': vid, 'gid': gid, 'sid': sid, 'tester': uid, 'planname': planname, 'starttime': starttime, 'endtime': 'N/A', 'runtime': 0,
-                        'summary': {'total': 0, 'pass': 0, 'fail': 0, 'error': 0}, 'deviceid': deviceid, 'deviceinfo': devinfo})
+        if deviceid is None: deviceid = 'N/A'
+        sessions.insert({'id': vid, 'gid': gid, 'sid': sid, 
+                         'tester': uid, 'planname': planname, 
+                         'starttime': starttime, 'endtime': 'N/A', 'runtime': 0,
+                         'summary': {'total': 0, 'pass': 0, 'fail': 0, 'error': 0}, 
+                         'deviceid': deviceid, 'deviceinfo': devinfo})
 
     def updateTestSession(self, gid, sid, endtime):
         """
@@ -387,10 +411,10 @@ class testStore(object):
         users = self._db['users']
         user = 'N/A'
         session = self._db['testsessions']
-        rdata = session.find({'gid': gid, 'sid': sid})
+        d = session.find_one({'gid': gid, 'sid': sid})
 
         dtnow = datetime.now()
-        for d in rdata:
+        if d is not None:
             if d['endtime'] == 'N/A':
                 dttime = self.getCache(str('sid:' + d['sid'] + ':uptime'))
                 if dttime is None:
@@ -406,8 +430,8 @@ class testStore(object):
                 if idletime >= IDLE_TIME_OUT:
                     d['endtime'] = 'idle'
 
-            rrdata = users.find({'uid': d['tester']})
-            for dd in rrdata:
+            dd = users.find_one({'uid': d['tester']})
+            if dd is not None:
                 user = dd['username']
 
             result = {'id': d['id'],
@@ -436,12 +460,95 @@ class testStore(object):
         result['cases'] = lists
         return result
 
+    def isSessionUpdated(self,gid,sid,tid):
+        tResult = self._db['testresults']
+        record = tResult.find_one({'gid':gid,'sid':sid,'tid':{'$gt':int(tid)}})
+        if record is None:
+            return 0
+        else:
+            return 1
+
+    def getSessionLive(self,gid,sid,maxCount):
+        tSession = self._db['testsessions']
+        s = tSession.find_one({'sid':sid})
+        summary = {}
+        runtime = 0
+        if s is None:
+            summary['total'] = 0
+            summary['pass'] = 0
+            summary['fail'] = 0
+            summary['error'] = 0
+        else:
+            summary = s['summary']
+            runtime = s['runtime']
+        
+        tResult = self._db['testresults']
+        specs = {'gid':gid,'sid':sid}
+        fields = {'_id':False,'gid':False,'sid':False,'log':False,'checksnap':False,'snapshots':False}
+        records = tResult.find(spec=specs,fields=fields,limit=int(maxCount),sort=[('tid',pymongo.DESCENDING)])
+        cases = []
+        for record in records:
+            cases.append(record)
+        
+        result = {}
+        result['runtime'] = runtime
+        result['summary'] = summary
+        result['cases'] = cases
+        return result
+
+    def getSessionAll(self,gid,sid,type='total',page=1,pagesize=100):
+        tSession=self._db['testsessions']
+        s=tSession.find_one({'sid':sid})
+        summary={}
+        if s is None:
+            return None
+
+        summary['count']=s['summary'][type]
+        total=summary['count']
+        if (total%pagesize>0):
+            summary['totalpage']=(total/pagesize+1)
+        else:
+            summary['totalpage']=(total/pagesize)
+        summary['page']=page
+        summary['pagesize']=pagesize        
+        
+        tResult=self._db['testresults']
+        if type == 'total':
+            specs={'sid':sid}            
+        else:    
+            specs={'sid':sid,'result':type}
+        fields={'_id':False,'gid':False,'sid':False,'log':False,'checksnap':False,'snapshots':False}
+        records=tResult.find(spec=specs,fields=fields,skip=int((page-1)*pagesize),limit=int(pagesize),sort=[('tid',pymongo.ASCENDING)])
+        cases=[]
+        for record in records:
+            cases.append(record)
+        
+        result={}
+        result['summary']=summary
+        result['cases']=cases
+
+        return result
+
+    def getSessionSummary(self,gid,sid):
+        tSession=self._db['testsessions']
+        s=tSession.find_one({'sid':sid})
+        if s is None:
+            return None
+        
+        if 'tester' in s:
+            users=self._db['users']
+            u=users.find_one({'uid':s['tester']})
+            if not u is None:
+                s['tester']=u['username']
+        s.pop('_id')
+        return s
+
     def readTestCaseInfo(self, gid, sid, tid):
         """
         read list of test cases records in database
         """
         caseresult = self._db['testresults']
-        ret = caseresult.find({'sid': sid, 'tid': tid})
+        ret = caseresult.find({'sid': sid, 'tid': int(tid)})
         result = None
         for d in ret:
             if not 'result' in d:
@@ -469,7 +576,7 @@ class testStore(object):
         read list of test session records in database
         """
         caseresult = self._db['testresults']
-        ret = caseresult.find({'sid': sid, 'tid': tid})
+        ret = caseresult.find({'sid': sid, 'tid': int(tid)})
         result = None
         logid = None
         for d in ret:
@@ -486,7 +593,7 @@ class testStore(object):
         timestamp = datetime.now().strftime(DATE_FORMAT_STR1)
         self.setCache(str('sid:' + sid + ':uptime'), timestamp)
         caseresult = self._db['testresults']
-        caseresult.insert({'gid': gid, 'sid': sid, 'tid': tid, 'casename': casename, 'log': 'N/A', 'traceinfo':
+        caseresult.insert({'gid': gid, 'sid': sid, 'tid': int(tid), 'casename': casename, 'log': 'N/A', 'traceinfo':
                           'N/A', 'result': 'running', 'starttime': starttime, 'endtime': 'N/A', 'snapshots': []})
         session = self._db['testsessions']
         session.update({'gid': gid, 'sid': sid}, {'$inc': {'summary.total': 1}})
@@ -528,7 +635,7 @@ class testStore(object):
         else:
             session.update({'gid': gid, 'sid': sid}, {'$inc': {'summary.error': 1}, '$set': {'runtime': runtime}})
 
-        caseresult.update({'gid': gid, 'sid': sid, 'tid': tid}, {'$set': {'result': status, 'traceinfo': traceinfo,
+        caseresult.update({'gid': gid, 'sid': sid, 'tid': int(tid)}, {'$set': {'result': status, 'traceinfo': traceinfo,
                           'endtime': endtime, 'snapshots': snapshots}})
 
     def writeTestLog(self, gid, sid, tid, logfile):
@@ -538,7 +645,7 @@ class testStore(object):
         """
         caseresult = self._db['testresults']
         fkey = self.setfile(logfile)
-        caseresult.update({'gid': gid, 'sid': sid, 'tid': tid}, {'$set': {'log': fkey}})
+        caseresult.update({'gid': gid, 'sid': sid, 'tid': int(tid)}, {'$set': {'log': fkey}})
 
     def writeTestSnapshot(self, gid, sid, tid, snapfile, stype):
         """
@@ -559,7 +666,7 @@ class testStore(object):
             sfile = stype[posi + 1:]
             fkey = self.setfile(snapfile)
             if xtype == 'expect':
-                results.update({'gid': gid, 'sid': sid, 'tid': tid}, {'$set': {'checksnap': {'title': sfile, 'fid': fkey}}})
+                results.update({'gid': gid, 'sid': sid, 'tid': int(tid)}, {'$set': {'checksnap': {'title': sfile, 'fid': fkey}}})
             elif xtype == 'current':
                 self._snapqueue[sid + '-' + tid].append({'title': sfile, 'fid': fkey})
         except:
@@ -575,7 +682,7 @@ class testStore(object):
 
     def readTestHistorySnaps(self, gid, sid, tid):
         caseresult = self._db['testresults']
-        ret = caseresult.find({'sid': sid, 'tid': tid})
+        ret = caseresult.find({'sid': sid, 'tid': int(tid)})
         snapids = []
         snaps = []
         checkid = ''
@@ -607,7 +714,7 @@ class testStore(object):
 def _getStore():
     mongo_uri = MONGODB_URI
     replicaset = MONGODB_REPLICASET
-    mongo_client = MONGODB_REPLICASET and MongoReplicaSetClient(mongo_uri, replicaSet=replicaset, read_preference=ReadPreference.SECONDARY_PREFERRED) or MongoClient(mongo_uri)
+    mongo_client = MONGODB_REPLICASET and MongoReplicaSetClient(mongo_uri, replicaSet=replicaset, read_preference=ReadPreference.PRIMARY) or MongoClient(mongo_uri)
 
     mc = memcache.Client(MEMCACHED_URI.split(','))
 
