@@ -11,9 +11,20 @@ function showUserInfo(){
                         groups.sort(function(a,b){return a['groupname'].toLowerCase() >= b['groupname'].toLowerCase()});
                         $.each(groups,function(i, o) {
                             var $li = $('<li>');
-                            $li.append('<a class=\"clearfix link-item highlight-icon js-open-board\" href=\"group.html#group/'
-                                       + o['gid'] + '\">' + o['groupname'] + '</a>')
+                            var showdel = o['role']=='1'? '[x]':'';
+                            $li.append('<a class=\"clearfix link-item highlight-icon js-open-board\" id=\"group' + o['gid'] + '\">'
+                                       + '<span class=\"item-name\">' + o['groupname'] + '</span>'
+                                       + '<span class=\"list-item-menu\" id=\"group-icon' + o['gid'] + '\">'
+                                       + showdel
+                                       + '</span>'
+                                       +'</a>')
                             $usergrp.append($li);
+                            $('#group'+o['gid']).attr('href', "group.html#group/"+ o['gid'] );
+                            $('#group-icon'+o['gid']).bind('click',function () {
+                                                                                 deleteGroup(o['gid']);  
+                                                                                return false;
+                                                                             });
+
                         });
                         var $usertst = $('#user-tests').html('');
                         var tests = data['inTests']
@@ -54,6 +65,15 @@ function showUserInfo(){
             });
 }
 
+function deleteGroup(gid){
+      if(confirm('Confirm to delete this group?')) {
+        invokeWebApi('/group/'+gid+'/delete',
+                    prepareData({}),
+                    function(data) {
+                       showUserInfo();
+                    });
+    }
+}
 var AppRouter = Backbone.Router.extend({
     routes: {
         "":"showDefault",

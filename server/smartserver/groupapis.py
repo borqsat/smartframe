@@ -290,6 +290,25 @@ def doGetGroupInfo(gid, uid):
     return getGroupInfo(uid, gid)
 
 
+@appweb.route('/group/<gid>/delete', method='GET')
+def doDeleteGroup(gid, uid):
+    """
+    URL:/group/<gid>/delete
+    TYPE:http/GET
+
+    get group profile by id
+
+    @type gid:string
+    @param gid:the id of Group
+    @type token:string
+    @param token:access token of account
+    @rtype: JSON
+    @return: ok-{'results':'OK'}
+             error-{'errors':{'code':(string)code,'msg':(string)info}}
+    """
+    return deleteGroup(gid,uid)
+
+
 @appweb.route('/group/<gid>/test/<sid>/create', method='POST', content_type='application/json')
 def doCreateGroupTestSession(gid, sid, uid):
     """
@@ -453,6 +472,60 @@ def doGetSessionInfo(gid, sid):
     """
     return getTestSessionInfo(gid, sid)
 
+@appweb.route('/group/<gid>/test/<sid>/poll',method='GET')
+def checkSessionUpdated(gid, sid):
+    tid=request.params.get('tid')
+    if tid is None:
+        return {'error':{'code':0,'msg':'Without tid'}}
+    else:
+        return isSessionUpdated(gid,sid,tid)
+
+@appweb.route('/group/<gid>/test/<sid>/live', method='GET')
+def getSessionLiveData(gid, sid):
+    """
+    URL:/group/<gid>/test/<sid>/live
+    TYPE:http/GET
+
+    Get the latest data of a test session
+
+    @type gid:string
+    @param gid:the id of group
+    @type sid:string
+    @param sid:the id of test session
+    @type token:JSON
+    @param token:the access token
+    @type limit:JSON
+    @param limit:the limit of returned data count
+    @rtype: JSON
+    @return:
+    ok-{'results':
+    {
+    'summary':{'total':(int)n,'pass':(int)n,'fail':(int)n,'error':(int)n},
+    'cases':[{'tid':(int)tid,'casename':(string)casename,'starttime':(string)starttime,'endtime':(string)endtime,'result':(string)result,'traceinfo':(string)traceinfo},...]
+    }
+    }
+    
+    error-{'errors':{'code':value,'msg':(string)info}}
+    """
+    maxCount=request.params.get('limit')
+    if maxCount is None:
+        return getSessionLive(gid,sid,100)
+    else:
+        return getSessionLive(gid,sid,maxCount)
+
+@appweb.route('/group/<gid>/test/<sid>/history', method='GET')
+def getSessionHistoryData(gid, sid):
+    type=request.params.get('type',default='total')
+    page=request.params.get('page',default='1')
+    pagesize=request.params.get('pagesize',default='100')
+    return getSessionHistory(gid,sid,type,int(page),int(pagesize))
+
+@appweb.route('/group/<gid>/test/<sid>/summary', method='GET')
+def doGetSessionSummary(gid, sid):
+    '''
+    Get Session Summary.
+    '''
+    return getSessionSummary(gid,sid)
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/log', method='GET')
 def doGetCaseResultLog(gid, sid, tid):

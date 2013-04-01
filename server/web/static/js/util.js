@@ -58,7 +58,7 @@ var invokeWebApi = function(apiUrl,dataj,render) {
         alert("Server Internal error!");
         _ajaxend();
     };
-    options['beforeSend'] = _ajaxstart;
+    //options['beforeSend'] = _ajaxstart;
     options['url'] = apiBaseURL + apiUrl;
     options['async'] = true;
     options['type'] = 'GET';

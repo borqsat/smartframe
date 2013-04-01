@@ -12,19 +12,42 @@ def deleteTestSession(gid, sid):
     store.deleteTestSession(gid, sid)
     return {'results':1}
 
+def deleteGroup(gid,uid):
+    return store.deleteGroup(gid,uid)
+
 def getTestSessionList(gid):
     rdata = store.readTestSessionList(gid)
     if not rdata is None :
         return {'results':rdata}
     else:
-        return {'errors':{'code':404,'msg':'None reuslt.'}}
+        return {'errors':{'code':404,'msg':'None result.'}}
 
 def getTestSessionInfo(gid, sid):
     rdata = store.readTestSessionInfo(gid, sid)
     if not rdata is None :
         return {'results':rdata}
     else:
-        return {'errors':{'code':404,'msg':'None reuslt.'}}
+        return {'errors':{'code':404,'msg':'None result.'}}
+
+def isSessionUpdated(gid,sid,tid):
+    return {'results':store.isSessionUpdated(gid,sid,tid)}
+
+def getSessionLive(gid,sid,maxCount):
+    return {'results':store.getSessionLive(gid,sid,maxCount)}
+
+def getSessionHistory(gid,sid,type,page,pagesize):
+    result=store.getSessionAll(gid,sid,type,page,pagesize)
+    if result is None:
+        return {'errors':{'code':404,'msg':'None result.'}}
+    else:
+        return {'results':result}
+
+def getSessionSummary(gid,sid):
+    result=store.getSessionSummary(gid,sid)
+    if result is None:
+        return {'errors':{'code':404,'msg':'None result.'}}
+    else:
+        return {'results':result}
 
 def createCaseResult(gid, sid,tid,casename,starttime):
     store.createTestCaseResult(gid, sid, tid, casename, starttime)
