@@ -2,84 +2,124 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>smartServer</title>
-    <link href="static/css/bootstrap.css" rel="stylesheet">
-    <link href="static/css/bootstrap-responsive.css" rel="stylesheet">
-    <link href="static/css/jquery-ui-1.8.16.custom.css" rel="stylesheet">
-    <link href="static/css/style.css" rel="stylesheet">
-    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-        <script src="static/js/html5.js"></script>
-    <![endif]-->   
+    <meta content="maximum-scale=1.0,width=device-width,initial-scale=1.0,user-scalable=0" name="viewport">
+    <title>SmartAT</title> 
+    <link href="./static/css/bootstrap.css" rel="stylesheet"> 
+    <link href="./static/css/jquery-ui-1.8.16.custom.css" rel="stylesheet">   
+    <link href="./static/css/core.css" rel="stylesheet">
   </head>
-  
-  <body>
-    <header>
-        <div class="sfContentBlock">
-            <h2>SmartServer</h2>
-            <div class="navbar pull-right">
-              <ul class="nav">
-                  <li><a href="#" class="navbar-text" id="logname"></a></li>    
-                  <li><a href="javascript:logout()" class="navbar-text" id="logout">logout</a></li>
-              </ul>
-            </div>
-        </div>
-    </header>
 
-    <nav class='greyback'>			
-        <ul>
-            <li class="first-child"><a href="index.html"></a></li>
-            <li class="active"><a href="javascript:createSessionList()">Results</a></li>
-	</ul>
-    </nav>
+<body class="page-index fixed-content">
 
-    <div id="main" class="container-fluid">
-        <div id="img" style="position:absolute;z-index: 1999;"></div>
-        <div class="row-fluid">
-            <div class="span12" id="maintab">
-               <ul class="nav nav-tabs" style="margin-bottom:5px">
-                  <li id="tabrun" class="active"><a href="javascript:viewRun();">Running Session</a></li>
-                  <li id="tabstop"><a href="javascript:viewStop();">Stopped Session</a></li>
-               </ul>
-               <div id="run_cycle_panel"></div>
-               <div id="stop_cycle_panel" style="display:none"></div>
+<div class="clearfix" id="user-view"> 
+
+<div id="header">
+  <a title="smartServer" href="index.html" class="header-btn header-logo">
+      <img src="static/img/logo-h.png" height="30px" alt="smart server"> 
+  </a>
+  <div id="header-search">
+    <form>
+      <label for="search-text">Global Search</label>
+      <input type="text" value="" spellcheck="false" autocorrect="off" autocomplete="off" id="search-text"><input type="submit" value="Search" id="search-submit">
+      <a href="javascript:void(0);" class="header-btn header-search js-search-submit">
+        <span class="app-icon light search-icon"></span> 
+      </a> 
+    </form>
+  </div>
+
+  <div>
+  <a title="Everything else. Support, how-tos, documentation, and apps" href="" class="header-btn header-help"> <span class="app-icon light manual-icon"></span> <span class="header-btn-text">Help</span> </a> 
+  </div>
+
+  <div class="header-user">
+     <a href="javascript:logout()" class="header-btn header-help"><span class="header-btn-text">Logout</span> </a>
+     <a href="javascript:void(0);" class="header-auth member js-open-header-member-menu"> 
+         <span><img width="20" height="20" title="" alt="" src="http://storage.aliyun.com/wutong-data/system/1_S.jpg" class="member-avatar"></span>
+     </a>
+  </div>
+</div>
+
+<div class="clearfix" id="content">
+
+<div>
+
+<div style="margin-top: 40px;" class="member-detail-modal">
+
+ <div class="window-main-col clearfix">
+     <div id="group-div">
+        <div class="window-module"> 
+            <div class="window-module-title"> 
+               <span class="app-icon window-module-title-icon org-icon"> </span>
+               <h3>My Groups</h3>
+               <span style="margin: 0 0 0 6px;" class="quiet"> 
+                  <a id="create-group" class="inline-block js-add-board" href="javascript:void(0);">New Group…</a> 
+               </span> 
             </div>
+            <ul id="user-groups" class="boards-list bold-list gutter js-list-boards"></ul> 
         </div>
     </div>
 
-   <div id="gotop">
-      <a href="#" onclick="javascript:document.body.scrollTop=0;document.documentElement.scrollTop=0;this.blur();return false;" title="back to top">
-        <img src="static/img/top.png" alt="TOP" />
-      </a>
-   </div>
+    <div id="session-div">         
+        <div class="window-module">
+            <div class="window-module-title">
+               <span class="app-icon window-module-title-icon board-icon"> </span>
+               <h3>My Tests</h3>
+            </div>
+            <ul id="user-tests" class="boards-list bold-list gutter js-list-boards"></ul>
+        </div>
+    </div>
+</div>
+
+<div class="window-sidebar"> 
+  <a href="javascript:void(0);" class="profile-member ed js-change-avatar-profile">  
+    <img alt="" src="http://storage.aliyun.com/wutong-data/system/1_L.jpg" class="profile-member-avatar">
+    <span class="change-av-text"> Change Avatar </span> 
+  </a>
+
+  <div id="user-name" style="margin: 8px;"></div>
+
+  <hr>
+
+  <ul class="sidebar-nav">
+      <li><a href="" class="js-member-groups">Groups</a> </li>
+      <li><a href="#showTests" class="js-member-tests">Tests</a> </li>
+  </ul>
+
+  <hr style="margin: 8px 0;"> 
+  <ul class="sidebar-nav mini"> 
+      <li> <a href="#editaccount" class="js-member-account">Account Settings</a> </li> 
+  </ul>
+ </div> 
+
+   </div> 
+  </div>
+ </div>
+</div>
 
 
-    <footer>
-      <table align="center" style="border: none">
-            <tr align="center">
-                <td>
-                    <address>Copyright &copy; 2007-2012 Borqs.co</address>
-                </td>
-            </tr>
-      </table>                      
-  </footer>
 
 
-</body>
-    <!-- global jquery.js -->
-    <script type="text/javascript" src="static/js/jquery-1.7.2.min.js"></script>
-    <script type="text/javascript" src="static/js/jquery.cookie.js"></script>
-    <script type="text/javascript" src="static/js/json2.js"></script>
-    <script type="text/javascript" src="static/js/util.js"></script> 
-    <script type="text/javascript" src="static/js/app.js"></script>
-    <script src="static/js/bootstrap.js"></script>
-    <script type="text/javascript">
-        if($.cookie('ticket') === undefined || $.cookie('ticket') === null) window.location = "./login.html"
-        $(window).load(function(){$("#loading").hide();})
-        $(function(){
-            $('#maintab').tab('show');
-            initMainPage();
-        });
-    </script>
+  <div id="dialog-group" title="Create new Group" style="display:none">
+     <div class="content clearfix" style="">
+        <form>
+            <label for="name">GroupName</label>
+            <input type="text" name="name" id="name" class="text ui-widget-content ui-corner-all" />
+        </form>
+     </div>
+  </div>
 
+
+  <div id="progress-img" style="position:absolute;z-index:1999;"></div>
+
+  </body>
+  <!-- global jquery.js -->
+  <script type="text/javascript" src="./static/js/jquery-1.7.2.min.js"></script>
+  <script type="text/javascript" src="./static/js/jquery.cookie.js"></script>
+  <script type="text/javascript" src="./static/js/jquery-ui.js"></script>    
+  <script type="text/javascript" src="./static/js/json2.js"></script>
+  <script type="text/javascript" src="./static/js/bootstrap.js"></script>
+  <script type="text/javascript" src="./static/js/underscore-min.js"></script>
+  <script type="text/javascript" src="./static/js/backbone.js"></script>
+  <script type="text/javascript" src="./static/js/util.js"></script>
+  <script type="text/javascript" src="./static/js/user.js"></script>
 </html>
