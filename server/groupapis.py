@@ -377,7 +377,7 @@ def doUpdateCaseResult(gid, sid, tid):
     return updateCaseResult(gid, sid, tid, request.json['result'], request.json['traceinfo'], request.json['time'])
 
 
-@appweb.route('/group/<gid>/test/<sid>/case/<tid>/fileupload', method='PUT', content_type=['application/json', 'application/zip', 'application/octet-stream'])
+@appweb.route('/group/<gid>/test/<sid>/case/<tid>/fileupload', method='PUT', login=False)
 def doUploadCaseFile(gid, sid, tid):
     """
     URL:/group/<gid>/test/<sid>/case/<tid>/fileupload
@@ -403,7 +403,6 @@ def doUploadCaseFile(gid, sid, tid):
         ftype = 'png'
     else:
         ftype = 'zip'
-
     xtype = request.headers.get('Ext-Type') or ''
 
     return uploadCaseResultFile(gid, sid, tid, request.body, ftype, xtype)
@@ -435,22 +434,22 @@ def doDeleteGroupTestSession(gid, sid):
     """
     URL:/group/<gid>/test/<sid>/delete
     TYPE:http/GET
-
+login=False
     delete a test session from group.
 
     @type gid:string
     @param gid:the id of group
-    @type sid:string
+    @type sid:stringlogin=False
     @param sid:the id of test session
     @type token:string
     @param token:the access token
     @rtype: JSON
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
-    """
+    """login=False
     # TODO we should check if the uid has the permission to perform the operation
     return deleteTestSession(gid, sid)
-
+login=False
 
 @appweb.route('/group/<gid>/test/<sid>/results', method='GET')
 def doGetSessionInfo(gid, sid):
@@ -513,7 +512,7 @@ def getSessionLiveData(gid, sid):
     else:
         return getSessionLive(gid,sid,maxCount)
 
-@appweb.route('/group/<gid>/test/<sid>/history', method='GET')
+@appweb.route('/group/<gid>/test/<sid>/history', method='GET', login=False)
 def getSessionHistoryData(gid, sid):
     type=request.params.get('type',default='total')
     page=request.params.get('page',default='1')

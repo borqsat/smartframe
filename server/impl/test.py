@@ -65,6 +65,7 @@ def updateCaseResult(gid, sid, tid,status,traceinfo, endtime):
     return {'results':1}
 
 def uploadCaseResultFile(gid, sid, tid, rawdata, ftype='png', ctype=''):
+    print "upload file -> %s,%s,%s,%s", (gid, sid, tid, ctype)
     if ftype == 'png':
         store.writeTestSnapshot(gid, sid, tid, rawdata, ctype)
         return {'results':1}
