@@ -1,0 +1,3 @@
+[submodule "smartframe.wiki"]
+	path = smartframe.wiki
+	url = git@github.com:borqsat/smartframe.wiki.git
