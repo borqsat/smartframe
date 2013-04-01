@@ -8,6 +8,7 @@ import uuid
 import base64
 from bson.objectid import ObjectId
 from datetime import datetime
+import pymongo
 from pymongo import MongoClient, MongoReplicaSetClient
 from pymongo import ReadPreference
 
