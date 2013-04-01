@@ -12,7 +12,7 @@ def registerDevice(token,jdata):
     @rtype: JSON
     @return: ok-{'results':{'deviceid':(string)value}}
              error-{'errors':{'code':0,'msg':(string)info}} 
-    """   
+    """ 
     pass
 
 def unregisterDevice(token,deviceId):

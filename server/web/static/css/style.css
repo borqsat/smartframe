@@ -7,6 +7,7 @@ body {
     padding: 0;
     top: 0;
     width: 100%;
+    background-color: #F0F0F0;
 }
 strong, em, b, i {
     color: #2E2E2E;
@@ -746,4 +747,19 @@ th {
    background:#DADADA;
    border:1px solid #ffffff;
    font-size:14px;
+}
+.carousel ul {
+  margin: 0;
+}
+
+.thumbnailr {
+  border: 1px solid red;
+}
+
+.thumbnaile {
+  border: 1px solid green;
+}
+
+.prodcut_nav {
+  margin-bottom: 15px;
 }
