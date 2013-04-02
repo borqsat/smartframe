@@ -38,9 +38,9 @@ DATE_FORMAT_STR = "%Y.%m.%d-%H.%M.%S"
 IDLE_TIME_OUT = 1800
 
 
-class testStore(object):
+class DataStore(object):
     """
-    Class dbStore provides the access to MongoDB DataBase
+    Class DbStore provides the access to MongoDB DataBase
     """
     def __init__(self, db, fs, mem):
         """
@@ -718,8 +718,8 @@ def _getStore():
 
     mc = memcache.Client(MEMCACHED_URI.split(','))
 
-    return testStore(mongo_client.smartServer,
-                     gridfs.GridFS(mongo_client.smartFiles, collection="fs"),
-                     mc)
+    return DataStore(mongo_client.smartServer,
+                    gridfs.GridFS(mongo_client.smartFiles, collection="fs"),
+                    mc)
 
 store = _getStore()
