@@ -1,4 +1,0 @@
-[tests]
-testcase.cases.phone.PhoneTest.testMOCall = 1
-testcase.cases.message.MessageTest.testSMSSend = 1
-#testcase.cases.snapshot.SnapshotTest.testSnapshot = 1
