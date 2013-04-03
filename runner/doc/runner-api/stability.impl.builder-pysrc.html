@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>stability.impl.builder</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="stability.impl-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        Package&nbsp;stability ::
+        <a href="stability.impl-module.html">Package&nbsp;impl</a> ::
+        Module&nbsp;builder
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="stability.impl.builder-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="stability.impl.builder-module.html">Module stability.impl.builder</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-docstring">'''</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-docstring">EpyDoc</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-docstring">@version: $id$</tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"><tt class="py-docstring">@author: U{borqsat&lt;www.borqs.com&gt;}</tt> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-docstring">@see: null</tt> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-docstring">'''</tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">os</tt><tt class="py-op">,</tt><tt class="py-name">sys</tt><tt class="py-op">,</tt><tt class="py-name">string</tt><tt class="py-op">,</tt><tt class="py-name">threading</tt><tt class="py-op">,</tt><tt class="py-name">unittest</tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-0" class="py-name" targets="Module stability.impl.configparser=stability.impl.configparser-module.html"><a title="stability.impl.configparser" class="py-name" href="#" onclick="return doclink('link-0', 'configparser', 'link-0');">configparser</a></tt> <tt class="py-keyword">import</tt> <tt id="link-1" class="py-name" targets="Class stability.impl.configparser.Parser=stability.impl.configparser.Parser-class.html"><a title="stability.impl.configparser.Parser" class="py-name" href="#" onclick="return doclink('link-1', 'Parser', 'link-1');">Parser</a></tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">stability</tt><tt class="py-op">.</tt><tt class="py-name">util</tt><tt class="py-op">.</tt><tt class="py-name">log</tt> <tt class="py-keyword">import</tt> <tt class="py-name">Logger</tt> </tt>
+<a name="TestBuilder"></a><div id="TestBuilder-def"><a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt> <a class="py-toggle" href="#" id="TestBuilder-toggle" onclick="return toggle('TestBuilder');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="stability.impl.builder.TestBuilder-class.html">TestBuilder</a><tt class="py-op">(</tt><tt class="py-base-class">object</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="TestBuilder-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="TestBuilder-expanded"><a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line">    <tt class="py-docstring">'''Class for storing test session properties'''</tt> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line">    <tt id="link-2" class="py-name" targets="Variable stability.impl.builder.TestBuilder.__instance=stability.impl.builder.TestBuilder-class.html#__instance,Variable stability.impl.uploader.ResultSender.__instance=stability.impl.uploader.ResultSender-class.html#__instance"><a title="stability.impl.builder.TestBuilder.__instance
+stability.impl.uploader.ResultSender.__instance" class="py-name" href="#" onclick="return doclink('link-2', '__instance', 'link-2');">__instance</a></tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line">    <tt id="link-3" class="py-name" targets="Variable stability.impl.builder.TestBuilder.__mutex=stability.impl.builder.TestBuilder-class.html#__mutex,Variable stability.impl.uploader.ResultSender.__mutex=stability.impl.uploader.ResultSender-class.html#__mutex"><a title="stability.impl.builder.TestBuilder.__mutex
+stability.impl.uploader.ResultSender.__mutex" class="py-name" href="#" onclick="return doclink('link-3', '__mutex', 'link-3');">__mutex</a></tt> <tt class="py-op">=</tt> <tt class="py-name">threading</tt><tt class="py-op">.</tt><tt class="py-name">Lock</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line">    <tt id="link-4" class="py-name" targets="Variable stability.impl.builder.TestBuilder.__buildOption=stability.impl.builder.TestBuilder-class.html#__buildOption"><a title="stability.impl.builder.TestBuilder.__buildOption" class="py-name" href="#" onclick="return doclink('link-4', '__buildOption', 'link-4');">__buildOption</a></tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="TestBuilder.__init__"></a><div id="TestBuilder.__init__-def"><a name="L17"></a><tt class="py-lineno"> 17</tt> <a class="py-toggle" href="#" id="TestBuilder.__init__-toggle" onclick="return toggle('TestBuilder.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="stability.impl.builder.TestBuilder-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">properties</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="TestBuilder.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="TestBuilder.__init__-expanded"><a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"><tt class="py-docstring">        Init test loader and command-line input properties.</tt> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-5" class="py-name"><a title="stability.impl.builder.TestBuilder.__buildOption" class="py-name" href="#" onclick="return doclink('link-5', '__buildOption', 'link-4');">__buildOption</a></tt> <tt class="py-op">=</tt> <tt class="py-name">properties</tt> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">__testLoader</tt> <tt class="py-op">=</tt> <tt id="link-6" class="py-name" targets="Class stability.impl.builder.TestLoader=stability.impl.builder.TestLoader-class.html"><a title="stability.impl.builder.TestLoader" class="py-name" href="#" onclick="return doclink('link-6', 'TestLoader', 'link-6');">TestLoader</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"> </tt>
+<a name="TestBuilder.getProperty"></a><div id="TestBuilder.getProperty-def"><a name="L24"></a><tt class="py-lineno"> 24</tt> <a class="py-toggle" href="#" id="TestBuilder.getProperty-toggle" onclick="return toggle('TestBuilder.getProperty');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="stability.impl.builder.TestBuilder-class.html#getProperty">getProperty</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">name</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="TestBuilder.getProperty-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="TestBuilder.getProperty-expanded"><a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line">        <tt class="py-docstring">'''Get the value of argument input from command-line'''</tt> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line">        <tt class="py-keyword">assert</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-7" class="py-name"><a title="stability.impl.builder.TestBuilder.__buildOption" class="py-name" href="#" onclick="return doclink('link-7', '__buildOption', 'link-4');">__buildOption</a></tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-8" class="py-name"><a title="stability.impl.builder.TestBuilder.__buildOption" class="py-name" href="#" onclick="return doclink('link-8', '__buildOption', 'link-4');">__buildOption</a></tt><tt class="py-op">.</tt><tt class="py-name">has_key</tt><tt class="py-op">(</tt><tt class="py-name">name</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line">            <tt class="py-name">value</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-9" class="py-name"><a title="stability.impl.builder.TestBuilder.__buildOption" class="py-name" href="#" onclick="return doclink('link-9', '__buildOption', 'link-4');">__buildOption</a></tt><tt class="py-op">[</tt><tt class="py-name">name</tt><tt class="py-op">]</tt> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line">            <tt class="py-keyword">raise</tt> <tt class="py-string">'miss data name'</tt> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">value</tt> </tt>
+</div><a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line">         </tt>
+<a name="TestBuilder.getWorkspace"></a><div id="TestBuilder.getWorkspace-def"><a name="L33"></a><tt class="py-lineno"> 33</tt> <a class="py-toggle" href="#" id="TestBuilder.getWorkspace-toggle" onclick="return toggle('TestBuilder.getWorkspace');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="stability.impl.builder.TestBuilder-class.html#getWorkspace">getWorkspace</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="TestBuilder.getWorkspace-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="TestBuilder.getWorkspace-expanded"><a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line">        <tt class="py-docstring">'''Return the test session's report workspace '''</tt> </tt>
+<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line">        <tt class="py-name">workspace</tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-10" class="py-name" targets="Variable stability.impl.xmlrunner.XMLTestRunner.path=stability.impl.xmlrunner.XMLTestRunner-class.html#path"><a title="stability.impl.xmlrunner.XMLTestRunner.path" class="py-name" href="#" onclick="return doclink('link-10', 'path', 'link-10');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">dirname</tt><tt class="py-op">(</tt><tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-11" class="py-name"><a title="stability.impl.xmlrunner.XMLTestRunner.path" class="py-name" href="#" onclick="return doclink('link-11', 'path', 'link-10');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">dirname</tt><tt class="py-op">(</tt><tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-12" class="py-name"><a title="stability.impl.xmlrunner.XMLTestRunner.path" class="py-name" href="#" onclick="return doclink('link-12', 'path', 'link-10');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">dirname</tt><tt class="py-op">(</tt><tt class="py-name">__file__</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">workspace</tt> </tt>
+</div><a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line"> </tt>
+<a name="TestBuilder.getLogger"></a><div id="TestBuilder.getLogger-def"><a name="L38"></a><tt class="py-lineno"> 38</tt> <a class="py-toggle" href="#" id="TestBuilder.getLogger-toggle" onclick="return toggle('TestBuilder.getLogger');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="stability.impl.builder.TestBuilder-class.html#getLogger">getLogger</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="TestBuilder.getLogger-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="TestBuilder.getLogger-expanded"><a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line">        <tt class="py-docstring">'''Return a logger instance'''</tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line">        <tt class="py-comment">#self.__logger = Logger.getLogger('device.log',"INFO","DEBUG")</tt> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">__logger</tt> <tt class="py-op">=</tt> <tt class="py-name">Logger</tt><tt class="py-op">.</tt><tt id="link-13" class="py-name" targets="Method stability.impl.builder.TestBuilder.getLogger()=stability.impl.builder.TestBuilder-class.html#getLogger"><a title="stability.impl.builder.TestBuilder.getLogger" class="py-name" href="#" onclick="return doclink('link-13', 'getLogger', 'link-13');">getLogger</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">__logger</tt> </tt>
+</div><a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line"> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line">    <tt class="py-decorator">@</tt><tt class="py-decorator">staticmethod</tt> </tt>
+<a name="TestBuilder.getBuilder"></a><div id="TestBuilder.getBuilder-def"><a name="L45"></a><tt class="py-lineno"> 45</tt> <a class="py-toggle" href="#" id="TestBuilder.getBuilder-toggle" onclick="return toggle('TestBuilder.getBuilder');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="stability.impl.builder.TestBuilder-class.html#getBuilder">getBuilder</a><tt class="py-op">(</tt><tt class="py-param">option</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="TestBuilder.getBuilder-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="TestBuilder.getBuilder-expanded"><a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line">        <tt class="py-docstring">'''Return a single instance of TestBuilder object '''</tt> </tt>
+<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt><tt class="py-op">(</tt><tt id="link-14" class="py-name" targets="Class stability.impl.builder.TestBuilder=stability.impl.builder.TestBuilder-class.html"><a title="stability.impl.builder.TestBuilder" class="py-name" href="#" onclick="return doclink('link-14', 'TestBuilder', 'link-14');">TestBuilder</a></tt><tt class="py-op">.</tt><tt id="link-15" class="py-name"><a title="stability.impl.builder.TestBuilder.__instance
+stability.impl.uploader.ResultSender.__instance" class="py-name" href="#" onclick="return doclink('link-15', '__instance', 'link-2');">__instance</a></tt> <tt class="py-op">==</tt> <tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt>  </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line">            <tt id="link-16" class="py-name"><a title="stability.impl.builder.TestBuilder" class="py-name" href="#" onclick="return doclink('link-16', 'TestBuilder', 'link-14');">TestBuilder</a></tt><tt class="py-op">.</tt><tt id="link-17" class="py-name"><a title="stability.impl.builder.TestBuilder.__mutex
+stability.impl.uploader.ResultSender.__mutex" class="py-name" href="#" onclick="return doclink('link-17', '__mutex', 'link-3');">__mutex</a></tt><tt class="py-op">.</tt><tt class="py-name">acquire</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt><tt class="py-op">(</tt><tt id="link-18" class="py-name"><a title="stability.impl.builder.TestBuilder" class="py-name" href="#" onclick="return doclink('link-18', 'TestBuilder', 'link-14');">TestBuilder</a></tt><tt class="py-op">.</tt><tt id="link-19" class="py-name"><a title="stability.impl.builder.TestBuilder.__instance
+stability.impl.uploader.ResultSender.__instance" class="py-name" href="#" onclick="return doclink('link-19', '__instance', 'link-2');">__instance</a></tt> <tt class="py-op">==</tt> <tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line">                <tt id="link-20" class="py-name"><a title="stability.impl.builder.TestBuilder" class="py-name" href="#" onclick="return doclink('link-20', 'TestBuilder', 'link-14');">TestBuilder</a></tt><tt class="py-op">.</tt><tt id="link-21" class="py-name"><a title="stability.impl.builder.TestBuilder.__instance
+stability.impl.uploader.ResultSender.__instance" class="py-name" href="#" onclick="return doclink('link-21', '__instance', 'link-2');">__instance</a></tt> <tt class="py-op">=</tt> <tt id="link-22" class="py-name"><a title="stability.impl.builder.TestBuilder" class="py-name" href="#" onclick="return doclink('link-22', 'TestBuilder', 'link-14');">TestBuilder</a></tt><tt class="py-op">(</tt><tt class="py-name">option</tt><tt class="py-op">)</tt> </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line">            <tt class="py-keyword">else</tt><tt class="py-op">:</tt>  </tt>
+<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line">                <tt class="py-keyword">pass</tt>   </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line">            <tt id="link-23" class="py-name"><a title="stability.impl.builder.TestBuilder" class="py-name" href="#" onclick="return doclink('link-23', 'TestBuilder', 'link-14');">TestBuilder</a></tt><tt class="py-op">.</tt><tt id="link-24" class="py-name"><a title="stability.impl.builder.TestBuilder.__mutex
+stability.impl.uploader.ResultSender.__mutex" class="py-name" href="#" onclick="return doclink('link-24', '__mutex', 'link-3');">__mutex</a></tt><tt class="py-op">.</tt><tt class="py-name">release</tt><tt class="py-op">(</tt><tt class="py-op">)</tt>  </tt>
+<a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line">            <tt class="py-keyword">pass</tt>      </tt>
+<a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt id="link-25" class="py-name"><a title="stability.impl.builder.TestBuilder" class="py-name" href="#" onclick="return doclink('link-25', 'TestBuilder', 'link-14');">TestBuilder</a></tt><tt class="py-op">.</tt><tt id="link-26" class="py-name"><a title="stability.impl.builder.TestBuilder.__instance
+stability.impl.uploader.ResultSender.__instance" class="py-name" href="#" onclick="return doclink('link-26', '__instance', 'link-2');">__instance</a></tt> </tt>
+</div><a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line"> </tt>
+<a name="TestBuilder.getTestSuites"></a><div id="TestBuilder.getTestSuites-def"><a name="L58"></a><tt class="py-lineno"> 58</tt> <a class="py-toggle" href="#" id="TestBuilder.getTestSuites-toggle" onclick="return toggle('TestBuilder.getTestSuites');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="stability.impl.builder.TestBuilder-class.html#getTestSuites">getTestSuites</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="TestBuilder.getTestSuites-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="TestBuilder.getTestSuites-expanded"><a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line">        <tt class="py-docstring">''' Return a test object list via test loader. we called it TestSuites.</tt> </tt>
+<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line"><tt class="py-docstring">        test object format:  TestCase.__init__(methodName)</tt> </tt>
+<a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line"><tt class="py-docstring">        A unittest.TestCase instance only contain the target method to be run.</tt> </tt>
+<a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">__testLoader</tt><tt class="py-op">.</tt><tt id="link-27" class="py-name" targets="Method stability.impl.builder.TestLoader.loadTestSuites()=stability.impl.builder.TestLoader-class.html#loadTestSuites"><a title="stability.impl.builder.TestLoader.loadTestSuites" class="py-name" href="#" onclick="return doclink('link-27', 'loadTestSuites', 'link-27');">loadTestSuites</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-28" class="py-name"><a title="stability.impl.builder.TestBuilder.__buildOption" class="py-name" href="#" onclick="return doclink('link-28', '__buildOption', 'link-4');">__buildOption</a></tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line"> </tt>
+<a name="TestLoader"></a><div id="TestLoader-def"><a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line"> </tt>
+<a name="L66"></a><tt class="py-lineno"> 66</tt> <a class="py-toggle" href="#" id="TestLoader-toggle" onclick="return toggle('TestLoader');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="stability.impl.builder.TestLoader-class.html">TestLoader</a><tt class="py-op">(</tt><tt class="py-base-class">object</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="TestLoader-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="TestLoader-expanded"><a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line">    <tt class="py-docstring">'''Class for loading test cases according to the specified path'''</tt> </tt>
+<a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line">    <tt class="py-comment">#testMethodPrefix = 'test' </tt> </tt>
+<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line">    <tt class="py-comment">#sortTestMethodsUsing = cmp </tt> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line">    <tt class="py-comment">#suiteClass = TestSuite</tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line">    <tt id="link-29" class="py-name" targets="Variable stability.impl.builder.TestLoader._defaultTestLoader=stability.impl.builder.TestLoader-class.html#_defaultTestLoader"><a title="stability.impl.builder.TestLoader._defaultTestLoader" class="py-name" href="#" onclick="return doclink('link-29', '_defaultTestLoader', 'link-29');">_defaultTestLoader</a></tt> <tt class="py-op">=</tt>  <tt class="py-name">unittest</tt><tt class="py-op">.</tt><tt id="link-30" class="py-name"><a title="stability.impl.builder.TestLoader" class="py-name" href="#" onclick="return doclink('link-30', 'TestLoader', 'link-6');">TestLoader</a></tt> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line">    <tt id="link-31" class="py-name" targets="Variable stability.impl.builder.TestLoader._defaultParser=stability.impl.builder.TestLoader-class.html#_defaultParser"><a title="stability.impl.builder.TestLoader._defaultParser" class="py-name" href="#" onclick="return doclink('link-31', '_defaultParser', 'link-31');">_defaultParser</a></tt> <tt class="py-op">=</tt> <tt id="link-32" class="py-name"><a title="stability.impl.configparser.Parser" class="py-name" href="#" onclick="return doclink('link-32', 'Parser', 'link-1');">Parser</a></tt> </tt>
+<a name="TestLoader.__init__"></a><div id="TestLoader.__init__-def"><a name="L73"></a><tt class="py-lineno"> 73</tt> <a class="py-toggle" href="#" id="TestLoader.__init__-toggle" onclick="return toggle('TestLoader.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="stability.impl.builder.TestLoader-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">loader</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">,</tt><tt class="py-param">parser</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="TestLoader.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="TestLoader.__init__-expanded"><a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line">        <tt class="py-docstring">'''Init test loader and test parser'''</tt> </tt>
+<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">loader</tt><tt class="py-op">:</tt> </tt>
+<a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">loader</tt> <tt class="py-op">=</tt> <tt id="link-33" class="py-name"><a title="stability.impl.builder.TestLoader" class="py-name" href="#" onclick="return doclink('link-33', 'TestLoader', 'link-6');">TestLoader</a></tt><tt class="py-op">.</tt><tt id="link-34" class="py-name"><a title="stability.impl.builder.TestLoader._defaultTestLoader" class="py-name" href="#" onclick="return doclink('link-34', '_defaultTestLoader', 'link-29');">_defaultTestLoader</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">parser</tt><tt class="py-op">:</tt> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">parser</tt> <tt class="py-op">=</tt> <tt id="link-35" class="py-name"><a title="stability.impl.builder.TestLoader" class="py-name" href="#" onclick="return doclink('link-35', 'TestLoader', 'link-6');">TestLoader</a></tt><tt class="py-op">.</tt><tt id="link-36" class="py-name"><a title="stability.impl.builder.TestLoader._defaultParser" class="py-name" href="#" onclick="return doclink('link-36', '_defaultParser', 'link-31');">_defaultParser</a></tt> </tt>
+</div><a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line"> </tt>
+<a name="TestLoader.readTestCasePlan"></a><div id="TestLoader.readTestCasePlan-def"><a name="L80"></a><tt class="py-lineno"> 80</tt> <a class="py-toggle" href="#" id="TestLoader.readTestCasePlan-toggle" onclick="return toggle('TestLoader.readTestCasePlan');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="stability.impl.builder.TestLoader-class.html#readTestCasePlan">readTestCasePlan</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">plan</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="TestLoader.readTestCasePlan-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="TestLoader.readTestCasePlan-expanded"><a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line">        <tt class="py-docstring">'''Get the cases plan defination from plan file '''</tt> </tt>
+<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line">        <tt class="py-name">tests</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">parser</tt><tt class="py-op">.</tt><tt id="link-37" class="py-name" targets="Static Method stability.impl.configparser.Parser.getTestConfig()=stability.impl.configparser.Parser-class.html#getTestConfig"><a title="stability.impl.configparser.Parser.getTestConfig" class="py-name" href="#" onclick="return doclink('link-37', 'getTestConfig', 'link-37');">getTestConfig</a></tt><tt class="py-op">(</tt><tt class="py-name">plan</tt><tt class="py-op">)</tt> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">tests</tt> </tt>
+</div><a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line"> </tt>
+<a name="TestLoader.loadTestSuites"></a><div id="TestLoader.loadTestSuites-def"><a name="L85"></a><tt class="py-lineno"> 85</tt> <a class="py-toggle" href="#" id="TestLoader.loadTestSuites-toggle" onclick="return toggle('TestLoader.loadTestSuites');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="stability.impl.builder.TestLoader-class.html#loadTestSuites">loadTestSuites</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">option</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="TestLoader.loadTestSuites-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="TestLoader.loadTestSuites-expanded"><a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line">        <tt class="py-docstring">'''return test suite object'''</tt> </tt>
+<a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line">        <tt class="py-name">prefix</tt> <tt class="py-op">=</tt> <tt class="py-string">'%s.%s.'</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt><tt class="py-name">option</tt><tt class="py-op">[</tt><tt class="py-string">'product'</tt><tt class="py-op">]</tt><tt class="py-op">,</tt><tt class="py-string">'cases'</tt><tt class="py-op">)</tt> </tt>
+<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line">        <tt class="py-name">tests</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">option</tt><tt class="py-op">[</tt><tt class="py-string">'testcase'</tt><tt class="py-op">]</tt> <tt class="py-keyword">is</tt> <tt class="py-keyword">not</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line">            <tt class="py-name">tests</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-name">option</tt><tt class="py-op">[</tt><tt class="py-string">'testcase'</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-number">1</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-38" class="py-name" targets="Method stability.impl.builder.TestLoader.__loadSimplyTestSuites()=stability.impl.builder.TestLoader-class.html#__loadSimplyTestSuites"><a title="stability.impl.builder.TestLoader.__loadSimplyTestSuites" class="py-name" href="#" onclick="return doclink('link-38', '__loadSimplyTestSuites', 'link-38');">__loadSimplyTestSuites</a></tt><tt class="py-op">(</tt><tt class="py-name">tests</tt><tt class="py-op">,</tt><tt class="py-name">prefix</tt><tt class="py-op">=</tt><tt class="py-name">prefix</tt><tt class="py-op">)</tt> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">option</tt><tt class="py-op">[</tt><tt class="py-string">'plan'</tt><tt class="py-op">]</tt> <tt class="py-keyword">is</tt> <tt class="py-keyword">not</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">            <tt class="py-name">tests</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-39" class="py-name" targets="Method stability.impl.builder.TestLoader.readTestCasePlan()=stability.impl.builder.TestLoader-class.html#readTestCasePlan"><a title="stability.impl.builder.TestLoader.readTestCasePlan" class="py-name" href="#" onclick="return doclink('link-39', 'readTestCasePlan', 'link-39');">readTestCasePlan</a></tt><tt class="py-op">(</tt><tt class="py-name">option</tt><tt class="py-op">[</tt><tt class="py-string">'plan'</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-40" class="py-name"><a title="stability.impl.builder.TestLoader.__loadSimplyTestSuites" class="py-name" href="#" onclick="return doclink('link-40', '__loadSimplyTestSuites', 'link-38');">__loadSimplyTestSuites</a></tt><tt class="py-op">(</tt><tt class="py-name">tests</tt><tt class="py-op">,</tt><tt class="py-name">prefix</tt><tt class="py-op">=</tt><tt class="py-name">prefix</tt><tt class="py-op">)</tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line">            <tt class="py-name">option</tt><tt class="py-op">[</tt><tt class="py-string">'plan'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-string">'%s%s%s%s%s'</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt><tt class="py-name">option</tt><tt class="py-op">[</tt><tt class="py-string">'product'</tt><tt class="py-op">]</tt><tt class="py-op">,</tt><tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">sep</tt><tt class="py-op">,</tt><tt class="py-string">'plan'</tt><tt class="py-op">,</tt><tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">sep</tt><tt class="py-op">,</tt><tt class="py-string">'plan'</tt><tt class="py-op">)</tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line">            <tt class="py-name">tests</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-41" class="py-name"><a title="stability.impl.builder.TestLoader.readTestCasePlan" class="py-name" href="#" onclick="return doclink('link-41', 'readTestCasePlan', 'link-39');">readTestCasePlan</a></tt><tt class="py-op">(</tt><tt class="py-name">option</tt><tt class="py-op">[</tt><tt class="py-string">'plan'</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-42" class="py-name"><a title="stability.impl.builder.TestLoader.__loadSimplyTestSuites" class="py-name" href="#" onclick="return doclink('link-42', '__loadSimplyTestSuites', 'link-38');">__loadSimplyTestSuites</a></tt><tt class="py-op">(</tt><tt class="py-name">tests</tt><tt class="py-op">,</tt><tt class="py-name">prefix</tt><tt class="py-op">=</tt><tt class="py-name">prefix</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line"> </tt>
+<a name="TestLoader.__loadTestingTestSuites"></a><div id="TestLoader.__loadTestingTestSuites-def"><a name="L100"></a><tt class="py-lineno">100</tt> <a class="py-toggle" href="#" id="TestLoader.__loadTestingTestSuites-toggle" onclick="return toggle('TestLoader.__loadTestingTestSuites');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="stability.impl.builder.TestLoader-class.html#__loadTestingTestSuites">__loadTestingTestSuites</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">tests</tt><tt class="py-op">,</tt><tt class="py-param">isRandom</tt><tt class="py-op">=</tt><tt class="py-name">False</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="TestLoader.__loadTestingTestSuites-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="TestLoader.__loadTestingTestSuites-expanded"><a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line">        <tt class="py-docstring">'''Get and random list of test cases object'''</tt> </tt>
+<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line">        <tt class="py-name">names</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line">        <tt class="py-name">t</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">type</tt><tt class="py-op">(</tt><tt class="py-name">tests</tt><tt class="py-op">)</tt> <tt class="py-keyword">is</tt> <tt class="py-name">type</tt><tt class="py-op">(</tt><tt class="py-op">{</tt><tt class="py-op">}</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line">            <tt class="py-name">t</tt> <tt class="py-op">=</tt> <tt class="py-name">tests</tt><tt class="py-op">.</tt><tt class="py-name">items</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line">        <tt class="py-keyword">elif</tt> <tt class="py-name">type</tt><tt class="py-op">(</tt><tt class="py-name">tests</tt><tt class="py-op">)</tt> <tt class="py-keyword">is</tt> <tt class="py-name">type</tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line">            <tt class="py-name">t</tt> <tt class="py-op">=</tt> <tt class="py-name">tests</tt> </tt>
+<a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-op">(</tt><tt class="py-name">k</tt><tt class="py-op">,</tt><tt class="py-name">v</tt><tt class="py-op">)</tt> <tt class="py-keyword">in</tt> <tt class="py-name">t</tt><tt class="py-op">:</tt> </tt>
+<a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line">            <tt class="py-keyword">for</tt> <tt class="py-name">i</tt> <tt class="py-keyword">in</tt> <tt class="py-name">range</tt><tt class="py-op">(</tt><tt class="py-name">v</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line">                <tt class="py-name">names</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">k</tt><tt class="py-op">)</tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line">        <tt class="py-keyword">print</tt> <tt class="py-string">'list names'</tt> </tt>
+<a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line">        <tt class="py-keyword">print</tt> <tt class="py-name">names</tt> </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line">        <tt class="py-comment">##['','','']</tt> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line">        <tt class="py-comment">###here we can keep test suites sequence.</tt> </tt>
+<a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line">        <tt class="py-name">suite</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">loader</tt><tt class="py-op">.</tt><tt class="py-name">loadTestsFromNames</tt><tt class="py-op">(</tt><tt class="py-name">names</tt><tt class="py-op">)</tt> </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">suite</tt> </tt>
+</div><a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line"> </tt>
+<a name="TestLoader.__loadSimplyTestSuites"></a><div id="TestLoader.__loadSimplyTestSuites-def"><a name="L118"></a><tt class="py-lineno">118</tt> <a class="py-toggle" href="#" id="TestLoader.__loadSimplyTestSuites-toggle" onclick="return toggle('TestLoader.__loadSimplyTestSuites');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="stability.impl.builder.TestLoader-class.html#__loadSimplyTestSuites">__loadSimplyTestSuites</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">tests</tt><tt class="py-op">,</tt><tt class="py-param">prefix</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">,</tt><tt class="py-param">isRandom</tt><tt class="py-op">=</tt><tt class="py-name">False</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="TestLoader.__loadSimplyTestSuites-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="TestLoader.__loadSimplyTestSuites-expanded"><a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line">        <tt class="py-docstring">'Get an ordered list of tests cases object with the given string specifier.'</tt> </tt>
+<a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line">        <tt class="py-name">names</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line">        <tt class="py-name">t</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">type</tt><tt class="py-op">(</tt><tt class="py-name">tests</tt><tt class="py-op">)</tt> <tt class="py-keyword">is</tt> <tt class="py-name">type</tt><tt class="py-op">(</tt><tt class="py-op">{</tt><tt class="py-op">}</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line">            <tt class="py-name">t</tt> <tt class="py-op">=</tt> <tt class="py-name">tests</tt><tt class="py-op">.</tt><tt class="py-name">items</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line">        <tt class="py-keyword">elif</tt> <tt class="py-name">type</tt><tt class="py-op">(</tt><tt class="py-name">tests</tt><tt class="py-op">)</tt> <tt class="py-keyword">is</tt> <tt class="py-name">type</tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L125"></a><tt class="py-lineno">125</tt>  <tt class="py-line">            <tt class="py-name">t</tt> <tt class="py-op">=</tt> <tt class="py-name">tests</tt> </tt>
+<a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-op">(</tt><tt class="py-name">k</tt><tt class="py-op">,</tt><tt class="py-name">v</tt><tt class="py-op">)</tt> <tt class="py-keyword">in</tt> <tt class="py-name">t</tt><tt class="py-op">:</tt> </tt>
+<a name="L127"></a><tt class="py-lineno">127</tt>  <tt class="py-line">            <tt class="py-name">k</tt> <tt class="py-op">=</tt> <tt class="py-string">'%s%s'</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt><tt class="py-name">prefix</tt><tt class="py-op">,</tt><tt class="py-name">k</tt><tt class="py-op">)</tt> </tt>
+<a name="L128"></a><tt class="py-lineno">128</tt>  <tt class="py-line">            <tt class="py-keyword">for</tt> <tt class="py-name">i</tt> <tt class="py-keyword">in</tt> <tt class="py-name">range</tt><tt class="py-op">(</tt><tt class="py-name">v</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L129"></a><tt class="py-lineno">129</tt>  <tt class="py-line">                <tt class="py-name">names</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">k</tt><tt class="py-op">)</tt> </tt>
+<a name="L130"></a><tt class="py-lineno">130</tt>  <tt class="py-line">        <tt class="py-comment">#print 'list names'</tt> </tt>
+<a name="L131"></a><tt class="py-lineno">131</tt>  <tt class="py-line">        <tt class="py-comment">#print names</tt> </tt>
+<a name="L132"></a><tt class="py-lineno">132</tt>  <tt class="py-line">        <tt class="py-name">suite</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">loader</tt><tt class="py-op">.</tt><tt class="py-name">loadTestsFromNames</tt><tt class="py-op">(</tt><tt class="py-name">names</tt><tt class="py-op">)</tt> </tt>
+<a name="L133"></a><tt class="py-lineno">133</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">suite</tt> </tt>
+</div></div><a name="L134"></a><tt class="py-lineno">134</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="stability.impl-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Tue Apr  2 15:13:27 2013
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

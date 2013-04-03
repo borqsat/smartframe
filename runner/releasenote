@@ -1,0 +1,8 @@
+date:2013.04.01
+update:
+1. update README document.
+2. add android_sample and tizen_sample code.
+3. add tizen howto document in tizen_sample folder.
+4. add multi-devices support for Tizen
+    export TIZEN_SERIAL=serialnumber of your device
+

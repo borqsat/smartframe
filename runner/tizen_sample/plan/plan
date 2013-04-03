@@ -1,0 +1,4 @@
+[tests]
+
+#Alarm
+alarm.AlarmTest.testAlarmAddDelete                            = 1

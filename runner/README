@@ -1,0 +1,68 @@
+Welcome to the SmartRunner.
+For the latest released version of SmartRunner, see the official website at "http://ats.borqs.com/smartserver"
+
+###############################################################
+###                         SmartRunner          ###          
+### Author: borqs                                ###
+### URL: <http://ats.borqs.com/smartframe>       ###
+### For license information, see xxxxxxxxxxx     ###
+###############################################################
+
+Introduction
+~~~~~~~~~~~~
+SmartRunner simplifies the creation and execution of tests for mobile devices. The tool enable you to use the features of    products for developing, debugging, deploying, running, and monitoring tests.
+
+SmartRunner includes the following:
+
+    SmartRunner provide API to simulate the user interaction with device and verify the expected result.
+    
+    A device screen shot tool that enables you to take snapshot and save it.
+    
+    Enable test script development using jython language.
+    
+    Debugging and executing test from command-line.
+    
+    Enable users to monitor test results  remotely.
+
+    Sample tests that provide the basic structure of typical test scenarios. You can configure the samples for your device 
+    and then use them as provided, or edit them if needed. See the SmartRunner API User’s Guide. The samples are provided in the SmartRunner Release folder.
+
+Documentation
+~~~~~~~~~~~~~
+    Documentation for SmartRunner, including installation and usage
+    instructions, and a complete description of how to write test 
+    case, is available on the smart runner homepage:
+ 
+        <http://ats.borqs.com/smartframe>
+
+    This documentation is also available in the doc/ of
+    the source distribution.
+
+Installing
+~~~~~~~~~~
+    1, Before using SmartRunner, please make sure you have installed:
+
+       - ubuntu: 10.04 or 11.04, 12.04 (English version 32 bit or 64 bit)
+         If you are using ubuntu 12.04(32bit,64bit). You need to install the libjpeg62 library:
+             sudo apt-get install libjpeg62
+       - python: 2.6.x or 2.7.x
+       - JDK6 or JDK7 (32-bit JDK release for 32-bit operationg system,64-bit JDK release for 64-bit operationg system)
+       - Platform SDK(Android or Tizen)
+       
+    Tip:
+        Android: "android-sdk-version/tools" and "android-sdk-version/platform-tools" must be in system PATH environment. 
+                 SmartRunner requires to run 'adb', 'monkeyrunner' in shell.
+        Tizen: "tizen-sdk/tools" must be in system PATH environment. SmartRunner requires to run 'sdb' in shell command line.      
+
+    2, Then from the shell command-line you can directly trigger installation by executing:
+       $ python install.py
+
+Usage
+~~~~~
+    1, How to develop test case script?
+       For how to write test case script for device, please see 'docs/UserGuide.pdf' As an example of using SmartRunner UserGuide will show you how to create and write tests script for one of Android applications.
+      
+more
+~~~~
+    If you are interested in contributing to SmartRunner, please email 
+    <borqsat@borqs.com>
