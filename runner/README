@@ -1,10 +1,10 @@
 Welcome to the SmartRunner.
-For the latest released version of SmartRunner, see the official website at "http://ats.borqs.com/smartserver"
+For the latest released version of SmartRunner, see the official website at "http://ats.borqs.com/smartserver/"
 
 ###############################################################
 ###                         SmartRunner          ###          
 ### Author: borqs                                ###
-### URL: <http://ats.borqs.com/smartframe>       ###
+### URL: <https://github.com/borqsat/smartframe>       ###
 ### For license information, see xxxxxxxxxxx     ###
 ###############################################################
 
@@ -33,7 +33,7 @@ Documentation
     instructions, and a complete description of how to write test 
     case, is available on the smart runner homepage:
  
-        <http://ats.borqs.com/smartframe>
+        <https://github.com/borqsat/smartframe/>
 
     This documentation is also available in the doc/ of
     the source distribution.
