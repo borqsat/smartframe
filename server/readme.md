@@ -33,46 +33,24 @@
 
 # Run the test
 
-        $ nosetests
+    $ nosetests test
 
 # Run the server
   
-- Read configuration from config file: `development.ini`.
+We defines below env variables:
 
-        [redis]
-        uri=redis://localhost:6379
+- MONGODB_URI: mongodb://localhost:27017
+- MONGODB_REPLICASET: mongo replicaset name. *TODO: necessary?*
+- REDIS_URI: redis://localhost:6379
+- MEMCACHED_URI: localhost:11211
+- WEB_HOST and WEB_PORT: hostname and port of the web server
 
-        [mongodb]
-        uri=mongodb://localhost:27017
-        replicaSet=ats_rs                 --> remove this ling
+Start server using below command:
 
-        [memcached]
-        uri=localhost:11211
+    $ python app.py
 
-        [server:web]
-        host=localhost
-        port=8080
-    
-    Start server like below:
+It will read configuration from environment, and use default in case of no defination in environment.
 
-        $ python app.py -c development.ini
+Or we can define env in command line:
 
-- Read configuration from environment.
-
-    We defines below env variables:
-
-    - MONGODB_URI: mongodb://localhost:27017
-    - MONGODB_REPLICASET: mongo replicaset name. *TODO: necessary?*
-    - REDIS_URI: redis://localhost:6379
-    - MEMCACHED_URI: localhost:11211
-    - WEB_HOST and WEB_PORT: hostname and port of the web server
-
-    Start server using below command:
-
-        $ python app.py
-
-    It will read configuration from environment, and use default in case of no defination.
-    
-    Or we can define env in command line:
-
-        $ MONGODB_URI=mongodb://localhost:27017 REDIS_URI=redis://localhost:6379 MEMCACHED_URI=localhost:11211 WEB_HOST=localhost WEB_PORT=8080 python app.py
+    $ MONGODB_URI=mongodb://localhost:27017 REDIS_URI=redis://localhost:6379 MEMCACHED_URI=localhost:11211 WEB_PORT=8080 python app.py
