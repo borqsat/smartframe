@@ -1,5 +1,0 @@
-liveapis	liveapis-module.html
-liveapis.handle_console_websocket	liveapis-module.html#handle_console_websocket
-liveapis.appweb	liveapis-module.html#appweb
-liveapis.wslist	liveapis-module.html#wslist
-liveapis.handle_screen_websocket	liveapis-module.html#handle_screen_websocket

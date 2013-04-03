@@ -1,8 +1,0 @@
-testapis	testapis-module.html
-testapis.doCreateTestResult	testapis-module.html#doCreateTestResult
-testapis.doUpdateSession	testapis-module.html#doUpdateSession
-testapis.doCreateSession	testapis-module.html#doCreateSession
-testapis.app	testapis-module.html#app
-testapis.doDeleteSession	testapis-module.html#doDeleteSession
-testapis.doUploadFile	testapis-module.html#doUploadFile
-testapis.doUpdateTestResult	testapis-module.html#doUpdateTestResult
