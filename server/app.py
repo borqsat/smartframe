@@ -10,8 +10,22 @@ from bottle import Bottle, static_file, redirect
 import os
 
 from smartserver.config import WEB_HOST, WEB_PORT  # import db configuration and arguments
-from smartserver.liveapis import appws as ws
-from smartserver.groupapis import appweb as api
+from smartserver.api import v0
+
+
+# Below code is to fix known log issue because of mismatch on gevent and gunicorn
+# http://stackoverflow.com/questions/9444405/gunicorn-and-websockets
+def log_request(self):
+    log = self.server.log
+    if log:
+        if hasattr(log, "info"):
+            log.info(self.format_request() + '\n')
+        else:
+            log.write(self.format_request() + '\n')
+
+import gevent
+gevent.pywsgi.WSGIHandler.log_request = log_request
+# end of fix
 
 app = Bottle()
 
@@ -28,8 +42,8 @@ def root():
     return redirect("/smartserver/index.html")
 
 
-api.mount('/ws', ws)
-app.mount('/smartapi', api)
+app.mount('/smartapi', v0)
+app.mount('/smart/0/api/', v0)
 
 
 def main():
