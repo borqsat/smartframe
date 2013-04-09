@@ -96,7 +96,6 @@ function viewStop(){
 }
 
 function viewLatest(){
-    $('#tabs_session').show();
     $('#tablatest').addClass('active');
     $('#tabhistory').removeClass('active');
     $('#live_cases_div').show();
@@ -104,7 +103,6 @@ function viewLatest(){
 }
 
 function viewHistory(){
-    $('#tabs_session').show();
     $('#tablatest').removeClass('active');
     $('#tabhistory').addClass('active');
     $('#live_cases_div').hide();
@@ -112,7 +110,6 @@ function viewHistory(){
 }
 
 function clearTab() {
-    $('#tabs_session').hide();
     $('#cases_div').show();
 }
 
@@ -338,11 +335,12 @@ function renderSnapshotDiv(gid, sid) {
     var wd = parseInt(_appglobal.deviceinfo['width']) >> zoom;
     var ht = parseInt(_appglobal.deviceinfo['height']) >> zoom;
     $('#snap_div').dialog({
-			                     title:"Real-time Screen Snap",
-		                       height: ht+120,
-			                     width: wd+40,
-		                       resizable:false,
-		                       modal: true
+			      title:"Real-time Screen Snap",
+		              height: ht+120,
+			      width: wd+40,
+		              resizable:false,
+		              modal: true,
+                              close: function () {if(ws !== undefined)  ws.close()}
                          });
     var c=document.getElementById("snapCanvas");
     var cxt=c.getContext("2d");
@@ -384,15 +382,13 @@ function sortTestCases(data) {
     return datacases;
 }
 
-function fillDetailTable(data, ids, tag){
+function fillDetailTable(gid, sid, data, ids, tag){
     var detail_table = $("#"+ids+" > tbody").html('');
     var tablerows = '';
     var len = data.length;
     for (var i = 0; i < data.length; i++){
          var citem = data[i];
-         var cgid = citem['gid'];
          var ctid = citem['tid'];
-         var csid = citem['sid'];
          var ctime = citem['starttime'];
          var cname = citem['casename'];
          var cresult = citem['result'];
@@ -409,8 +405,8 @@ function fillDetailTable(data, ids, tag){
                                         "<td>"+
                                         "\""+ctraceinfo+"\""+
                                         "</td>"+
-                                        "<td><a href=\""+apiBaseURL+"/group/"+cgid+"/test/"+csid+"/case/"+ctid+"/log\">log</a> </td>"+
-                                        "<td><a href=\"javascript:showHistoryDiv('"+cgid+"','"+csid+"','"+ctid+"');\">snaps</a></td>"+
+                                        "<td><a href=\""+apiBaseURL+"/group/"+gid+"/test/"+sid+"/case/"+ctid+"/log\">log</a> </td>"+
+                                        "<td><a href=\"javascript:showHistoryDiv('"+gid+"','"+sid+"','"+ctid+"');\">snaps</a></td>"+
                                         "</tr>";
 
          } else if (cresult === 'error') {
@@ -471,9 +467,9 @@ function showLiveSessionCases(gid,sid) {
                    function(data){
                         if(data.results === undefined) return;
                         var caseslist = sortTestCases(data.results.cases);
-                        createSessionSummary(data);
+                        createSessionSummary(data,gid, sid);
                         createDetailTable('live_cases_div', 'table_latest_' + sid);
-                        fillDetailTable(caseslist,'table_latest_' + sid, 'all');
+                        fillDetailTable(gid, sid, caseslist,'table_latest_' + sid, 'all');
                   });
 }
 
@@ -485,8 +481,8 @@ function showHistorySessionCases(gid,sid) {
                         var caseslist = sortTestCases(data.results.cases);
                         _appglobal.caseslist = caseslist;
                         createDetailTable('cases_div','table_all_' + sid);
-                        fillDetailTable(_appglobal.caseslist,'table_all_' + sid,'all'); 
-                  });
+                        fillDetailTable(gid, sid, _appglobal.caseslist,'table_all_' + sid,'all'); 
+                  },true);
 }
 
 
@@ -498,17 +494,25 @@ function showSessionInfo(gid,sid) {
                         _appglobal.deviceinfo.deviceid = data.results.deviceid;
                         $('#session-name').parent().attr('href','#/group/'+gid+'/session/'+sid);
                         $('#session-name').html('session:'+data.results['id']);
-                        if(data['results']['endtime'] === undefined || data['results']['endtime'] === 'N/A') {                         
+                        if(data['results']['endtime'] === undefined || data['results']['endtime'] === 'N/A') {
+                            $('#tabs_session').show();
                             viewLatest();
                             createSessionBaseInfo(data, gid, sid);
-                            createSessionSummary(data);
+                            createSessionSummary(data, gid, sid);
                             showLiveSessionCases(gid, sid);
+                            $('#tabhistory').bind('click', function() {
+                               showHistorySessionCases(gid, sid);
+                            });
+                            $('#tablatest').bind('click', function() {
+                               showLiveSessionCases(gid, sid);
+                            });
+                            showHistorySessionCases(gid, sid);                                                    
                             _appglobal.t1 = setInterval("pollSessionStatus(\""+gid+"\",\""+sid+"\")", 10000);
                         }
                         else {
                             clearTab();
                             createSessionBaseInfo(data, '', '');
-                            createSessionSummary(data);   
+                            createSessionSummary(data, gid, sid);   
                             showHistorySessionCases(gid, sid);    
                         }
                   });
@@ -548,7 +552,7 @@ function createSessionBaseInfo(data, gid, sid) {
 }
 
 
-function createSessionSummary(data) {
+function createSessionSummary(data, gid, sid) {
     data = data['results'];
     var key = data['sid'];
     var alllink = "o_"+key;
@@ -578,24 +582,28 @@ function createSessionSummary(data) {
           "</tr>";
     $summary_table.append($tr);
 
-    $("#"+alllink).click(function(){                  
+    $("#"+alllink).click(function(){
+                           viewHistory();                  
                            createDetailTable('cases_div','table_all_' + key);
-                           fillDetailTable(_appglobal.caseslist,'table_all_' + key,'all');
+                           fillDetailTable(gid, sid, _appglobal.caseslist,'table_all_' + key,'all');
                       });       
 
     $("#"+faillink).click(function(){
+                           viewHistory();
                            createDetailTable('cases_div','table_fail_' + key);
-                           fillDetailTable(_appglobal.caseslist,'table_fail_' + key,'fail');
+                           fillDetailTable(gid, sid, _appglobal.caseslist,'table_fail_' + key,'fail');
                       });
 
     $("#"+passlink).click(function(){
+                           viewHistory();
                            createDetailTable('cases_div','table_pass_' + key);
-                           fillDetailTable(_appglobal.caseslist, 'table_pass_' + key, 'pass');
+                           fillDetailTable(gid, sid, _appglobal.caseslist, 'table_pass_' + key, 'pass');
                         });
 
     $("#"+errorlink).click(function(){
+                           viewHistory();
                            createDetailTable('cases_div','table_error_' + key);
-                           fillDetailTable(_appglobal.caseslist, 'table_error_' + key, 'error');
+                           fillDetailTable(gid, sid, _appglobal.caseslist, 'table_error_' + key, 'error');
                         });
 }
 
