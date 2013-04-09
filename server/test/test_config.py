@@ -5,17 +5,18 @@ import os
 DIRNAME = os.path.abspath(os.path.dirname(__file__))
 
 
-class TestConfigEnv(unittest.TestCase):
+class TestConfigEnv_v0(unittest.TestCase):
+
     def setUp(self):
         self.orig_argv = sys.argv
         sys.argv = self.orig_argv[0:1]
-        os.environ["MONGODB_URI"] = "mongo://192.168.0.1:6666"
+        os.environ["MONGODB_URI"] = "mongodb://192.168.0.1:6666"
         os.environ["MONGODB_REPLICASET"] = "replicaset"
         os.environ["REDIS_URI"] = "redis://192.168.0.1:12345"
         os.environ["MEMCACHED_URI"] = "192.168.0.1:6667"
         os.environ["WEB_HOST"] = "www.google.com"
         os.environ["WEB_PORT"] = "8080"
-        from smartserver import config
+        from smartserver.v0 import config
         self.config = reload(config)
 
     def tearDown(self):
@@ -28,7 +29,7 @@ class TestConfigEnv(unittest.TestCase):
         sys.argv = self.orig_argv
 
     def testLoadConfigFromEnv(self):
-        self.assertEqual(self.config.MONGODB_URI, "mongo://192.168.0.1:6666")
+        self.assertEqual(self.config.MONGODB_URI, "mongodb://192.168.0.1:6666")
         self.assertEqual(self.config.MONGODB_REPLICASET, "replicaset")
         self.assertEqual(self.config.REDIS_URI, "redis://192.168.0.1:12345")
         self.assertEqual(self.config.REDIS_HOST, "192.168.0.1")
@@ -38,11 +39,12 @@ class TestConfigEnv(unittest.TestCase):
         self.assertEqual(self.config.WEB_PORT, 8080)
 
 
-class TestConfigDefaultEnv(unittest.TestCase):
+class TestConfigDefaultEnv_v0(unittest.TestCase):
+
     def setUp(self):
         self.orig_argv = sys.argv
         sys.argv = self.orig_argv[0:1]
-        from smartserver import config
+        from smartserver.v0 import config
         self.config = reload(config)
 
     def tearDown(self):
@@ -57,3 +59,19 @@ class TestConfigDefaultEnv(unittest.TestCase):
         self.assertEqual(self.config.MEMCACHED_URI, "localhost:11211")
         self.assertEqual(self.config.WEB_HOST, "")
         self.assertEqual(self.config.WEB_PORT, 80)
+
+
+class TestConfig(unittest.TestCase):
+
+    def setUp(self):
+        self.envs = ["MONGODB_URI", "MONGODB_REPLICASET", "REDIS_URI",
+                     "REDIS_HOST", "REDIS_PORT", "MEMCACHED_URI", "WEB_HOST",
+                     "WEB_PORT"]
+
+    def tearDown(self):
+        pass
+
+    def testLoadConfigFromEnv(self):
+        from smartserver import config
+        for env in self.envs:
+            self.assertTrue(env in config.__dict__)
