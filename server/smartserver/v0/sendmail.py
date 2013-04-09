@@ -9,7 +9,7 @@ import smtplib
 __all__ = ['sendVerifyMail', 'sendInviteMail']
 
 
-def _sendVerifyMail(receiver, user, token):
+def __sendVerifyMail(receiver, user, token):
     sender = 'borqsat@borqs.com'
     subject = 'Please active your account from SmartAT'
     mailuser = 'borqsat@borqs.com'
@@ -35,7 +35,7 @@ def _sendVerifyMail(receiver, user, token):
     smtp.quit()
 
 
-def _sendInviteMail(receiver, user, group, token):
+def __sendInviteMail(receiver, user, group, token):
     sender = 'borqsat@borqs.com'
     subject = 'Please active your account from SmartAT'
     mailuser = 'borqsat@borqs.com'
@@ -61,5 +61,5 @@ def _sendInviteMail(receiver, user, group, token):
     smtp.quit()
 
 
-sendVerifyMail = _sendVerifyMail
-sendInviteMail = _sendInviteMail
+sendVerifyMail = __sendVerifyMail
+sendInviteMail = __sendInviteMail
