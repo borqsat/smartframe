@@ -1,7 +1,9 @@
+#!/usr/bin/env python  
+#coding: utf-8
 '''
-EpyDoc
-@version: $id$
-@author: U{borqsat<www.borqs.com>}
+Module provides the ability to subscribe the topic used by smart runner.
+@version: 1.0
+@author: borqsat
 @see: null
 '''
 
@@ -10,7 +12,9 @@ from builder import TestBuilder
 from resulthandler import ResultHandler
 
 def collectResult(func):
-    '''Decorator of collecting test results method'''
+    '''
+    Decorator of function. It publishes messages to some topic
+    '''
     def wrap(*args, **argkw):
         func(*args, **argkw)
         if True:
@@ -19,29 +23,13 @@ def collectResult(func):
         return func
     return wrap
 
-def onTopicResult(info=None,path=None,sessionStatus=None):
-    '''sort test session's result.
-    Arguments:
-    info -- the test case instance
-    path: the file path need to be uploaded
-    sessionStatus: the session status
+def subscribe(topic):
     '''
-    ResultHandler.handle(info,path,sessionStatus)
-		
-def onTopicGui(guiMsg):
-    '''Topic for updating UI'''
-    pass
-
-def onTopicMemoryTrack():
-    '''Topic for memory monitor'''
-    pass
-
-#mapper = {'collectresult':onTopicResult,
-#            'gui':onTopicGui,
-#            'memorytrack':onTopicMemoryTrack}
-
-#print 'init pubsub listener begin:'
-handler = ResultHandler()
-pub.subscribe(handler.handle,'collectresult')
-#pub.subscribe(reconnect,'reconnecttopic')
+    Public method to add topic and handler.The handler need to be implemented.
+    @type topic: string
+    @param topic: the name of topic need to be sucscribed.
+    '''
+    handler = ResultHandler()
+    pub.subscribe(handler.handle,topic)
+subscribe('collectresult')
 

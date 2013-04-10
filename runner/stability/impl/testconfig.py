@@ -1,7 +1,7 @@
 '''
-EpyDoc
-@version: $id$
-@author: U{borqsat<www.borqs.com>}
+Module provides the class to represent user account and system config information.
+@version: 1.0
+@author: borqsat
 @see: null
 '''
 class Account(object):
@@ -35,7 +35,7 @@ class Account(object):
 
 class SystemConfig(object):
     '''
-    A class for present user account info.
+    A class for present system config info.
     '''
     def __init__(self):
         self.data = {}

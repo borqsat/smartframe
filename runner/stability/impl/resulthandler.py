@@ -1,7 +1,7 @@
 '''
-EpyDoc
-@version: $id$
-@author: U{borqsat<www.borqs.com>}
+Module provides the function to grab device log and dispatch upload request.
+@version: 1.0
+@author: borqsat
 @see: null
 '''
 
@@ -16,9 +16,12 @@ import device
 
 LOG_FILE = Parser.getDeviceLogConfig()
 
-#notify server client exited and resource released.
-def stop(signum, frame):
-    '''Method for ctaching CTRL+C CTRL+D event'''
+def stop(signum):
+    '''
+    Catch CTRL+C AND CTRL_D event.
+    @type signum: int
+    @param signum: the number of signal
+    '''
     if ResultHandler.sender:
         if ResultSender.getInstance().queue:
             pub.sendMessage('collectresult',sessionStatus='sessionstop')
@@ -37,12 +40,22 @@ def stop(signum, frame):
 
 class ResultHandler(object):
     '''
-    A class for handling test result.
+    A class for handling request from pubsub.
     '''
     sender = None
     is_upload = None
     def handle(self,info=None,path=None,sessionStatus=None):
-        '''Dispatch the test results'''
+        '''
+        handle the request from pubsub.
+        @type info: tuple
+        @param info: (methodname,test,error) (methodname,test) 
+                     info[0]:addStart,addStop,addSuccess,addFailure,addError
+                     info[1]: unittest.TestCase
+        @type path: string
+        @param path: the path of snapshot
+        @type sessionStatus: string
+        @param sessionStatus: the status of current session
+        '''
         if not ResultHandler.is_upload:
             ResultHandler.is_upload = TestBuilder.getBuilder().getProperty('uploadresult')
             #if ResultHandler.is_upload:
@@ -58,6 +71,9 @@ class ResultHandler(object):
         #handler.join()
 
 class Handler(threading.Thread):
+    '''
+    not used.
+    '''
     def __init__(self,info,path,sessionStatus,isUpload):
         threading.Thread.__init__(self)
         self.info = info
@@ -69,16 +85,18 @@ class Handler(threading.Thread):
         handleResult(self.info,self.path,self.sessionStatus,self.isUpload)
 
 def handleResult(info,path,sessionStatus,isUpload):
-    '''Sort test case result in workspace folder.
-    Arguments:
-    @type info:tuple
-    @params info:tuple of test case object description.(should not be none)
-    @type path:string
-    @params path:the file path need to be uploaded.
-    @type sessionStatus:string
-    @params sessionStatus: the test session status (start,stop)
-    @type isUpload:boolean
-    @params isUpload:the switch of uploading function.
+    '''
+    Handle the device log when failure.
+    @type info: tuple
+    @param info: (methodname,test,error) (methodname,test) 
+                 info[0]:addStart,addStop,addSuccess,addFailure,addError
+                 info[1]: unittest.TestCase
+    @type path: string
+    @param path: the path of snapshot
+    @type path: string
+    @param path: the path of snapshot
+    @type sessionStatus: string
+    @param sessionStatus: the status of current session
     '''
     logger = Logger.getLogger()
     if info:
@@ -114,6 +132,9 @@ def handleResult(info,path,sessionStatus,isUpload):
             ResultSender.getInstance().addTask(sessionStatus=sessionStatus)
 
 def zipFolder(foldername, filename, includeEmptyDIr=True):
+    '''
+    Used By zipLog method.
+    '''
     empty_dirs = []
     try:  
         ziper = zipfile.ZipFile(filename, 'w', zipfile.ZIP_DEFLATED)  
@@ -134,15 +155,24 @@ def zipFolder(foldername, filename, includeEmptyDIr=True):
             ziper.close()
 
 def zipLog(name,dest):
+    '''
+    Zip device log.
+    '''
     logfolder = os.path.join(dest,'device_log')
     zipName = '%s%s%s.%s' % (dest,os.sep,name,'zip')
     zipFolder(logfolder,zipName)
 
 def _copyFilesToOtherFolder(src, dest,info):
-    '''Copy test failures or error case from source folder to destination folder.
-    Keyword arguments:
-    src -- Path of source folder. (should not be none)
-    dest -- Path of destination folder(should not be none)
+    '''
+    Copy test failures or error case from source folder to destination folder.
+    @type src: string
+    @param src: source folder path
+    @type dest: string
+    @param dest: destination folder path
+    @type info: tuple
+    @param info: (methodname,test,error) (methodname,test) 
+                 info[0]:addStart,addStop,addSuccess,addFailure,addError
+                 info[1]: unittest.TestCase
     '''
     try:
         rightPath = info.verifier.expectResult.getCurrentCheckPoint()
@@ -162,10 +192,9 @@ def _copyFilesToOtherFolder(src, dest,info):
 
 
 def _saveLog(dest):
-    '''Generate device log in destination folder.
-    Keyword arguments:
-    dest -- Path of destination folder(should not be none)
-     '''
+    '''
+    Save device log to dest folder.
+    '''
     try:
         logfolder = os.path.join(dest, 'device_log')
         os.makedirs(logfolder)
@@ -179,6 +208,9 @@ def _saveLog(dest):
         return False
 
 def _adbPull(pullfiles,folder):
+    '''
+    Save device log via adb.
+    '''
     serialId = device._getSerial()
     if pullfiles is not None and pullfiles is not '':
         files = pullfiles.replace(',', ';')
@@ -195,6 +227,9 @@ def _adbPull(pullfiles,folder):
     return True
 
 def _sdbPull(pullfiles,folder):
+    '''
+    Save device log via sdb.
+    '''
     serialId = device._getSerial()
     if pullfiles is not None and pullfiles is not '':
         files = pullfiles.replace(',', ';')

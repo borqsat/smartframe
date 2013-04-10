@@ -1,7 +1,7 @@
 '''
-EpyDoc
-@version: $id$
-@author: U{borqsat<www.borqs.com>}
+Module for maintaining session properties and generating test suite. 
+@version: 1.0
+@author: borqsat
 @see: null
 '''
 
@@ -10,19 +10,21 @@ from configparser import Parser
 from stability.util.log import Logger
 
 class TestBuilder(object):
-    '''Class for storing test session properties'''
+    '''Class for maintaining session properties.'''
     __instance = None
     __mutex = threading.Lock()
     __buildOption = None
     def __init__(self,properties=None):
-        '''
-        Init test loader and command-line input properties.
-        '''
+        '''Init TestBuilder instance'''
         self.__buildOption = properties
         self.__testLoader = TestLoader()
 
     def getProperty(self,name):
-        '''Get the value of argument input from command-line'''
+        '''
+        Get the property value of name.
+        @rtype: string
+        @return: the value of property
+        '''
         assert self.__buildOption
         if self.__buildOption.has_key(name):
             value = self.__buildOption[name]
@@ -31,19 +33,21 @@ class TestBuilder(object):
         return value
         
     def getWorkspace(self):
-        '''Return the test session's report workspace '''
+        '''
+        Return the test session's report workspace.
+        @rtype: string
+        @return: the smart runner workspace directory
+        '''
         workspace = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
         return workspace
 
-    def getLogger(self):
-        '''Return a logger instance'''
-        #self.__logger = Logger.getLogger('device.log',"INFO","DEBUG")
-        self.__logger = Logger.getLogger()
-        return self.__logger
-
     @staticmethod
     def getBuilder(option=None):
-        '''Return a single instance of TestBuilder object '''
+        '''
+        Return a single instance of TestBuilder object.
+        @rtype: TestBuilder
+        @return: the single instance of TestBuilder
+        '''
         if(TestBuilder.__instance == None): 
             TestBuilder.__mutex.acquire()
             if(TestBuilder.__instance == None):
@@ -56,49 +60,63 @@ class TestBuilder(object):
         return TestBuilder.__instance
 
     def getTestSuites(self):
-        ''' Return a test object list via test loader. we called it TestSuites.
-        test object format:  TestCase.__init__(methodName)
+        '''
+        Return a test object list. we called it TestSuites.
         A unittest.TestCase instance only contain the target method to be run.
+        @rtype: unittest.TestSuite
+        @return: A instance of TestSuite. a composite test consisting of a number of TestCases    
         '''
         return self.__testLoader.loadTestSuites(self.__buildOption)
 
 
 class TestLoader(object):
-    '''Class for loading test cases according to the specified path'''
+    '''Generate test suites '''
     #testMethodPrefix = 'test' 
     #sortTestMethodsUsing = cmp 
     #suiteClass = TestSuite
     _defaultTestLoader =  unittest.TestLoader
     _defaultParser = Parser
     def __init__(self,loader=None,parser=None):
-        '''Init test loader and test parser'''
+        '''Init TestLoader instance'''
         if not loader:
             self.loader = TestLoader._defaultTestLoader()
         if not parser:
             self.parser = TestLoader._defaultParser
 
-    def readTestCasePlan(self,plan):
-        '''Get the cases plan defination from plan file '''
-        tests = self.parser.getTestConfig(plan)
-        return tests
-
     def loadTestSuites(self,option):
-        '''return test suite object'''
+        '''
+        Get test suite.
+        @type option: dictionary
+        @param option: the properties value of user input from command line.
+        @rtype: TestSuite
+        @return: a instance of TestSuite.
+        '''
         prefix = '%s.%s.' % (option['product'],'cases')
         tests = []
         if option['testcase'] is not None:
             tests.append((option['testcase'], 1))
             return self.__loadSimplyTestSuites(tests,prefix=prefix)
         if option['plan'] is not None:
-            tests = self.readTestCasePlan(option['plan'])
+            tests = self.__readTestCasePlan(option['plan'])
             return self.__loadSimplyTestSuites(tests,prefix=prefix)
         else:
             option['plan'] = '%s%s%s%s%s' % (option['product'],os.sep,'plan',os.sep,'plan')
-            tests = self.readTestCasePlan(option['plan'])
+            tests = self.__readTestCasePlan(option['plan'])
             return self.__loadSimplyTestSuites(tests,prefix=prefix)
 
+    def __readTestCasePlan(self,plan):
+        '''
+        Get the test case list from plan file.
+        @type plan: string
+        @param plan: the path of test case plan file.
+        @rtype: list
+        @return: a list of test case
+        '''
+        tests = self.parser.getTestConfig(plan)
+        return tests
+
     def __loadTestingTestSuites(self,tests,isRandom=False):
-        '''Get and random list of test cases object'''
+        '''Remove in future'''
         names = []
         t = None
         if type(tests) is type({}):
@@ -116,7 +134,17 @@ class TestLoader(object):
         return suite
 
     def __loadSimplyTestSuites(self,tests,prefix=None,isRandom=False):
-        'Get an ordered list of tests cases object with the given string specifier.'
+        '''
+        Return a suite of all tests cases given a string specifier.
+        @type tests: list
+        @param tests: a list of test cases
+        @type prefix: string
+        @param prefix: a prefix of test case path
+        @type isRandom: boolean
+        @param isRandom: If the test case sequence in random order.
+        @rtype: unittest.TestSuite
+        @return: A instance of TestSuite. a composite test consisting of a number of TestCases speified by test case list.  
+        '''
         names = []
         t = None
         if type(tests) is type({}):

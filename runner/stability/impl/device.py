@@ -1,7 +1,7 @@
 '''
-EpyDoc
-@version: $id$
-@author: U{borqsat<www.borqs.com>}
+Module provides the function to interact with device.
+@version: 1.0
+@author: borqsat
 @see: null
 '''
 import time, sys, os, shutil, datetime, string, uuid, commands, socket
@@ -32,7 +32,7 @@ elif str(sys.path).find('tizenrunner.jar') != -1:
 
 _device = None
 def _getSerial():
-    '''Get the tested device serial number from shell ENV'''
+    '''get device serial number which specify by export XXXX_SERIAL=xxxx '''
     global _DEVICE_SERIAL
     if (os.environ.has_key(_DEVICE_SERIAL)):
         return os.environ[_DEVICE_SERIAL]
@@ -40,7 +40,7 @@ def _getSerial():
         return None
 
 def getAvailablePort():
-    '''Find and get an available local port to forward'''
+    '''find an available local port to forward'''
     host = '127.0.0.1'
     available_port = 9000
     time_out = 2
@@ -52,7 +52,6 @@ def getAvailablePort():
             sk.close()
             bflag = False
         except socket.error, e:
-            print e
             if e.errno == 98 or e.errno == 13:
                 bflag = True
         if bflag: available_port += 1
@@ -60,7 +59,7 @@ def getAvailablePort():
     return available_port
 
 def _getDevice(serial=None):
-    '''Get the tested device instance'''
+    '''get target device instance '''
     logger = Logger.getLogger()
     # Wait for the device
     global _device
@@ -71,7 +70,7 @@ def _getDevice(serial=None):
     else:
         try:
             _device.wake()
-            checkDeviceStatus(DEVICE,_device,serial)
+            checkDeviceStatus(DEVICE,_device)
         except:
             logger.debug('DEV: device unavailable. try to get device again...')
             reconnect = True
@@ -97,10 +96,8 @@ def _getDevice(serial=None):
             logger.debug('DEV: device may be already reboot or daemon exit.')
     return _device
 
-def checkDeviceStatus(platform,device,serial):
-    '''Check the connection status between device and machine.
-       If the connection is broken. need to reconnect..
-    '''
+def checkDeviceStatus(platform,device):
+    '''Check the debug bridge status '''
     if platform == 'android':
         ret = device.getProperty(DEVICE_UPTIME)
         if ret is None:
@@ -519,11 +516,11 @@ class TizenDevice:
         except:
             self.logger.debug('Error during adb command!!!')
 
-def invokeDeviceDaemon(timeout=None,serial=None,port=None):
-    import subprocess
-    subprocess.Popen(['sdb','forward','tcp:3490','tcp:3490'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,stdin=subprocess.PIPE)
-    print 'forward ok'
-    subprocess.Popen(['sdb','shell','GASClient','/dev/input/event0','/dev/input/event1'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,stdin=subprocess.PIPE)
-    print 'GASClient start ok'
-    import time
-    time.sleep(3)
+#def invokeDeviceDaemon(timeout=None,serial=None):
+#    import subprocess
+#    subprocess.Popen(['sdb','forward','tcp:3490','tcp:3490'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,stdin=subprocess.PIPE)
+#    print 'forward ok'
+#    subprocess.Popen(['sdb','shell','GASClient','/dev/input/event0','/dev/input/#event1'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,stdin=subprocess.PIPE)
+#    print 'GASClient start ok'
+#    import time
+#    time.sleep(3)

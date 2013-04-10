@@ -1,7 +1,7 @@
 '''
-EpyDoc
-@version: $id$
-@author: U{borqsat<www.borqs.com>}
+Module provides the function to maintain collecion of availiable devices.
+@version: 1.0
+@author: borqsat
 @see: null
 '''
 
@@ -13,19 +13,19 @@ elif str(sys.path).find('tizenrunner.jar') != -1:
 from stability.util.log import Logger
 
 class DeviceManager(object):
-    '''DeviceManager maintains the collecion of availiable devices'''
+    '''DeviceManager maintains collecion of availiable devices'''
     _instance = None
     _mutex = threading.Lock()
 
     def __init__(self):
-        '''Init DeviceManager instance'''
+        '''Init DeviceManager Instance.'''
         self._devices = list()
         self.logger = Logger.getLogger()
         self.logger.debug('DEV: init DeviceManager instance!')
 
     @staticmethod
     def getInstance(context=None):
-        '''Get the instance of DeviceManager'''
+        '''Get single instance of DeviceManager'''
         if(DeviceManager._instance == None):
             DeviceManager._mutex.acquire()
             if(DeviceManager._instance == None):
@@ -41,11 +41,11 @@ class DeviceManager(object):
         return DeviceManager._instance
 
     def setContext(self, context=None):
-        '''Set the application context'''
+        '''set session context if exists'''
         self._context = context
 
     def getDevice(self):
-        '''Get an available device instance'''
+        '''Get instance of device '''
         self.logger.debug('DEV: get device instance.')
         self._device = device()
         self._device.getConnect()
@@ -53,9 +53,9 @@ class DeviceManager(object):
         return self._device
 
     def getDeviceState(self,serial=None):
-        '''Get the device status'''
+        '''Get the connected device status '''
         return self._device.getState()
 
     def getDevices(self):
-        '''Get the devices list holds by DeviceManager'''
+        '''Get the device collection list'''
         return self._devices

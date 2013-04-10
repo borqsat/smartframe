@@ -1,9 +1,10 @@
 '''
-SmartRunner DOCUMENT
+Module provides the Application class, which launch a test session and register signal.
 @version: 1.0
-@author: U{borqsat team<www.borqs.com>}
-@see: github
+@author: borqsat
+@see: null
 '''
+
 from builder import TestBuilder
 from testrunner import TestRunner
 from signal import signal, SIGINT,SIGTSTP
@@ -11,12 +12,11 @@ from resulthandler import stop
 
 class Application(object):
     '''
-    Init application context of SmartRunner.
+    Application concept for represent a cycle of test.
     '''
     def __init__(self,properties):
         '''
-        Init test builder, test runner.
-
+        Init test builder test runner before testing start.
         @type properties: Obejct of CommandOptions
         @param properties: Instance of CommandOptions for user command line.
         '''

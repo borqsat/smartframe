@@ -1,7 +1,12 @@
+#!/usr/bin/env python  
+#coding: utf-8
 '''
-EpyDoc
-@version: $id$
-@author: U{borqsat<www.borqs.com>}
+Module provides TestRunner and _TestResult class.
+TestRunner class for controling the whole test cycle.
+_TestResult class extends from unittest.TestResult which holds test result information.
+
+@version: 1.0
+@author: borqsat
 @see: null
 '''
 
@@ -57,8 +62,7 @@ class TestRunner(object):
 
 class _TestResult(TestResult):
     '''
-    A test result class that stores result and output result in terminal or remote server.
-    Used by TestRunner.
+    Holder for test result information. Each instance holds the total number of tests run, and collections of failures and errors that occurred among those test runs. The collections contain tuples of (testcase, exceptioninfo), where exceptioninfo is the   formatted traceback of the error that occurred.
     '''
     separator1 = '=' * 70
     separator2 = '-' * 70
@@ -120,7 +124,9 @@ class _TestResult(TestResult):
             self.logger.info("%s" % err)
 
     def __initReportWorkspace(self):
-        '''Generate the test report workspace'''
+        '''
+        Init test report workspace.
+        '''
         self.dirs = {}
         self.dirs['ws'] = self.builder.getWorkspace()
         self.dirs['ws_report'] = os.path.join(self.dirs['ws'],'report')
@@ -133,7 +139,9 @@ class _TestResult(TestResult):
         self.logger.debug('%s %s' % ('runner report path: ',self.dirs['ws_result']))
 
     def __initTestCaseWorkspace(self,test):
-        '''Generate the test cases workspace'''
+        '''
+        Init test case result workspace.
+        '''
         class_name = test.__module__.split('.')[2]
         case_name = '%s.%s' %(type( test).__name__,  test._testMethodName)
         #self.case_start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))

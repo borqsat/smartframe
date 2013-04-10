@@ -1,7 +1,7 @@
 '''
-EpyDoc
-@version: $id$
-@author: U{borqsat<www.borqs.com>}
+Module provides the function to communicate with remote server.
+@version: 1.0
+@author: borqsat
 @see: null
 '''
 
@@ -13,7 +13,7 @@ from configparser import Parser
 import minjson
 
 def _openFile(path):
-    '''Get binary data of file'''
+    '''return the data of file'''
     f = None
     try:
         f = open(path, "rb")
@@ -26,12 +26,11 @@ def _openFile(path):
             f.close()
 
 class SendUtils(object):
-    '''Send http request functions'''
+    '''Send http request'''
     @staticmethod
     def request(task):
         '''
-        Static method for uploading the data to server.
-        data format: 
+        task format: 
         {'url':url,'data':rightFullData,'content_type':'image/png','method':'PUT','exttype':'userdefine'}
         '''
         logger = Logger.getLogger()
@@ -108,26 +107,32 @@ class SendUtils(object):
                 f.close()
 
 class ResultSender(object):
-    '''Class for uploading data to server.Support JSON and application/zip and image/png.
+    '''
+    Class for uploading data to server.It maintains token, the session id(id), test case id(tid)
     '''
     __instance = None 
     __mutex = threading.Lock()
 
     def __init__(self):
+        '''
+        Init instance of ResultSender.
+        '''
         self.logger = Logger.getLogger()
-        self.getUserAccount()
+        self.__initRequestUrl()
         #verify account and password
         self.token = self.getToken()
         if self.token is None:
             print 'Please check netwotk connection!' 
         assert self.token,'token is none'
         self.tid = 0
-        self.queue = Queue.Queue(20)
+        self.queue = Queue.Queue(10)
         self.sessionId = str(uuid.uuid1())
         self.addTask(sessionStatus='sessionstart')
 
-    def getUserAccount(self):
-        '''Get user account info from sysconfig file'''
+    def __initRequestUrl(self):
+        '''
+        Generate the request URL.
+        '''
         _account = Parser.getUserAccountConfig()
         _server_url = _account.result_update_url
         _auth_url = _account.server_auth_url
@@ -142,7 +147,11 @@ class ResultSender(object):
         self._auth_field = {'appid':'01','username':_username,'password':_password}
 
     def getToken(self):
-        '''Get the value of session token from server side'''
+        '''
+        Get the session token from server.
+        @rtype: string
+        @return: the value of token
+        '''
         field = self._auth_field
         m = hashlib.md5()
         m.update(field['password'])
@@ -195,20 +204,26 @@ class ResultSender(object):
         return ResultSender.__instance
 
     def addTask(self,info=None,path=None,sessionStatus=None):
-        '''Add test result info to queue
-        @params:
-        info: tuple of test case. (testmethodname,object of test case,object of trace info)
-        path: the upload file resource path
+        '''
+        Add upload resquest to task queue maintained by ResultSender instance.
+        @type info: tuple
+        @param info: (methodname,test,error) (methodname,test) 
+                     info[0]:addStart,addStop,addSuccess,addFailure,addError
+                     info[1]: unittest.TestCase
+        @type path: string
+        @param path: the path of snapshot
+        @type sessionStatus: string
+        @param sessionStatus: the status of current session
         '''
         if sessionStatus:
-            msg = self.parseMessage(msg_type=sessionStatus,session_id=self.sessionId) 
+            msg = self.__parseMessage(msg_type=sessionStatus,session_id=self.sessionId) 
         elif info:
             if info[0]=='startTest':
                 #creat case result id when start test
                 self.tid += 1
-            msg = self.parseMessage(msg_type='caseresult',session_id=self.sessionId,caseresult_id=self.tid,test_info=info,file_path=path)
+            msg = self.__parseMessage(msg_type='caseresult',session_id=self.sessionId,caseresult_id=self.tid,test_info=info,file_path=path)
         elif path:
-            msg = self.parseMessage(msg_type='caseresult',session_id=self.sessionId,caseresult_id=self.tid,test_info=info,file_path=path)
+            msg = self.__parseMessage(msg_type='caseresult',session_id=self.sessionId,caseresult_id=self.tid,test_info=info,file_path=path)
  
         for task in msg:
             self.logger.debug(task['url'])
@@ -224,9 +239,24 @@ class ResultSender(object):
                 self.logger.debug('>>>clear task queue')
                 self.logger.debug('%s %s' % ('>>>current task queue size:',str(self.queue.qsize())))   
 
-    #@staticmethod
-    def parseMessage(self,msg_type=None,session_id=None,caseresult_id=None,test_info=None,file_path=None):
-        '''Geneate request data functions'''
+    def __parseMessage(self,msg_type=None,session_id=None,caseresult_id=None,test_info=None,file_path=None):
+        '''
+        Generate the request data.
+        @type msg_type: string
+        @param msg_type: the rqeust type(session result snapshot)
+        @type session_id: int
+        @param session_id: the id of current session
+        @type caseresult_id: int
+        @param caseresult_id: the id of current test case
+        @type test_info: tuple
+        @param test_info: (methodname,test,error) (methodname,test) 
+                     info[0]:addStart,addStop,addSuccess,addFailure,addError
+                     info[1]: unittest.TestCase
+        @type file_path: string
+        @param file_path: the path of snapshot
+        @rtype: list
+        @return: a list of dictionary which contains the http request data
+        '''
         logger = self.logger
         if msg_type == 'sessionstart':
             logger.debug('>>>>>>>>>>>>session start request')
@@ -359,16 +389,22 @@ class ResultSender(object):
         return length
  
 class Sender(threading.Thread):
-    '''Thread for sending http request from task queue'''
+    '''
+    Thread for fetching task data from task queue.
+    '''
     def __init__(self,q):
-        '''Init instance of Sender thread.'''
+        '''
+        Init the instance of Sender.
+        '''
         threading.Thread.__init__(self)
         self.isStop = False
         self.task_queue = q
         self.logger = Logger.getLogger()
 
     def run(self):
-        '''Thread work functions'''
+        '''
+        The work method.
+        '''
         while not self.isStop:
             #if don't get tid from server. Can create thread for each request.
             try:
@@ -387,5 +423,7 @@ class Sender(threading.Thread):
                 pass
 
     def stop(self):
-        '''Stop the thread'''
+        '''
+        Stop the thread.
+        '''
         self.isStop = True

@@ -1,7 +1,7 @@
 '''
-EpyDoc
-@version: $id$
-@author: U{borqsat<www.borqs.com>}
+Module for maintaining the collection of each test case snapshot.
+@version: 1.0
+@author: borqsat
 @see: null
 '''
 
@@ -9,13 +9,22 @@ import time, sys, os, shutil, datetime, string,re
 from stability.util.log import Logger
 
 class ExpectResult:
-    '''Class for maintaining the test resources'''
+    '''
+    Class for maintaining the collection of each test case snapshot.
+    '''
     def __init__(self,path=None):
+        '''
+        Init instance of ExpectResult.
+        '''
         self.cusor = -1
         self.resultPath = path
 
     def getCurrentPath(self,name=None):
-        '''Get the path of current checkpoint'''
+        '''
+        Return the file path by name.
+        @rtype: string
+        @return: the file path
+        '''
         tag = '.png'
         if name:
             check_point_name = '%s'%name
@@ -28,11 +37,19 @@ class ExpectResult:
         return check_point_path
 
     def getCurrentCheckPoint(self):
-        '''Get the current checkpoint name'''
+        '''
+        Return the current check point snapshot path .
+        @rtype: string
+        @return: the file path
+        '''
         return self.currentCheckPoint
 
     def getCurrentCheckPointParent(self):
-        '''Get the full snapshot path of current checkpoint'''
+        '''
+        Return the full snapshot path of current check point .
+        @rtype: string
+        @return: the file path
+        '''
         full_path = ''
         try:
             dirs,filename = os.path.split(self.currentCheckPoint)
@@ -45,7 +62,9 @@ class ExpectResult:
             return full_path
 
     def _getFullSnapshot(self,filedir,substr):
-        '''Get snapshot path'''
+        '''
+        Return the full snapshot path of current check point .
+        '''
         pattern = re.compile(substr)
         if os.path.exists(filedir):
             for f in os.listdir(filedir):
@@ -54,7 +73,9 @@ class ExpectResult:
                     return f
 
     def __basename(self, name):
-        '''Get base path'''
+        '''
+        Generate snapshot name.
+        '''
         names = {}
         names['snapshot'] = '%s.wait.snapshot.png' % name
         names['checkpoint'] = '%s.wait.checkpoint.png' % name
