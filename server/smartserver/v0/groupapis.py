@@ -377,7 +377,7 @@ def doUpdateCaseResult(gid, sid, tid):
     return updateCaseResult(gid, sid, tid, request.json['result'], request.json['traceinfo'], request.json['time'])
 
 
-@appweb.route('/group/<gid>/test/<sid>/case/<tid>/fileupload', method='PUT', content_type=['application/json', 'application/zip', 'application/octet-stream'])
+@appweb.route('/group/<gid>/test/<sid>/case/<tid>/fileupload', method='PUT', content_type=['application/zip','image/png'], login=False)
 def doUploadCaseFile(gid, sid, tid):
     """
     URL:/group/<gid>/test/<sid>/case/<tid>/fileupload
@@ -474,22 +474,6 @@ def doGetSessionInfo(gid, sid):
 
 @appweb.route('/group/<gid>/test/<sid>/poll',method='GET')
 def checkSessionUpdated(gid, sid):
-    """
-    URL:/group/<gid>/test/<sid>/poll
-    TYPE:http/GET
-
-    Check whether the session has new data after the given test case.
-
-    @type gid:string
-    @param gid:the id of group
-    @type sid:string
-    @param sid:the id of test session
-    @type token:JSON
-    @param token:the access token
-    @rtype: JSON
-    @return:ok-{'results':(int)1}
-            error-{'errors':{'code':value,'msg':(string)info}}
-    """
     tid=request.params.get('tid')
     if tid is None:
         return {'error':{'code':0,'msg':'Without tid'}}
@@ -531,27 +515,6 @@ def getSessionLiveData(gid, sid):
 
 @appweb.route('/group/<gid>/test/<sid>/history', method='GET')
 def getSessionHistoryData(gid, sid):
-    """
-    URL:/group/<gid>/test/<sid>/history
-    TYPE:http/GET
-
-    Get session history data.
-
-    @type gid:string
-    @param gid:the id of group
-    @type sid:string
-    @param sid:the id of test session
-    @type token:JSON
-    @param token:the access token
-    @rtype: JSON
-    @return:ok-{'results':
-    {
-    'summary':{'count':(int)n,'totalpage':(int)n,'page':(int)n,'pagesize':(int)n},
-    'cases':[{'tid':(int)tid,'casename':(string)casename,'starttime':(string)starttime,'endtime':(string)endtime,'result':(string)result,'traceinfo':(string)traceinfo},...]
-    }
-    }
-            error-{'errors':{'code':value,'msg':(string)info}}
-    """
     type=request.params.get('type',default='total')
     page=request.params.get('page',default='1')
     pagesize=request.params.get('pagesize',default='100')
@@ -564,7 +527,7 @@ def doGetSessionSummary(gid, sid):
     '''
     return getSessionSummary(gid,sid)
 
-@appweb.route('/group/<gid>/test/<sid>/case/<tid>/log', method='GET')
+@appweb.route('/group/<gid>/test/<sid>/case/<tid>/log', method='GET', login=False)
 def doGetCaseResultLog(gid, sid, tid):
     """
     URL:/group/<gid>/test/<sid>/case/<tid>/log

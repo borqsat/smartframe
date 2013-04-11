@@ -1,5 +1,5 @@
 var apiBaseURL = "/smartapi";
-var SocketURL  = "ws://" +  window.location.hostname + ":" +  window.location.port + apiBaseURL + "/ws";
+var SocketURL  = "ws://" +  window.location.hostname + ":" + window.location.port + apiBaseURL + "/ws";
 var _appglobal = function () {};
 
 var _ajaxstart=function() {
@@ -40,7 +40,7 @@ var prepareData = function(data) {
 /*
  * Http Get Request by Jquery Ajax
  */
-var invokeWebApi = function(apiUrl,dataj,render) {
+var invokeWebApi = function(apiUrl,dataj,render,bprg) {
     var options = {}; 
     var funok=function(data) {
         if(data['results'] === undefined) {
@@ -55,16 +55,16 @@ var invokeWebApi = function(apiUrl,dataj,render) {
         }
     };
     var funerror=function() {
-        alert("Server Internal error!");
+        alert("Network connection timeout!");
         _ajaxend();
     };
-    //options['beforeSend'] = _ajaxstart;
+    if(bprg !== undefined) options['beforeSend'] = _ajaxstart;
     options['url'] = apiBaseURL + apiUrl;
     options['async'] = true;
     options['type'] = 'GET';
     options['data'] = dataj;
     options['dataType'] = 'json';
-    options['timeout'] = 15000;
+    options['timeout'] = 25000;
     options['success'] = funok;
     options['error'] = funerror;
 			
@@ -80,7 +80,7 @@ var invokeWebApiEx = function(apiUrl,datap,render) {
             if(data['errors'] !== undefined){
                 alert(data['errors']['msg']);
                 //if(data['errors']['code'] === '01') window.location = "login.html";
-            } else alert("Web server Internal error!");
+            } else alert("Web server occurr unexpected error!");
            //_ajaxend();
         } else {
            render(data);
@@ -88,7 +88,7 @@ var invokeWebApiEx = function(apiUrl,datap,render) {
         }
     };
     var funerror=function() {
-        alert("Server Internal error!");
+        alert("Network connection timeout!");
         //_ajaxend();
     };
     var options = {};
@@ -116,9 +116,9 @@ function logout(){
     invokeWebApi('/account/logout',
                   prepareData({}),
                   function (data){
-                        $.cookie('ticket', '', { expires: -1 });
-                        $.cookie('loginname', '', { expires: -1 });
-                        window.location = "./login.html";
+                      $.cookie('ticket', '', { expires: -1 });
+                      $.cookie('loginname', '', { expires: -1 });
+                      window.location = "./login.html";
                   }
                 )
 }
