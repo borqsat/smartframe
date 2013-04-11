@@ -47,7 +47,7 @@ def handle_screen_websocket(gid, sid):
                 if lenf > 0:
                     timestamp = snaps[lenf - 1]['snaptime']
                     snapdata = base64.encodestring(snaps[lenf - 1]['snap'])
-                    wsock.send('snapshot:' + snapdata)
+                    wsock.send("data:image/png;base64," + snapdata)
                 gevent.sleep(0.3)
             except WebSocketError:
                 break

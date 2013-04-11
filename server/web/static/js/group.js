@@ -357,13 +357,12 @@ function renderSnapshotDiv(gid, sid) {
 
     ws.onmessage = function (evt) {
 	var data = evt.data;
-	if (data.indexOf('snapsize:') >= 0 ) {
+	if (data.slice(0, 9) == 'snapsize:' ) {
             data = data.substr('snapsize:'.length);
             data = JSON.parse(data);
             c.setAttribute('width', wd + 'px');
             c.setAttribute('height', ht + 'px');      
-        } else if (data.indexOf('snapshot:') >= 0 ) {
-            data = data.substr('snapshot:'.length);
+        } else {
             doRenderImg(data);
         } 
         ws.send('sync:ok');
@@ -371,8 +370,10 @@ function renderSnapshotDiv(gid, sid) {
 
     function doRenderImg(data) {
         var img = new Image();
-        img.src = 'data:image/png;base64,' + data;
-        cxt.drawImage(img,0,0,wd,ht);
+        img.src = data;
+        img.onload = function() {
+            cxt.drawImage(img,0,0,wd,ht);
+        }
     }
 }
 
