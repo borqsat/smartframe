@@ -54,3 +54,11 @@ It will read configuration from environment, and use default in case of no defin
 Or we can define env in command line:
 
     $ MONGODB_URI=mongodb://localhost:27017 REDIS_URI=redis://localhost:6379 MEMCACHED_URI=localhost:11211 WEB_PORT=8080 python app.py
+
+# Run the server via gunicorn
+
+If we want to use gunicorn, we can also run below command:
+
+    $ MONGODB_URI=mongodb://localhost:27017 REDIS_URI=redis://localhost:6379 MEMCACHED_URI=localhost:11211 gunicorn -k "geventwebsocket.gunicorn.workers.GeventWebSocketWorker" --workers=2 --bind=localhost:8080 app:app
+
+It's simple for us to start multiple processes and serve on the same port.
