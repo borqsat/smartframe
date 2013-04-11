@@ -316,14 +316,14 @@ class DataStore(object):
         write a user account record in database
         """
         tokens = self._db['tokens']
-        rdata = tokens.find_one({'appid': appid, 'uid': uid})
-        if not rdata is None:
-            token = rdata['token']
-        else:
-            m = hashlib.md5()
-            m.update(str(uuid.uuid1()))
-            token = m.hexdigest()
-            tokens.insert({'appid': appid, 'uid': uid, 'info': info, 'token': token, 'expires': expires})
+        #rdata = tokens.find_one({'appid': appid, 'uid': uid})
+        #if not rdata is None:
+        #    token = rdata['token']
+        #else:
+        m = hashlib.md5()
+        m.update(str(uuid.uuid1()))
+        token = m.hexdigest()
+        tokens.insert({'appid': appid, 'uid': uid, 'info': info, 'token': token, 'expires': expires})
         return {'token': token, 'uid': uid}
 
     def deleteToken(self, token):
@@ -676,12 +676,13 @@ class DataStore(object):
         except:
             pass
 
-    def readTestLiveSnaps(self, gid, sid):
+    def readTestLiveSnaps(self, gid, sid, timestamp):
         result = []
-        snap = self.getCache(str('sid:' + sid + ':snap'))
         snaptime = self.getCache(str('sid:' + sid + ':snaptime'))
-        if not snap is None:
-            result.append({'snap': snap, 'snaptime': snaptime})
+        if snaptime is not None and timestamp != snaptime:
+            snap = self.getCache(str('sid:' + sid + ':snap'))
+            if not snap is None:
+                result.append({'snap': snap, 'snaptime': snaptime})
         return result
 
     def readTestHistorySnaps(self, gid, sid, tid):

@@ -88,8 +88,8 @@ def getTestCaseSnaps(gid, sid, tid):
     else:
         return {'errors':{'code':404,'msg':'None reuslt.'}}
 
-def getTestLiveSnaps(gid, sid):
-    imgBuffer = store.readTestLiveSnaps(gid, sid)
+def getTestLiveSnaps(gid, sid, timestamp):
+    imgBuffer = store.readTestLiveSnaps(gid, sid, timestamp)
     if not imgBuffer is None:
         return imgBuffer
     else:
