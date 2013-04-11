@@ -36,16 +36,20 @@ def handle_screen_websocket(gid, sid):
         wsock.send('snapsize:' + json.dumps(deviceinfo))
     else:
         abort(404, 'Request device is invalid.')
-
+    
     def send_screed():
+        timestamp = ''
         while True:
             try:
                 snapdata = ''
                 snaps = getTestLiveSnaps(gid, sid)
                 lenf = len(snaps)
                 if lenf > 0:
-                    snapdata = base64.encodestring(snaps[lenf - 1]['snap'])
-                wsock.send('snapshot:' + snapdata)
+                    snaptime = snaps[lenf - 1]['snaptime']
+                    if timestamp != snaptime:
+                        timestamp = snaptime
+                        snapdata = base64.encodestring(snaps[lenf - 1]['snap'])
+                        wsock.send('snapshot:' + snapdata)
                 gevent.sleep(0.3)
             except WebSocketError:
                 break

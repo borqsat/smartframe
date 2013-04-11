@@ -316,14 +316,14 @@ class DataStore(object):
         write a user account record in database
         """
         tokens = self._db['tokens']
-        rdata = tokens.find_one({'appid': appid, 'uid': uid})
-        if not rdata is None:
-            token = rdata['token']
-        else:
-            m = hashlib.md5()
-            m.update(str(uuid.uuid1()))
-            token = m.hexdigest()
-            tokens.insert({'appid': appid, 'uid': uid, 'info': info, 'token': token, 'expires': expires})
+        #rdata = tokens.find_one({'appid': appid, 'uid': uid})
+        #if not rdata is None:
+        #    token = rdata['token']
+        #else:
+        m = hashlib.md5()
+        m.update(str(uuid.uuid1()))
+        token = m.hexdigest()
+        tokens.insert({'appid': appid, 'uid': uid, 'info': info, 'token': token, 'expires': expires})
         return {'token': token, 'uid': uid}
 
     def deleteToken(self, token):

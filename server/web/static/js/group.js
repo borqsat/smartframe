@@ -2,21 +2,27 @@ function showGroupInfo(id) {
       invokeWebApi('/group/'+id+'/info',
                    prepareData({}),
                    function(data){
-                       data = data.results;
-                       if(data === undefined) return;
-                       $('#group-name').parent().attr('href','#/group/'+id);
-                       $('#group-name').html(data['groupname']);         
-                       var $groupprf = $('#group-members').html('');
-                       var members = data['members'];
-                       _appglobal.members = [];
-                       $.each(members,function(i, o) {
-                           _appglobal.members.push(o['username']);
-                           uid=o['uid'];
-                           role=o['role'];
-                           $groupprf.append('<li>' + o['username'] + '('+ o['role'] + ')'
+                         data = data.results;
+                         if(data === undefined) return;
+                         $('#group-name').parent().attr('href','#/group/'+id);
+                         $('#group-name').html(data['groupname']);         
+                         var $groupprf = $('#group-members').html('');
+                         var members = data['members'];
+                         var bAdmin = false;
+                         var userid = $.cookie('userid');
+                         $.each(members, function(i, o) {
+                              if(o['uid'] === userid)
+                                  bAdmin = (o['role'] === 'owner') || (o['role'] === 'admin');                          
+                         });
+                         _appglobal.members = [];
+                         $.each(members, function(i, o) {
+                            _appglobal.members.push(o['username']);
+                            var uid = o['uid'];
+                            var role = o['role'];
+                            $groupprf.append('<li>' + o['username'] + '('+ o['role'] + ')'
                                              + '<a href="javascript:deletemembersById(\''+id+'\',\''+uid+'\',\' '+role+'\')">' 
-                                             +(o['role']=='owner'?'':'[X]')+'</a></li>')
-                       })
+                                             + (bAdmin && o['role'] !== 'owner'? '[X]':'')+'</a></li>')
+                         })
                    })
       $('#dialog-user')
                       .dialog({
@@ -73,11 +79,11 @@ function deletemembersById(id, uid,role){
 function showTestSummary(id) {
     $('#session-div').tab();
     invokeWebApi('/group/'+id+'/testsummary',
-                 prepareData({}),
-                 function(data) {
-                     renderTestSessionView(data);
-                     _appglobal.t2 = setTimeout("showTestSummary(\""+id+"\")",60000);
-                 }
+                  prepareData({}),
+                  function(data) {
+                      renderTestSessionView(data);
+                      _appglobal.t2 = setTimeout("showTestSummary(\""+id+"\")",60000);
+                  }
                 );
 }
 

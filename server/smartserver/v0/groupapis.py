@@ -377,7 +377,7 @@ def doUpdateCaseResult(gid, sid, tid):
     return updateCaseResult(gid, sid, tid, request.json['result'], request.json['traceinfo'], request.json['time'])
 
 
-@appweb.route('/group/<gid>/test/<sid>/case/<tid>/fileupload', method='PUT', content_type=['application/zip','image/png'])
+@appweb.route('/group/<gid>/test/<sid>/case/<tid>/fileupload', method='PUT', content_type=['application/zip','image/png'], login=False)
 def doUploadCaseFile(gid, sid, tid):
     """
     URL:/group/<gid>/test/<sid>/case/<tid>/fileupload

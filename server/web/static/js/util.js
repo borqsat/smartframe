@@ -80,7 +80,7 @@ var invokeWebApiEx = function(apiUrl,datap,render) {
             if(data['errors'] !== undefined){
                 alert(data['errors']['msg']);
                 //if(data['errors']['code'] === '01') window.location = "login.html";
-            } else alert("Web server Internal error!");
+            } else alert("Web server occurr unexpected error!");
            //_ajaxend();
         } else {
            render(data);
@@ -88,7 +88,7 @@ var invokeWebApiEx = function(apiUrl,datap,render) {
         }
     };
     var funerror=function() {
-        alert("Server Internal error!");
+        alert("Network connection timeout!");
         //_ajaxend();
     };
     var options = {};
@@ -116,9 +116,9 @@ function logout(){
     invokeWebApi('/account/logout',
                   prepareData({}),
                   function (data){
-                        $.cookie('ticket', '', { expires: -1 });
-                        $.cookie('loginname', '', { expires: -1 });
-                        window.location = "./login.html";
+                      $.cookie('ticket', '', { expires: -1 });
+                      $.cookie('loginname', '', { expires: -1 });
+                      window.location = "./login.html";
                   }
                 )
 }
