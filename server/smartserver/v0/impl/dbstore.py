@@ -658,17 +658,17 @@ class DataStore(object):
             self._snapqueue[sid + '-' + tid] = []
 
         try:
-            results = self._db['testresults']
             posi = stype.index(':')
             xtype = stype[0:posi]
             sfile = stype[posi + 1:]
+            results = self._db['testresults']
             fkey = self.setfile(snapfile)
             if xtype == 'expect':
                 results.update({'gid': gid, 'sid': sid, 'tid': int(tid)}, 
                                {'$set': {'checksnap': {'title': sfile, 'fid': fkey}}})
             elif xtype == 'current':
-                self.setCache(str('sid:' + sid + ':snap'), snapfile.read())
                 snapfile.seek(0)  # seek to head of the file
+                self.setCache(str('sid:' + sid + ':snap'), snapfile.read())
                 timenow = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
                 self.setCache(str('sid:' + sid + ':snaptime'), timenow)
                 self._snapqueue[sid + '-' + tid].append({'title': sfile, 'fid': fkey})
