@@ -654,11 +654,6 @@ class DataStore(object):
         """
         add snapshot png in image buffer
         """
-        self.setCache(str('sid:' + sid + ':snap'), snapfile.read())
-        snapfile.seek(0)  # seek to head of the file
-        timenow = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-        self.setCache(str('sid:' + sid + ':snaptime'), timenow)
-
         if not (sid + '-' + tid) in self._snapqueue:
             self._snapqueue[sid + '-' + tid] = []
 
@@ -669,9 +664,13 @@ class DataStore(object):
             sfile = stype[posi + 1:]
             fkey = self.setfile(snapfile)
             if xtype == 'expect':
-                results.update({'gid': gid, 'sid': sid, 'tid': int(tid)}, {
-                               '$set': {'checksnap': {'title': sfile, 'fid': fkey}}})
+                results.update({'gid': gid, 'sid': sid, 'tid': int(tid)}, 
+                               {'$set': {'checksnap': {'title': sfile, 'fid': fkey}}})
             elif xtype == 'current':
+                self.setCache(str('sid:' + sid + ':snap'), snapfile.read())
+                snapfile.seek(0)  # seek to head of the file
+                timenow = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+                self.setCache(str('sid:' + sid + ':snaptime'), timenow)
                 self._snapqueue[sid + '-' + tid].append({'title': sfile, 'fid': fkey})
         except:
             pass
