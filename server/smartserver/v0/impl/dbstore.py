@@ -28,7 +28,7 @@ cache_opts = {
     'cache.expire': 600,
     'cache.regions': 'local',
     'cache.local.lock_dir': '/tmp/cache/lock_local',
-    'cache.local.type': 'memory',e
+    'cache.local.type': 'memory',
     'cache.local.expire': '60'
 }
 cm = beaker.cache.CacheManager(**parse_cache_config_options(cache_opts))
