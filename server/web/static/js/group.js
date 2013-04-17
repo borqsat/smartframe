@@ -152,7 +152,7 @@ function renderTestSessionDiv(div_id, test_session){
     $product_table.append($tbody);
     $cycle_panel.append($product_table);
 
-    test_session.sort(function(a,b){return b._id - a._id});
+    test_session.sort(function(a,b){return b.id - a.id});
     for(var k = 0; k < test_session.length;k++){
             var value = test_session[k];
             var key = value.id;
