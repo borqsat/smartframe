@@ -18,14 +18,37 @@ function afterRegister(data) {
     }
 }
 
+
+function afterUpdate(data) {
+    var ret = data["errors"];
+    if(ret !== undefined ) {
+        alert(ret["msg"]);
+    } else {
+        alert("Update account successfully!");
+        window.location = "index.html";
+    }
+}
+
+function afterChnpass(data) {
+    var ret = data["errors"];
+    if(ret !== undefined ) {
+        alert(ret["msg"]);
+    } else {
+        alert("Change password successfully!");
+        window.location = "login.html";
+    }
+}
+
 var AppRouter = Backbone.Router.extend({
     routes: {
          "":"showLogin",
          "signup":"showSignup",
+         "editaccount":"showeditaccount"
     },
     showLogin: function(){
          $('#login-view').show();
-         $('#signup-view').hide();   
+         $('#signup-view').hide();
+         $('#editaccount-view').hide();  
          $('#btnlogin').bind('click',
                              function(){
                                   var username = $('#username').val();
@@ -44,6 +67,7 @@ var AppRouter = Backbone.Router.extend({
     showSignup: function(){
          $('#login-view').hide();
          $('#signup-view').show();
+         $('#editaccount-view').hide();
          $('#btnsignup').bind('click',
                              function(){
                                  var email = $('#regemail').val();                              
@@ -57,10 +81,6 @@ var AppRouter = Backbone.Router.extend({
                                      $('#regwarning').html('<p class="error">The email, username, password can\'t be null.</p>');
                                      return;
                                  }
-                                 /*if(email.search(pattern) < 0) {
-                                     $('#regwarning').html('<p class="error">Invalid format for email.</p>');
-                                     return;
-                                 } */
                                  invokeWebApiEx("/account/register",
                                                 { 
                                                 "username":username,
@@ -71,7 +91,56 @@ var AppRouter = Backbone.Router.extend({
                                                 afterRegister
                                   );
                })
+    },
+    showeditaccount: function(){
+         $('#login-view').hide();
+         $('#signup-view').hide();
+         $('#editaccount-view').show();
+         $('#btnchnpass').bind('click',
+                             function(){                       
+                                 var oldpassword = $('#orgpassword').val();
+                                 var newpassword = $('#newpassword').val();
+                                 var confpassword = $('#confpassword').val();
+                                 $('#txtwarning').html('');
+                                 if(oldpassword === '' || newpassword === '' || confpassword === '') {
+                                     $('#txtwarning').html('<p class="error">The oldpassword, newpassword, confpassword can\'t be null.</p>');
+                                     return;
+                                 }
+                                 if(newpassword !== confpassword ) {
+                                     $('#txtwarning').html('<p class="error">The newpassword, confpassword are not consistent.</p>');
+                                     return;
+                                 }
+                                 invokeWebApiEx("/account/changepasswd",
+                                                prepareData({
+                                                "oldpassword":oldpassword,
+                                                "newpassword":newpassword
+                                                }),
+                                                afterChnpass
+                                  );
+               });
+
+
+         $('#btnupdate').bind('click',
+                             function(){
+                                 var email = $('#upemail').val();                         
+                                 var phone = $('#upphone').val();
+                                 var company = $('#upcompany').val();
+                                 var info = {};
+                                 if (email !== '') info["email"] = email;
+                                 if (password !== '') info["phone"] = phone;
+                                 if (company !== '') info["company"] = company;
+
+                                 $('#txtwarning').html('');
+                                 invokeWebApiEx("/account/update",
+                                                prepareData({
+                                                "password":password,
+                                                "info":info
+                                                }),
+                                                afterUpdate
+                                  );
+               })
    }
+
 });
 var loginRouter = new AppRouter;
 Backbone.history.start();

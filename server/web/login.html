@@ -50,8 +50,8 @@
           <input type="email" autofocus="" autocapitalize="off" spellcheck="true" autocorrect="off" autocomplete="off" tabindex="3" value="" id="regemail" name="regemail">
           <label for="regemail">Company</label>
           <input type="text" autofocus="" autocapitalize="off" spellcheck="true" autocorrect="off" autocomplete="off" tabindex="4" value="" id="regcompany" name="regcompany">
-          <label for="regtelephone">Telephone Number</label>
-          <input type="text" autofocus="" autocapitalize="off" spellcheck="true" autocorrect="off" autocomplete="off" tabindex="4" value="" id="regtelephone" name="regtelephone">
+          <label for="regphone">Telephone Number</label>
+          <input type="text" autofocus="" autocapitalize="off" spellcheck="true" autocorrect="off" autocomplete="off" tabindex="4" value="" id="regphone" name="regphone">
           <input type="button" tabindex="6" value="Register" class="primary" id="btnsignup">
 
           <p class="quiet clear">
@@ -60,6 +60,31 @@
           </p>
       </form>
     </div>
+
+    <div id="editaccount-view" class="account-content clearfix" style="display:none">
+      <form novalidate="" class="clearfix">
+          <span id="txtwarning"></span>
+          <h2> Change Password</h2>
+          <span id="regwarning"></span>
+          <label for="oldpassword">Original Password<span style="color:red">*</span></label>
+          <input type="password" tabindex="2" id="orgpassword" name="orgpassword">
+          <label for="newpassword">New Password<span style="color:red">*</span></label>
+          <input type="password" tabindex="2" id="newpassword" name="newpassword">
+          <label for="confpassword">Original Password<span style="color:red">*</span></label>
+          <input type="password" tabindex="2" id="confpassword" name="confpassword">
+          <input type="button" tabindex="6" value="Submit" class="primary" id="btnchnpass">
+          <hr>
+          <h2> Change Information</h2>
+          <label for="upemail">Email</label>
+          <input type="email" autofocus="" autocapitalize="off" spellcheck="true" autocorrect="off" autocomplete="off" tabindex="3" value="" id="upemail" name="upemail">
+          <label for="upcompany">Company</label>
+          <input type="text" autofocus="" autocapitalize="off" spellcheck="true" autocorrect="off" autocomplete="off" tabindex="4" value="" id="upcompany" name="upcompany">
+          <label for="upphone">Telephone Number</label>
+          <input type="text" autofocus="" autocapitalize="off" spellcheck="true" autocorrect="off" autocomplete="off" tabindex="4" value="" id="upphone" name="upphone">
+          <input type="button" tabindex="6" value="Update" class="primary" id="btnupdate">
+      </form>
+    </div>
+
 
   </div>
 
