@@ -613,7 +613,9 @@ class DataStore(object):
         session = self._db['testsessions']
         status = status.lower()
         runtime = 0
-        snapshots = self._snapqueue[sid + '-' + tid]
+        snapshots = []
+        if str(sid + '-' + tid) in self._snapqueue:
+            snapshots = self._snapqueue[sid + '-' + tid]
         rdata = session.find({'sid': sid})
         for d in rdata:
             starttime = d['starttime']
