@@ -253,8 +253,9 @@ class DataStore(object):
         m = hashlib.md5()
         m.update(oldpassword)
         users = self._db['users']
-        rdata = users.findOne({'uid': uid})
+        rdata = users.find_one({'uid': uid})
         if m.hexdigest() == rdata['password']:
+            m = hashlib.md5()
             m.update(newpassword)
             users.update({'uid': uid}, {'$set': {'password': m.hexdigest()}})
             return {'uid': uid}
