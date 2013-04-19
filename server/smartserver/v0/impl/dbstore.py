@@ -452,8 +452,8 @@ class DataStore(object):
         caseresult = self._db['testresults']
         rdata = caseresult.find({'sid': sid})
         lists = [{'tid': d['tid'],
-                  'gid':d['gid'],
-                  'sid':d['sid'],
+                  #'gid':d['gid'],
+                  #'sid':d['sid'],
                   'casename':d['casename'],
                   'starttime':d['starttime'],
                   'endtime':d['endtime'],
@@ -616,6 +616,7 @@ class DataStore(object):
         snapshots = []
         if str(sid + '-' + tid) in self._snapqueue:
             snapshots = self._snapqueue[sid + '-' + tid]
+        #snapshots = self._snapqueue[sid + '-' + tid]
         rdata = session.find({'sid': sid})
         for d in rdata:
             starttime = d['starttime']
