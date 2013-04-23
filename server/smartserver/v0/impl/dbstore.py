@@ -572,7 +572,7 @@ class DataStore(object):
         result = None
         logid = None
         if not ret is None:
-            logid = d['log']
+            logid = ret['log']
             if not logid is None:
                 result = self.getfile(logid)
         return result
