@@ -105,7 +105,6 @@ def doInviteUser(uid):
         sendInviteMail(email, username, groupname, rdata['results']['token'])
     return rdata
 
-
 @appweb.route('/account/active', method='POST', content_type='application/json')
 def doActiveUser(uid, token):
     """
@@ -467,7 +466,7 @@ def doGetSessionInfo(gid, sid):
     @type token:JSON
     @param token:the access token
     @rtype: JSON
-    @return:ok-{'results':{'count':(int)count, 'paging':{'pageSize':(int)pageSize,'totalPage':(int)totalPage,'curPage':(int)curPage },'cases':[{'casename':(string)casename, 'starttime':(string)}, 'result':(pass,fail,error), 'log':(string)logfileKey, snaps':[]...]}}
+    @return:ok-{'results':{'count':(int)count, 'paging':{'pagesize':(int)pagesize,'totalpage':(int)totalpage,'curpage':(int)curPage },'cases':[{'casename':(string)casename, 'starttime':(string)}, 'result':(pass,fail,error), 'log':(string)logfileKey, snaps':[]...]}}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
     return getTestSessionInfo(gid, sid)
@@ -515,10 +514,10 @@ def getSessionLiveData(gid, sid):
 
 @appweb.route('/group/<gid>/test/<sid>/history', method='GET')
 def getSessionHistoryData(gid, sid):
-    type=request.params.get('type',default='total')
-    page=request.params.get('page',default='1')
-    pagesize=request.params.get('pagesize',default='100')
-    return getSessionHistory(gid,sid,type,int(page),int(pagesize))
+    type = request.params.get('type',default='total')
+    page = request.params.get('page',default='1')
+    pagesize = request.params.get('pagesize', default='100')
+    return getSessionHistory(gid, sid, type, int(page), int(pagesize))
 
 @appweb.route('/group/<gid>/test/<sid>/summary', method='GET')
 def doGetSessionSummary(gid, sid):
