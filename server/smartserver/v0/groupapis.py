@@ -553,9 +553,8 @@ def doGetCaseResultLog(gid, sid, tid):
     else:
         filename = 'log-%s-%s.zip' % (sid, tid)
         response.set_header('Content-Type', 'application/x-download')
-        response.set_header('Content-Disposition', 'attachment; filename=' + filename, True)
+        response.set_header('Content-Disposition', 'attachment; filename=' + filename)
         return data
-
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/snaps', method='GET')
 def doGetCaseResultSnapshots(gid, sid, tid):
