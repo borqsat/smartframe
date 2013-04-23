@@ -486,10 +486,8 @@ function showHistorySessionCases(gid,sid) {
                         var paging = data.results.paging;
                         var caseslist = data.results.cases;
                         createDetailTable('cases_div','table_total_' + sid);
-                        if(paging !== undefined) 
-                            TablePage(gid, sid, paging['totalpage'], paging['pagesize'], fillDetailTable,'table_total_' + sid,'total');
-                        else 
-                            fillDetailTable(gid, sid, caseslist,'table_total_' + sid, 'total');
+                        fillDetailTable(gid, sid, caseslist,'table_total_' + sid, 'total');
+                        if(paging !== undefined)  TablePage(gid, sid, paging['totalpage'], paging['pagesize'], fillDetailTable,'table_total_' + sid,'total');
                   },true);
 }
 
