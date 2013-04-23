@@ -33,17 +33,17 @@ def isSessionUpdated(gid,sid,tid):
     return {'results':store.isSessionUpdated(gid,sid,tid)}
 
 def getSessionLive(gid,sid,maxCount):
-    return {'results':store.getSessionLive(gid,sid,maxCount)}
+    return {'results':store.getSessionLiveCases(gid,sid,maxCount)}
 
 def getSessionHistory(gid,sid,type,page,pagesize):
-    result=store.getSessionAll(gid,sid,type,page,pagesize)
+    result = store.getSessionAllCases(gid,sid,type,page,pagesize)
     if result is None:
         return {'errors':{'code':404,'msg':'None result.'}}
     else:
         return {'results':result}
 
 def getSessionSummary(gid,sid):
-    result=store.getSessionSummary(gid,sid)
+    result = store.getSessionSummary(gid,sid)
     if result is None:
         return {'errors':{'code':404,'msg':'None result.'}}
     else:

@@ -260,7 +260,7 @@ class DataStore(object):
             users.update({'uid': uid}, {'$set': {'password': m.hexdigest()}})
             return {'uid': uid}
         else:
-            return {'code': '03', 'msg': 'Invalid original password!'}
+            return {'code': '03', 'msg': 'Incorrect original password!'}
 
     def userUpdateInfo(self, uid, info):
         users = self._db['users']
@@ -317,10 +317,6 @@ class DataStore(object):
         write a user account record in database
         """
         tokens = self._db['tokens']
-        #rdata = tokens.find_one({'appid': appid, 'uid': uid})
-        #if not rdata is None:
-        #    token = rdata['token']
-        #else:
         m = hashlib.md5()
         m.update(str(uuid.uuid1()))
         token = m.hexdigest()
@@ -452,8 +448,6 @@ class DataStore(object):
         caseresult = self._db['testresults']
         rdata = caseresult.find({'sid': sid})
         lists = [{'tid': d['tid'],
-                  'gid':d['gid'],
-                  'sid':d['sid'],
                   'casename':d['casename'],
                   'starttime':d['starttime'],
                   'endtime':d['endtime'],
@@ -471,24 +465,25 @@ class DataStore(object):
         else:
             return 1
 
-    def getSessionLive(self, gid, sid, maxCount):
+    def getSessionLiveCases(self, gid, sid, maxCount):
         tSession = self._db['testsessions']
-        s = tSession.find_one({'sid': sid})
+        ret = tSession.find_one({'sid': sid})
         summary = {}
         runtime = 0
-        if s is None:
+        if ret is None:
             summary['total'] = 0
             summary['pass'] = 0
             summary['fail'] = 0
             summary['error'] = 0
         else:
-            summary = s['summary']
-            runtime = s['runtime']
+            summary = ret['summary']
+            runtime = ret['runtime']
 
         tResult = self._db['testresults']
         specs = {'gid': gid,'sid':sid}
         fields = {'_id': False,'gid':False,'sid':False,'log':False,'checksnap':False,'snapshots':False}
-        records = tResult.find(spec=specs, fields=fields, limit=int(maxCount), sort=[('tid', pymongo.DESCENDING)])
+        records = tResult.find(spec=specs, fields=fields, 
+                               limit=int(maxCount), sort=[('tid', pymongo.DESCENDING)])
         cases = []
         for record in records:
             cases.append(record)
@@ -499,38 +494,40 @@ class DataStore(object):
         result['cases'] = cases
         return result
 
-    def getSessionAll(self,gid,sid,type='total',page=1,pagesize=100):
+    def getSessionAllCases(self,gid,sid,type='total',page=1,pagesize=100):
         tSession = self._db['testsessions']
-        s = tSession.find_one({'sid': sid})
-        summary = {}
-        if s is None:
+        ret = tSession.find_one({'sid': sid})
+        if ret is None:
             return None
-
-        summary['count'] = s['summary'][type]
-        total = summary['count']
-        if (total % pagesize > 0):
-            summary['totalpage'] = (total/pagesize+1)
+        result = {}
+        paging = {}
+        total = 0
+        if type in ret['summary']:
+            total = ret['summary'][type] 
         else:
-            summary['totalpage'] = (total/pagesize)
-        summary['page'] = page
-        summary['pagesize'] = pagesize
+            return None
+        if (total % pagesize != 0):
+            paging['totalpage'] = (total / pagesize + 1)
+        else:
+            paging['totalpage'] = (total / pagesize)
+        paging['curpage'] = page
+        paging['pagesize'] = pagesize
 
         tResult = self._db['testresults']
         if type == 'total':
             specs = {'sid': sid}
         else:
             specs = {'sid': sid,'result':type}
-        fields = {'_id': False,'gid':False,'sid':False,'log':False,'checksnap':False,'snapshots':False}
-        records = tResult.find(spec=specs, fields=fields, skip=int((
-            page-1)*pagesize), limit=int(pagesize), sort=[('tid', pymongo.ASCENDING)])
+        fields = {'_id': False,'gid':False,'sid':False}
+        records = tResult.find(spec=specs, fields=fields, skip=int((page-1)*pagesize), 
+                               limit=int(pagesize), sort=[('tid', pymongo.DESCENDING)])
         cases = []
         for record in records:
             cases.append(record)
 
-        result = {}
-        result['summary'] = summary
+        result['count'] = len(cases)
+        result['paging'] = paging
         result['cases'] = cases
-
         return result
 
     def getSessionSummary(self, gid, sid):
@@ -552,27 +549,18 @@ class DataStore(object):
         read list of test cases records in database
         """
         caseresult = self._db['testresults']
-        ret = caseresult.find({'sid': sid, 'tid': int(tid)})
         result = None
-        for d in ret:
-            if not 'result' in d:
-                d['result'] = ''
-            if not 'log' in d:
-                d['log'] = ''
-            if not 'snapshots' in d:
-                d['snapshots'] = []
-            if not 'checksnap' in d:
-                d['checksnap'] = ''
-
-            result = {'tid': d['tid'],
-                      'casename': d['casename'],
-                      'starttime': d['starttime'],
-                      'endtime': d['endtime'],
-                      'result': d['result'],
-                      'traceinfo': d['traceinfo'],
-                      'log': d['log'],
-                      'snapshots': d['snapshots'],
-                      'checksnap': d['checksnap']}
+        ret = caseresult.find_one({'sid': sid, 'tid': int(tid)})
+        if not ret is None:
+            result = {'tid': ret['tid'],
+                      'casename': ret['casename'],
+                      'starttime': ret['starttime'],
+                      'endtime': ret['endtime'],
+                      'result': ret['result'],
+                      'traceinfo': ret['traceinfo'],
+                      'log': ret['log'],
+                      'snapshots': ret['snapshots'],
+                      'checksnap': ret['checksnap']}
         return result
 
     def getCaseLog(self, gid, sid, tid):
@@ -580,13 +568,13 @@ class DataStore(object):
         read list of test session records in database
         """
         caseresult = self._db['testresults']
-        ret = caseresult.find({'sid': sid, 'tid': int(tid)})
+        ret = caseresult.find_one({'sid': sid, 'tid': int(tid)})
         result = None
         logid = None
-        for d in ret:
+        if not ret is None:
             logid = d['log']
-        if not logid is None:
-            result = self.getfile(logid)
+            if not logid is None:
+                result = self.getfile(logid)
         return result
 
     def createTestCaseResult(self, gid, sid, tid, casename, starttime):
@@ -597,8 +585,9 @@ class DataStore(object):
         timestamp = datetime.now().strftime(DATE_FORMAT_STR1)
         self.setCache(str('sid:' + sid + ':uptime'), timestamp)
         caseresult = self._db['testresults']
-        caseresult.insert({'gid': gid, 'sid': sid, 'tid': int(tid), 'casename': casename, 'log': 'N/A', 'traceinfo':
-                          'N/A', 'result': 'running', 'starttime': starttime, 'endtime': 'N/A', 'snapshots': []})
+        caseresult.insert({'gid': gid, 'sid': sid, 'tid': int(tid),
+                           'casename': casename, 'log': 'N/A', 'starttime': starttime, 'endtime': 'N/A',
+                           'traceinfo':'N/A', 'result': 'running',  'snapshots': []})
         session = self._db['testsessions']
         session.update({'gid': gid, 'sid': sid}, {'$inc': {'summary.total': 1}})
 
@@ -616,13 +605,14 @@ class DataStore(object):
         snapshots = []
         if str(sid + '-' + tid) in self._snapqueue:
             snapshots = self._snapqueue[sid + '-' + tid]
-        rdata = session.find({'sid': sid})
-        for d in rdata:
-            starttime = d['starttime']
+        ret = session.find_one({'sid': sid})
+        if not ret is None:
+            starttime = ret['starttime']
             try:
                 d1 = datetime.strptime(starttime, DATE_FORMAT_STR)
             except:
                 d1 = datetime.strptime(starttime, DATE_FORMAT_STR1)
+
             try:
                 d2 = datetime.strptime(endtime, DATE_FORMAT_STR)
             except:
@@ -632,8 +622,7 @@ class DataStore(object):
             runtime = delta.days * 86400 + delta.seconds
 
         if status == 'pass':
-            for d in snapshots:
-                self.deletefile(d['fid'])
+            for d in snapshots: self.deletefile(d['fid'])
             snapshots = []
             session.update({'gid': gid, 'sid': sid}, {'$inc': {'summary.pass': 1}, '$set': {'runtime': runtime}})
         elif status == 'fail':
@@ -641,8 +630,7 @@ class DataStore(object):
         else:
             session.update({'gid': gid, 'sid': sid}, {'$inc': {'summary.error': 1}, '$set': {'runtime': runtime}})
 
-        caseresult.update({'gid': gid, 'sid': sid, 'tid': int(tid)}, {'$set': {'result': status, 'traceinfo': traceinfo,
-                          'endtime': endtime, 'snapshots': snapshots}})
+        caseresult.update({'gid': gid, 'sid': sid, 'tid': int(tid)},  {'$set': {'result': status, 'traceinfo': traceinfo,'endtime': endtime, 'snapshots': snapshots}} )
 
     def writeTestLog(self, gid, sid, tid, logfile):
         """
@@ -666,11 +654,10 @@ class DataStore(object):
             sfile = stype[posi + 1:]
             results = self._db['testresults']
             fkey = self.setfile(snapfile)
+            snapfile.seek(0)  # seek to head of the file
             if xtype == 'expect':
-                results.update({'gid': gid, 'sid': sid, 'tid': int(tid)}, 
-                               {'$set': {'checksnap': {'title': sfile, 'fid': fkey}}})
+                results.update({'gid': gid, 'sid': sid, 'tid': int(tid)}, {'$set': {'checksnap': {'title': sfile, 'fid': fkey}}})
             elif xtype == 'current':
-                snapfile.seek(0)  # seek to head of the file
                 self.setCache(str('sid:' + sid + ':snap'), snapfile.read())
                 timenow = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
                 self.setCache(str('sid:' + sid + ':snaptime'), timenow)
