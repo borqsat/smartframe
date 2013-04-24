@@ -532,17 +532,33 @@ class DataStore(object):
 
     def getSessionSummary(self, gid, sid):
         tSession = self._db['testsessions']
-        s = tSession.find_one({'sid': sid})
-        if s is None:
+        d = tSession.find_one({'sid': sid})
+        if d is None:
             return None
 
-        if 'tester' in s:
+        dtnow = datetime.now()
+        if d['endtime'] == 'N/A':
+            dttime = self.getCache(str('sid:' + d['sid'] + ':uptime'))
+            if dttime is None:
+                idletime = IDLE_TIME_OUT
+            else:
+                try:
+                    idle = datetime.strptime(dttime, DATE_FORMAT_STR1)
+                except:
+                    idle = datetime.strptime(dttime, DATE_FORMAT_STR)
+                delta = dtnow - idle
+                idletime = delta.days * 86400 + delta.seconds
+
+            if idletime >= IDLE_TIME_OUT:
+                d['endtime'] = 'idle'
+
+        if 'tester' in d:
             users = self._db['users']
-            u = users.find_one({'uid': s['tester']})
+            u = users.find_one({'uid': d['tester']})
             if not u is None:
-                s['tester'] = u['username']
-        s.pop('_id')
-        return s
+                d['tester'] = u['username']
+        d.pop('_id')
+        return d
 
     def readTestCaseInfo(self, gid, sid, tid):
         """
