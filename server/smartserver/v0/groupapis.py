@@ -526,36 +526,6 @@ def doGetSessionSummary(gid, sid):
     '''
     return getSessionSummary(gid,sid)
 
-@appweb.route('/group/<gid>/test/<sid>/case/<tid>/log', method='GET', login=False)
-def doGetCaseResultLog(gid, sid, tid):
-    """
-    URL:/group/<gid>/test/<sid>/case/<tid>/log
-    TYPE:http/GET
-
-    Get test case log file
-
-    @type gid:string
-    @param gid:the id of group
-    @type sid:string
-    @param sid:the id of test session
-    @type  tid: string
-    @param tid: the id of case result
-    @type data:JSON
-    @param data:{'token':(string)value}
-    @rtype: JSON
-    @return:ok
-            error-{'errors':{'code':value,'msg':(string)info}}
-    """
-    data = getTestCaseLog(gid, sid, tid)
-    if isinstance(data, type({})):
-        # if the type of data is a dict, then we got error...
-        return data
-    else:
-        filename = 'log-%s-%s.zip' % (sid, tid)
-        response.set_header('Content-Type', 'application/x-download')
-        response.set_header('Content-Disposition', 'attachment; filename=' + filename)
-        return data
-
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/snaps', method='GET')
 def doGetCaseResultSnapshots(gid, sid, tid):
     """

@@ -231,21 +231,29 @@ function renderCaseSnaps(gid, sid, tid){
                         ++idx;
                         var $snapli = $('<div>');
                         var $igdiv = $('<div>');
-                        var $icgdiv = $('<div>');                                
+                        var $icgdiv = $('<div>');
                         var $ig = new Image();
                         var $icg = new Image();
                         var title = '';
                         var rect = '';
+                        /*
                         var imgdata = data.results.snaps[d]['data'];
                         if(imgdata === "")
                             $ig.src = 'static/img/notFound.png';
                         else
                             $ig.src = 'data:image/png;base64,' + imgdata;
-                        $ig.setAttribute("id","snap"+idx);                        
+                        */
+                        var imgurl = data.results.snaps[d]['url'];
+                        if(imgurl === "")
+                            $ig.src = 'static/img/notFound.png';
+                        else
+                            $ig.src = storeBaseURL + "/snap/" + imgurl;
+
+                        $ig.setAttribute("id","snap"+idx);
                         $ig.setAttribute("width",wd+"px");
                         $ig.setAttribute("height",ht+"px");
-                        if((idx === total) && (data.results.checksnap !== undefined)) {
-                            $icg.src = 'data:image/png;base64,' + data.results.checksnap['data'];
+                        if((idx === total) && (data.results.checksnap !== undefined)) {  
+                            $icg.src = storeBaseURL + "/snap/" + data.results.checksnap['url'];
                             $icg.setAttribute("width", wd + "px");
                             $icg.setAttribute("height", ht + "px");
                             $ig.setAttribute('class','thumbnail thumbnailr');
@@ -263,8 +271,6 @@ function renderCaseSnaps(gid, sid, tid){
                             $icgdiv.append($icg);   
                             var $pdiv = $('<div>').attr('style','border:3px solid green; position:absolute; top:'+y+'px; left:'+x+'px; width:' +w+'px; height:'+h+'px');
                             $icgdiv.append($pdiv);
-                            //$snapli.append($icgdiv); 
-                            //$snapli.append($igdiv);
                             $icgdiv.attr('style','float:left');
                             $igdiv.attr('style','float:right');
                             $snapli.attr('class','item active');                                                 
@@ -400,6 +406,7 @@ function fillDetailTable(gid, sid, data, ids, tag) {
           var cname = citem['casename'];
           var cresult = citem['result'];
           var ctraceinfo = citem['traceinfo'];
+          var clog = citem['log'];
           if(tag !== 'total' && tag !== cresult) continue;
           var trId = "tr_"+ctid;
           if(cresult === 'fail'){
@@ -411,7 +418,7 @@ function fillDetailTable(gid, sid, data, ids, tag) {
                                         "<td>"+
                                         "\""+ctraceinfo+"\""+
                                         "</td>"+
-                                        "<td><a href=\""+apiBaseURL+"/group/"+gid+"/test/"+sid+"/case/"+ctid+"/log\">log</a> </td>"+
+                                        "<td><a href=\"" +storeBaseURL +"/log/" + clog + "\">log</a> </td>"+
                                         "<td><a href=\"javascript:showHistoryDiv('"+gid+"','"+sid+"','"+ctid+"');\">snaps</a></td>"+
                                         "</tr>";
 

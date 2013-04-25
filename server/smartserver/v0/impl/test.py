@@ -74,8 +74,8 @@ def uploadCaseResultFile(gid, sid, tid, rawdata, ftype='png', ctype=''):
     else:
         return {'errors':{'code':500,'msg':'Invalid ftype value.'}}
 
-def getTestCaseLog(gid, sid, tid):
-    rdata = store.getCaseLog(gid, sid, tid)
+def getTestCaseLog(fid):
+    rdata = store.getCaseLog(fid)
     if not rdata is None :
         return rdata
     else:
@@ -85,6 +85,13 @@ def getTestCaseSnaps(gid, sid, tid):
     rdata = store.readTestHistorySnaps(gid, sid, tid)
     if not rdata is None:
         return {'results':rdata}
+    else:
+        return {'errors':{'code':404,'msg':'None reuslt.'}}
+
+def getTestCaseSnap(fid):
+    rdata = store.readTestCaseSnap(fid)
+    if not rdata is None:
+        return rdata
     else:
         return {'errors':{'code':404,'msg':'None reuslt.'}}
 
