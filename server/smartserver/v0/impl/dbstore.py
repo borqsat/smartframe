@@ -37,9 +37,7 @@ DATE_FORMAT_STR1 = "%Y-%m-%d %H:%M:%S"
 DATE_FORMAT_STR = "%Y.%m.%d-%H.%M.%S"
 IDLE_TIME_OUT = 1800
 
-
 class DataStore(object):
-
     """
     Class DbStore provides the access to MongoDB DataBase
     """
@@ -51,7 +49,6 @@ class DataStore(object):
         self._db = db
         self._fs = fs
         self._mc = mem
-        self._snapqueue = {}
 
     def counter(self, keyname):
         ret = self._db.counter.find_and_modify(query={"_id": keyname}, update={"$inc": {"next": 1}}, new=True, upsert=True)
@@ -101,6 +98,13 @@ class DataStore(object):
             return value
         else:
             return None
+
+    def clearCache(self, key):
+        '''
+        get Cache value.
+        '''
+        if not self._mc is None:
+            self._mc.delete(key)
 
     def createUser(self, appid, user, password, info):
         """
@@ -345,6 +349,8 @@ class DataStore(object):
         """
         write a test session record in database
         """
+        self.clearCache(str('sid:' + sid + ':snap'))
+        self.clearCache(str('sid:' + sid + ':snaptime'))
         session = self._db['testsessions']
         session.update({'gid': gid, 'sid': sid}, {'$set': {'endtime': endtime}})
 
@@ -597,7 +603,7 @@ class DataStore(object):
         """
         write a test case resut record in database
         """
-        self._snapqueue[sid + '-' + tid] = []
+        self.setCache(str('sid:' + sid + ':tid:' + tid + ':snaps'), [])
         timestamp = datetime.now().strftime(DATE_FORMAT_STR1)
         self.setCache(str('sid:' + sid + ':uptime'), timestamp)
         caseresult = self._db['testresults']
@@ -614,13 +620,12 @@ class DataStore(object):
         """
         timestamp = datetime.now().strftime(DATE_FORMAT_STR1)
         self.setCache(str('sid:' + sid + ':uptime'), timestamp)
+        snapshots = self.getCache(str('sid:' + sid + ':tid:' + tid + ':snaps'))
+        self.clearCache(str('sid:' + sid + ':tid:' + tid + ':snaps'))
         caseresult = self._db['testresults']
         session = self._db['testsessions']
         status = status.lower()
         runtime = 0
-        snapshots = []
-        if str(sid + '-' + tid) in self._snapqueue:
-            snapshots = self._snapqueue[sid + '-' + tid]
         ret = session.find_one({'sid': sid})
         if not ret is None:
             starttime = ret['starttime']
@@ -661,23 +666,24 @@ class DataStore(object):
         """
         add snapshot png in image buffer
         """
-        if not (sid + '-' + tid) in self._snapqueue:
-            self._snapqueue[sid + '-' + tid] = []
-
+        snaps = self.getCache(str('sid:' + sid + ':tid:' + tid + ':snaps'))
+        if snaps is None: snaps = []
         try:
             posi = stype.index(':')
             xtype = stype[0:posi]
             sfile = stype[posi + 1:]
             results = self._db['testresults']
             fkey = self.setfile(snapfile)
-            snapfile.seek(0)  # seek to head of the file
+            snapfile.seek(0)
             if xtype == 'expect':
-                results.update({'gid': gid, 'sid': sid, 'tid': int(tid)}, {'$set': {'checksnap': {'title': sfile, 'fid': fkey}}})
+                results.update({'gid': gid, 'sid': sid, 'tid': int(tid) },
+                               {'$set': {'checksnap': {'title': sfile, 'fid': fkey}}})
             elif xtype == 'current':
-                self.setCache(str('sid:' + sid + ':snap'), snapfile.read())
+                snaps.append({'title': sfile, 'fid': fkey})
                 timenow = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+                self.setCache(str('sid:' + sid + ':snap'), snapfile.read())
                 self.setCache(str('sid:' + sid + ':snaptime'), timenow)
-                self._snapqueue[sid + '-' + tid].append({'title': sfile, 'fid': fkey})
+                self.setCache(str('sid:' + sid + ':tid:' + tid + ':snaps'), snaps)
         except:
             pass
 
