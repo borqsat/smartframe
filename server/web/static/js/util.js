@@ -1,4 +1,5 @@
 var apiBaseURL = "/smartapi";
+var storeBaseURL = "http://" +  window.location.hostname + ":" + window.location.port + apiBaseURL + "/fs";
 var SocketURL  = "ws://" +  window.location.hostname + ":" + window.location.port + apiBaseURL + "/ws";
 var _appglobal = function () {};
 

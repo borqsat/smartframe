@@ -585,20 +585,6 @@ class DataStore(object):
                       'checksnap': ret['checksnap']}
         return result
 
-    def getCaseLog(self, gid, sid, tid):
-        """
-        read list of test session records in database
-        """
-        caseresult = self._db['testresults']
-        ret = caseresult.find_one({'sid': sid, 'tid': int(tid)})
-        result = None
-        logid = None
-        if not ret is None:
-            logid = ret['log']
-            if not logid is None:
-                result = self.getfile(logid)
-        return result
-
     def createTestCaseResult(self, gid, sid, tid, casename, starttime):
         """
         write a test case resut record in database
@@ -696,33 +682,44 @@ class DataStore(object):
                 result.append({'snap': snap, 'snaptime': snaptime})
         return result
 
+    def getCaseLog(self, fid):
+        """
+        read list of test session records in database
+        """
+        data = self.getfile(fid)
+        if not data is None:
+            return data
+        else:
+            return None
+
+    def readTestCaseSnap(self, fid):
+        data = self.getfile(fid)
+        if not data is None:
+            return data
+        else:
+            return None
+
     def readTestHistorySnaps(self, gid, sid, tid):
         caseresult = self._db['testresults']
-        ret = caseresult.find({'sid': sid, 'tid': int(tid)})
+        ret = caseresult.find_one({'sid': sid, 'tid': int(tid)})
         snapids = []
         snaps = []
         checkid = ''
         checksnap = ''
         stitle = ''
-        for d in ret:
-            snapids = d['snapshots']
-            if not 'checksnap' in d:
-                checkid = ''
-                stitle = ''
+        if ret is not None:
+            snapids = ret['snapshots']
+            if not 'checksnap' in ret:
+                checksnap = {'title':'', 'url':''}
             else:
-                stitle = d['checksnap']['title']
-                checkid = d['checksnap']['fid']
-
-        if checkid != '':
-            fs = self.getfile(checkid)
-            if not fs is None:
-                checksnap = {'title': stitle, 'data': base64.encodestring(fs.read())}
+                stitle = ret['checksnap']['title']
+                checkid = ret['checksnap']['fid']
+                checksnap = {'title':stitle, 'url':checkid}
 
         for d in snapids:
             stitle = d['title']
-            fs = self.getfile(d['fid'])
-            if not fs is None:
-                snaps.append({'title': stitle, 'data': base64.encodestring(fs.read())})
+            fid = d['fid']
+            snaps.append({'title': stitle, 'url': fid})
 
         return {'snaps': snaps, 'checksnap': checksnap}
 
