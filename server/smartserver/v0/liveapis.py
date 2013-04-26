@@ -31,7 +31,6 @@ def handle_screen_websocket(gid, sid):
 
     ret = getTestSessionInfo(gid, sid)
     if not ret is None:
-        # wslist[sid].append({'ws':wsock, 'snaptime':''})
         deviceinfo = ret['results']['deviceinfo']
         wsock.send('snapsize:' + json.dumps(deviceinfo))
     else:
@@ -42,11 +41,10 @@ def handle_screen_websocket(gid, sid):
         while True:
             try:
                 snapdata = ''
-                snaps = getTestLiveSnaps(gid, sid, timestamp)
-                lenf = len(snaps)
-                if lenf > 0:
-                    timestamp = snaps[lenf - 1]['snaptime']
-                    snapdata = base64.encodestring(snaps[lenf - 1]['snap'])
+                snapbuf = getTestLiveSnaps(gid, sid, timestamp)
+                if not snapbuf is None:
+                    timestamp = snapbuf['snaptime']
+                    snapdata = base64.encodestring(snapbuf['snap'])
                     wsock.send("data:image/png;base64," + snapdata)
                 gevent.sleep(0.3)
             except WebSocketError:

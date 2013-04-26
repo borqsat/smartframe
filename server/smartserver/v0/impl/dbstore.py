@@ -674,12 +674,11 @@ class DataStore(object):
             pass
 
     def readTestLiveSnaps(self, gid, sid, timestamp):
-        result = []
+        result = None
         snaptime = self.getCache(str('sid:' + sid + ':snaptime'))
         if snaptime is not None and timestamp != snaptime:
             snap = self.getCache(str('sid:' + sid + ':snap'))
-            if not snap is None:
-                result.append({'snap': snap, 'snaptime': snaptime})
+            result = {'snap': snap, 'snaptime': snaptime}
         return result
 
     def getCaseLog(self, fid):

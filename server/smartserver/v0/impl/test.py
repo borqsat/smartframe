@@ -97,7 +97,4 @@ def getTestCaseSnap(fid):
 
 def getTestLiveSnaps(gid, sid, timestamp):
     imgBuffer = store.readTestLiveSnaps(gid, sid, timestamp)
-    if not imgBuffer is None:
-        return imgBuffer
-    else:
-        return []
+    return imgBuffer
