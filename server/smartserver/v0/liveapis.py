@@ -19,7 +19,6 @@ redis_plugin = RedisPlugin(host=REDIS_HOST,
                            keyword='rdb')
 appws.install(redis_plugin)  # install redis plugin
 
-
 @appws.route('/group/<gid>/test/<sid>/screen')
 def handle_screen_websocket(gid, sid):
     '''
@@ -28,14 +27,7 @@ def handle_screen_websocket(gid, sid):
     wsock = request.environ.get('wsgi.websocket')
     if not wsock:
         abort(400, 'Expected WebSocket request.')
-
-    ret = getTestSessionInfo(gid, sid)
-    if not ret is None:
-        deviceinfo = ret['results']['deviceinfo']
-        wsock.send('snapsize:' + json.dumps(deviceinfo))
-    else:
-        abort(404, 'Request device is invalid.')
-    
+ 
     def send_screed():
         timestamp = None
         while True:
@@ -49,6 +41,7 @@ def handle_screen_websocket(gid, sid):
                 gevent.sleep(0.3)
             except WebSocketError:
                 break
+
     g = gevent.spawn(send_screed)
     while True:
         try:

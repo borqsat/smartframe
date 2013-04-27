@@ -290,7 +290,7 @@ def doGetGroupInfo(gid, uid):
 
 
 @appweb.route('/group/<gid>/delete', method='GET')
-def doDeleteGroup(gid, uid):
+def doDeleteGroup(uid, gid):
     """
     URL:/group/<gid>/delete
     TYPE:http/GET
@@ -305,7 +305,7 @@ def doDeleteGroup(gid, uid):
     @return: ok-{'results':'OK'}
              error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
-    return deleteGroup(gid,uid)
+    return deleteGroup(uid, gid)
 
 
 @appweb.route('/group/<gid>/test/<sid>/create', method='POST', content_type='application/json')
@@ -430,7 +430,7 @@ def doUpdateGroupTestSession(gid, sid):
 
 
 @appweb.route('/group/<gid>/test/<sid>/delete', method='GET')
-def doDeleteGroupTestSession(gid, sid):
+def doDeleteGroupTestSession(uid, gid, sid):
     """
     URL:/group/<gid>/test/<sid>/delete
     TYPE:http/GET
@@ -448,7 +448,7 @@ def doDeleteGroupTestSession(gid, sid):
             error-{'errors':{'code':value,'msg':(string)info}}
     """
     # TODO we should check if the uid has the permission to perform the operation
-    return deleteTestSession(gid, sid)
+    return deleteTestSession(uid, gid, sid)
 
 
 @appweb.route('/group/<gid>/test/<sid>/results', method='GET')

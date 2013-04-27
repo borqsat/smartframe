@@ -204,11 +204,13 @@ function renderTestSessionView(data) {
     renderTestSessionDiv('run_cycle_panel', run_session_data);
     renderTestSessionDiv('stop_cycle_panel', stop_session_data);
 }
+
 function renderCaseSnaps(gid, sid, tid){
-    var zoom = 1;
     var $snaplist = $('#img_list').html('');
-    var wd = parseInt(_appglobal.deviceinfo['width']) >> zoom;
-    var ht = parseInt(_appglobal.deviceinfo['height']) >> zoom;
+    var wd = _appglobal.screensize['width']
+    var ht = _appglobal.screensize['height']
+    var zoom = 1;
+
     $('#history_div').dialog({title:"case snapshots",
                               height: ht + 120,
                               width: 2*wd + 80,
@@ -236,13 +238,6 @@ function renderCaseSnaps(gid, sid, tid){
                         var $icg = new Image();
                         var title = '';
                         var rect = '';
-                        /*
-                        var imgdata = data.results.snaps[d]['data'];
-                        if(imgdata === "")
-                            $ig.src = 'static/img/notFound.png';
-                        else
-                            $ig.src = 'data:image/png;base64,' + imgdata;
-                        */
                         var imgurl = data.results.snaps[d]['url'];
                         if(imgurl === "")
                             $ig.src = 'static/img/notFound.png';
@@ -291,17 +286,18 @@ function renderCaseSnaps(gid, sid, tid){
                             $icgdiv = undefined;
                             $snapli.attr('class','item');                                     
                         }
-		           $snaptitle = $('<span>');
-		           $snaptitle.html('<h3>('+idx+'/'+total+')'+ title +'</h3>'); 
+
+               $snaptitle = $('<span>');
+               $snaptitle.html('<h3>('+idx+'/'+total+')'+ title +'</h3>'); 
                            //$snapli.append($snaptitle);
                            if($icgdiv !== undefined) $snapli.append($icgdiv); 
                            $snapli.append($igdiv);
                            $snaplist.append($snapli);
                            //$snapli.append($snaptitle);
-			}
-			    $('#history_div').carousel({"interval":100000});
-		      }
-		   );
+      }
+          $('#history_div').carousel({"interval":100000});
+          }
+       );
 }
 
 function createDetailTable(div, ids){
@@ -329,14 +325,13 @@ function showSnapDiv(gid, sid) {
     renderSnapshotDiv(gid,sid);
 }
 
-function showHistoryDiv(gid, sid, tid) { 
+function showHistoryDiv(gid, sid, tid) {
     $("#history_div").show();
     $("#snap_div").hide();
     renderCaseSnaps(gid, sid, tid);
 }
 
 function renderSnapshotDiv(gid, sid) {
-    var zoom = 1;
     if(ws !== undefined)  ws.close();
     ws = getWebsocket("/group/"+gid+"/test/"+sid+"/screen");
     if(ws === null) {
@@ -344,41 +339,36 @@ function renderSnapshotDiv(gid, sid) {
         return;
     }
 
-    var wd = parseInt(_appglobal.deviceinfo['width']) >> zoom;
-    var ht = parseInt(_appglobal.deviceinfo['height']) >> zoom;
+    var wd = _appglobal.screensize['width'];
+    var ht = _appglobal.screensize['height'];
     $('#snap_div').dialog({
-			      title:"Real-time Screen Snap",
-		              height: ht+120,
-			      width: wd+40,
-		              resizable:false,
-		              modal: true,
-                              close: function () {if(ws !== undefined)  ws.close()}
+                          title:"Real-time Snapshot",
+                          height: ht+120,
+                          width: wd+40,
+                          resizable:false,
+                          modal: true,
+                          close: function () { if(ws !== undefined)  ws.close() }
                          });
-    var c=document.getElementById("snapCanvas");
-    var cxt=c.getContext("2d");
 
+    var c = document.getElementById("snapCanvas");
+    var cxt = c.getContext("2d");
     ws.onopen = function() {
         ws.send('sync:ok');
     }
 
     ws.onmessage = function (evt) {
-	var data = evt.data;
-	if (data.slice(0, 9) == 'snapsize:' ) {
-            data = data.substr('snapsize:'.length);
-            data = JSON.parse(data);
-            c.setAttribute('width', wd + 'px');
-            c.setAttribute('height', ht + 'px');      
-        } else {
+        var data = evt.data;
+        if (data !== undefined) {
             doRenderImg(data);
-        } 
-        ws.send('sync:ok');
+            ws.send('sync:ok');
+        }
     }
 
     function doRenderImg(data) {
         var img = new Image();
         img.src = data;
         img.onload = function() {
-            cxt.drawImage(img,0,0,wd,ht);
+            cxt.drawImage(img, 0, 0, wd, ht);
         }
     }
 }
@@ -406,7 +396,6 @@ function fillDetailTable(gid, sid, data, ids, tag) {
           var cname = citem['casename'];
           var cresult = citem['result'];
           var ctraceinfo = citem['traceinfo'];
-          var clog = citem['log'];
           if(tag !== 'total' && tag !== cresult) continue;
           var trId = "tr_"+ctid;
           if(cresult === 'fail'){
@@ -418,8 +407,8 @@ function fillDetailTable(gid, sid, data, ids, tag) {
                                         "<td>"+
                                         "\""+ctraceinfo+"\""+
                                         "</td>"+
-                                        "<td><a href=\"" +storeBaseURL +"/log/" + clog + "\">log</a> </td>"+
-                                        "<td><a href=\"javascript:showHistoryDiv('"+gid+"','"+sid+"','"+ctid+"');\">snaps</a></td>"+
+                                        "<td><a href=\""+apiBaseURL+"/group/"+gid+"/test/"+sid+"/case/"+ctid+"/log\">log</a></td>"+
+                                        "<td><a href=\"javascript:showHistoryDiv('"+gid+"','"+sid+"','"+ctid+"');\">image</a></td>"+
                                         "</tr>";
 
          } else if (cresult === 'error') {
@@ -498,16 +487,25 @@ function showHistorySessionCases(gid,sid) {
                   },true);
 }
 
+function initScreenInfo(data) {
+    var deviceinfo = data.results.deviceinfo;
+    var wd = parseInt(deviceinfo['width']) >> 1;
+    var ht = parseInt(deviceinfo['height']) >> 1;
+    var c = document.getElementById("snapCanvas");
+    c.setAttribute('width', wd + 'px');
+    c.setAttribute('height', ht + 'px');
+    _appglobal.screensize = {'width':wd, 'height':ht}
+}
 
 function showSessionInfo(gid,sid) {
       invokeWebApi('/group/'+gid+'/test/'+sid+'/summary',
                    prepareData({}),
                    function(data){
-                        _appglobal.deviceinfo = data.results.deviceinfo;
-                        _appglobal.deviceinfo.deviceid = data.results.deviceid;
-                        $('#session-name').parent().attr('href','#/group/'+gid+'/session/'+sid);
-                        $('#session-name').html('session:'+data.results['id']);
-                        if(data['results']['endtime'] === undefined || data['results']['endtime'] === 'N/A') {
+                        $('#session-name').parent().attr('href','#/group/' + gid + '/session/' + sid);
+                        $('#session-name').html('session:' + data.results['id']);
+                        initScreenInfo(data);
+                        if(data['results']['endtime'] === undefined 
+                          || data['results']['endtime'] === 'N/A') {
                             $('#tabs_session').show();
                             viewLatest();
                             createSessionBaseInfo(data, gid, sid);
