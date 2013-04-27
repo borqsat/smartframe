@@ -8,12 +8,13 @@ def updateTestSession(gid, sid, endtime):
     store.updateTestSession(gid, sid, endtime)
     return {'results':1}
 
-def deleteTestSession(gid, sid):
+def deleteTestSession(uid, gid, sid):
+    from .group import isGroupAdmin
+    if not isGroupAdmin(uid, gid):
+        return {'errors':{'code':'00','msg':'Admin permission required!'}}
+
     store.deleteTestSession(gid, sid)
     return {'results':1}
-
-def deleteGroup(gid,uid):
-    return store.deleteGroup(gid,uid)
 
 def getTestSessionList(gid):
     rdata = store.readTestSessionList(gid)
@@ -49,7 +50,7 @@ def getSessionSummary(gid,sid):
     else:
         return {'results':result}
 
-def createCaseResult(gid, sid,tid,casename,starttime):
+def createCaseResult(gid, sid, tid, casename, starttime):
     store.createTestCaseResult(gid, sid, tid, casename, starttime)
     return {'results':1}
 
@@ -97,7 +98,4 @@ def getTestCaseSnap(fid):
 
 def getTestLiveSnaps(gid, sid, timestamp):
     imgBuffer = store.readTestLiveSnaps(gid, sid, timestamp)
-    if not imgBuffer is None:
-        return imgBuffer
-    else:
-        return []
+    return imgBuffer
