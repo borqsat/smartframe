@@ -159,20 +159,12 @@ class DataStore(object):
         '''
         group = self._db['groups'].find_one({'gid': gid})
         if group is None:
-            return {'error': {'code': 0,'msg':'Invalid group.'}}
-
-        gMembers = self._db['group_members']
-        item = gMembers.find_one({'gid': gid,'uid':uid})
-        if item is None:
-            return {'error': {'code': 0,'msg':'Permission denial.'}}
-        else:
-            if item['role'] > 2:
-                return {'error': {'code': 0,'msg':'Permission denial.'}}
+            return {'errors': {'code': 0,'msg':'Invalid group.'}}
 
         collections = ['groups', 'group_members', 'testsessions', 'testresults']
         for collec in collections:
             self._db[collec].remove({'gid': gid})
-        return {'results': 'OK'}
+        return {'results': 1}
 
     def addGroupMember(self, gid, uid, role):
         members = self._db['group_members']
@@ -358,10 +350,24 @@ class DataStore(object):
         """
         delete a test session from database
         """
-        caseresult = self._db['testresults']
-        caseresult.remove({'gid': gid, 'sid': sid})
         session = self._db['testsessions']
         session.remove({'gid': gid, 'sid': sid})
+        # TODO: delete session resources in stand-alone worker
+        # caseresult = self._db['testresults']
+        # caseresult.remove({'gid': gid, 'sid': sid})
+        # cases = caseresult.find({'gid': gid, 'sid': sid, 'result': 'fail'})
+        # for record in cases:
+        #     if 'snapshots' in record:
+        #         snapshots = record['snapshots']
+        #         for snap in snapshots: self.deletefile(snap['fid'])
+            
+        #     if 'checksnap' in record:
+        #         checksnap = record['checksnap']
+        #         self.deletefile(checksnap['fid'])
+
+        #     if 'checksnap' in record:
+        #         log = record['log']
+        #         self.deletefile(log)
 
     def readTestSessionList(self, gid):
         """
