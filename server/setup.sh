@@ -16,7 +16,7 @@ BOOTSTRAP='bootstrap.py'
 # create bootstrap.py
 python create-venv-script.py
 # create virtualenv
-python $BOOTSTRAP $VENV
+python $BOOTSTRAP $VENV --no-site-packages
 rm $BOOTSTRAP
 
 echo "Virtual environment set-up finished!"
