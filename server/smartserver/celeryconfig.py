@@ -1,8 +1,8 @@
-from smartserver import config
+from . import config
 from celery.schedules import crontab
 
 # Included Taskes
-CELERY_INCLUDE = ['smartworker.tasks']
+CELERY_INCLUDE = ['smartserver.tasks']
 # Task Broker
 BROKER_URL = config.REDIS_URI
 # Task Result backend
@@ -17,7 +17,7 @@ CELERY_TASK_RESULT_EXPIRES = 3600
 # Scheduled tasks
 CELERYBEAT_SCHEDULE = {
     'add-every-30-seconds': {
-        'task': 'smarkworker.tasks.add',
+        'task': 'smartserver.tasks.add',
         'schedule': crontab(minute="*/1"),
         'args': (100, 2)
     },

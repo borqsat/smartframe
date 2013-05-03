@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from smartworker.worker import worker as w
+from .worker import worker as w
 
 
 @w.task

@@ -4,7 +4,7 @@ from celery import Celery
 from . import celeryconfig
 
 
-worker = Celery('smartworker.celery')
+worker = Celery('smartserver.worker')
 
 # Optional configuration, see the application user guide.
 worker.config_from_object(celeryconfig)
