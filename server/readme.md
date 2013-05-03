@@ -69,20 +69,20 @@ It's simple for us to start multiple processes and serve on the same port.
 
     Run below command to start one node of worker:
 
-        $ REDIS_URI=redis://localhost:6379/0 celery worker --app=smartworker.worker:worker
+        $ REDIS_URI=redis://localhost:6379/0 celery worker --app=smartserver.worker:worker
 
     or if you want to use different cocurrent pool instead of default processes
 
-        $ REDIS_URI=redis://localhost:6379/0 celery worker --app=smartworker.worker:worker -P gevent -c 1000
+        $ REDIS_URI=redis://localhost:6379/0 celery worker --app=smartserver.worker:worker -P gevent -c 1000
 
 - Multi nodes of worker server
 
     Run below command to start 4 nodes of workers (in case the server has 4 CPUs):
 
-        $ REDIS_URI=redis://localhost:6379/0 celery multi start 4 --app=smartworker.worker:worker -P gevent -l info -c:1-4 1000
+        $ REDIS_URI=redis://localhost:6379/0 celery multi start 4 --app=smartserver.worker:worker -P gevent -l info -c:1-4 1000
 
 # Run periodic task server
 
 **Make sure only one node is running the periodic task.** Run below command to start the periodic task server:
 
-    $ REDIS_URI=redis://localhost:6379/0 celery beat --app=smartworker.worker:worker --pid=/tmp/periodic_task.pid --detach
+    $ REDIS_URI=redis://localhost:6379/0 celery beat --app=smartserver.worker:worker --pid=/tmp/periodic_task.pid --detach
