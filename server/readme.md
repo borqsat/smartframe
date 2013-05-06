@@ -35,7 +35,7 @@
 
     $ nosetests test
 
-# Run the server
+# Run the web server
   
 We defines below env variables:
 
@@ -55,10 +55,34 @@ Or we can define env in command line:
 
     $ MONGODB_URI=mongodb://localhost:27017 REDIS_URI=redis://localhost:6379 MEMCACHED_URI=localhost:11211 WEB_PORT=8080 python app.py
 
-# Run the server via gunicorn
+## Run the web server via gunicorn
 
 If we want to use gunicorn, we can also run below command:
 
-    $ MONGODB_URI=mongodb://localhost:27017 REDIS_URI=redis://localhost:6379 MEMCACHED_URI=localhost:11211 gunicorn -k "geventwebsocket.gunicorn.workers.GeventWebSocketWorker" --workers=2 --bind=localhost:8080 app:app
+    $ MONGODB_URI=mongodb://localhost:27017 REDIS_URI=redis://localhost:6379/0 MEMCACHED_URI=localhost:11211 gunicorn -k "geventwebsocket.gunicorn.workers.GeventWebSocketWorker" --workers=2 --bind=localhost:8080 app:app --daemon --pid /tmp/smart-web.pid
 
 It's simple for us to start multiple processes and serve on the same port.
+
+# Run the worker server
+
+- One node worker server
+
+    Run below command to start one node of worker:
+
+        $ REDIS_URI=redis://localhost:6379/0 celery worker --app=smartserver.worker:worker
+
+    or if you want to use different cocurrent pool instead of default processes
+
+        $ REDIS_URI=redis://localhost:6379/0 celery worker --app=smartserver.worker:worker -P gevent -c 1000
+
+- Multi nodes of worker server
+
+    Run below command to start 4 nodes of workers (in case the server has 4 CPUs):
+
+        $ REDIS_URI=redis://localhost:6379/0 celery multi start 4 --app=smartserver.worker:worker -P gevent -l info -c:1-4 1000
+
+# Run periodic task server
+
+**Make sure only one node is running the periodic task.** Run below command to start the periodic task server:
+
+    $ REDIS_URI=redis://localhost:6379/0 celery beat --app=smartserver.worker:worker --pid=/tmp/periodic_task.pid --detach
