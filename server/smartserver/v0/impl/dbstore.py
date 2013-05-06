@@ -54,6 +54,13 @@ class DataStore(object):
         ret = self._db.counter.find_and_modify(query={"_id": keyname}, update={"$inc": {"next": 1}}, new=True, upsert=True)
         return int(ret["next"])
 
+    def isfile(self, fileId):
+        '''
+        If the file exists.
+        '''
+        objId = ObjectId(fileId)
+        return self._fs.exists(objId)
+
     def getfile(self, fileId):
         '''
         Get file.
