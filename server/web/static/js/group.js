@@ -310,7 +310,7 @@ function createDetailTable(div, ids){
               '<th align="left" width="6%">Result</th>'+
               '<th align="left" width="40%">Traceinfo</th>'+
               '<th align="left" width="4%">Log</th>'+
-              '<th align="left" width="6%">Snaps</th>'+
+              '<th align="left" width="6%">Image</th>'+
               '</tr></thead>';
     var $tbody = '<tbody></tbody>';
     $tb.append($th);
@@ -396,6 +396,7 @@ function fillDetailTable(gid, sid, data, ids, tag) {
           var cname = citem['casename'];
           var cresult = citem['result'];
           var ctraceinfo = citem['traceinfo'];
+          var clog = citem['log']
           if(tag !== 'total' && tag !== cresult) continue;
           var trId = "tr_"+ctid;
           if(cresult === 'fail'){
@@ -407,7 +408,7 @@ function fillDetailTable(gid, sid, data, ids, tag) {
                                         "<td>"+
                                         "\""+ctraceinfo+"\""+
                                         "</td>"+
-                                        "<td><a href=\""+apiBaseURL+"/group/"+gid+"/test/"+sid+"/case/"+ctid+"/log\">log</a></td>"+
+                                        "<td><a href=\""+storeBaseURL+"/log/"+clog+"\">log</a></td>"+
                                         "<td><a href=\"javascript:showHistoryDiv('"+gid+"','"+sid+"','"+ctid+"');\">image</a></td>"+
                                         "</tr>";
 
