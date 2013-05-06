@@ -16,10 +16,28 @@ CELERY_TASK_RESULT_EXPIRES = 3600
 
 # Scheduled tasks
 CELERYBEAT_SCHEDULE = {
-    'add-every-30-seconds': {
-        'task': 'smarkworker.tasks.add',
-        'schedule': crontab(minute="*/1"),
-        'args': (100, 2)
+#    'add-every-1-mins': {
+#        'task': 'smarkworker.tasks.mul',
+#        'schedule': crontab(),
+#        'args': (100, 2)
+#    },
+#    'add-every-2-mins': {
+#        'task': 'smarkworker.tasks.add',
+#        'schedule': crontab(minute='*/2'),
+#        'args': (100, 2)
+#   },
+#    'add-every-3-mins': {
+#        'task': 'smarkworker.tasks.minus',
+#        'schedule': crontab(minute='*/3'),
+#        'args': (100, 2)
+#    },
+#    'clearDirtyFs': {
+#        'task': 'smartworker.tasks.clearDirtyFs',
+#        'schedule': crontab(minute='*/1')        
+#    },
+    'touch-file-1-min': {
+        'task': 'smartworker.tasks.touchfile',
+        'schedule': crontab(minute='*/1')        
     },
 }
 
