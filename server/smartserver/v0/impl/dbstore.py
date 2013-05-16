@@ -43,15 +43,16 @@ class DataStore(object):
     """
     Class DbStore provides the access to MongoDB DataBase
     """
-    def __init__(self, db, fs, mem, fsdb):
+    def __init__(self, mongo_client, mem):
         """
         do the database instance init works
         """
         print 'init db store class!!!'
-        self._db = db
-        self._fs = fs
+
+        self._db = mongo_client.smartServer
+        self._fsdb = mongo_client.smartFiles
+        self._fs = gridfs.GridFS(self._fsdb, collection="fs")
         self._mc = mem
-        self._fsdb = fsdb
 
     def counter(self, keyname):
         ret = self._db.counter.find_and_modify(query={"_id": keyname}, update={"$inc": {"next": 1}}, new=True, upsert=True)
@@ -66,7 +67,8 @@ class DataStore(object):
         r_collection = self._db['testresults']
 
         #get all the result of the sid
-        trs = r_collection.find({'sid':sid})
+        trs = r_collection.find(spec={'sid':sid}, 
+                                fields={'snapshots': True, 'checksnap': True, 'log': True, '_id': False})
 
         fids = set()
         for record in trs:
@@ -76,6 +78,8 @@ class DataStore(object):
             
             if 'checksnap' in record:
                 fids.add(record['checksnap']['fid'])
+
+            if 'log' in record:
                 fids.add(record['log'])
         
         #TODO: Improve the speeed of deletion
@@ -93,7 +97,8 @@ class DataStore(object):
         s_collection = self._db['testsessions']
         
         #get all sessions of gid
-        ss = s_collection.find({'gid':gid})
+        ss = s_collection.find(spec={'gid': gid}, 
+                                fields={'sid': True, '_id': False})
 
         #delete all data relative all sid
         for s in ss:
@@ -114,11 +119,11 @@ class DataStore(object):
         g_gset = set()
 
         #get all gids from test session
-        for s in s_collection.find():
+        for s in s_collection.find(fields={'gid': True, '_id': False}):
             g_sset.add(s['gid'])
 
         #get all gids from groups
-        for g in g_collection.find():
+        for g in g_collection.find(fields={'gid': True, '_id': False}):
             g_gset.add(g['gid'])
 
         #delete all sessions which gid is not in groups
@@ -136,11 +141,11 @@ class DataStore(object):
         s_rset = set()
 
         #get all sids from test session
-        for s in s_collection.find():
+        for s in s_collection.find(fields={'sid': True, '_id': False}):
             s_sset.add(s['sid'])
 
         #get all sids from test results
-        for r in r_collection.find():
+        for r in r_collection.find(fields={'sid': True, '_id': False}):
             s_rset.add(r['sid'])
 
         #delete all test results which sid is not in test session
@@ -158,10 +163,12 @@ class DataStore(object):
         fid_rset = set()
 
         #Only consider files, created 3 days ago, could be dirty files
-        for f in fs_collection.find({'uploadDate': {'$lt': datetime.now() - timedelta(3)}}):
+        for f in fs_collection.find(spec={'uploadDate': {'$lt': datetime.now() - timedelta(3)}}, 
+                                    fields={'_id': True}):
             fid_aset.add(str(f['_id']))
 
-        trs = r_collection.find({'$or': [{'result':'fail'}, {'result':'error'}]})
+        trs = r_collection.find(spec={'$or': [{'result':'fail'}, {'result':'error'}]},
+                                fields={'snapshots': True, 'checksnap': True, 'log': True})
         for record in trs:
             if 'snapshots' in record:
                 for snap in record['snapshots']: 
@@ -169,30 +176,12 @@ class DataStore(object):
             
             if 'checksnap' in record:
                 fid_rset.add(record['checksnap']['fid'])
+
+            if 'log' in record:
                 fid_rset.add(record['log'])
 
         for tmp_fid in fid_aset - fid_rset:
             self.deletefile(tmp_fid)
-
-        #tmp_set = fid_aset - fid_rset
-        #print 'All fids: %d'%len(fid_aset)
-        #print 'All fids in results: %d'%len(fid_rset)
-        #print 'Abundant fids: %d'%len(tmp_set)
-
-        #f = open('/tmp/fids_all.txt', 'a')
-        #for r in fid_aset:
-        #    f.write(r+'\n')
-        #f.close()
-
-        #f = open('/tmp/fids_result.txt', 'a')
-        #for r in fid_rset:
-        #    f.write(r+'\n')
-        #f.close()
-
-        #f = open('/tmp/fids_tmp.txt', 'a')
-        #for r in tmp_set:
-        #    f.write(r+'\n')
-        #f.close()
 
     def del_dirty(self):
         '''
@@ -208,7 +197,7 @@ class DataStore(object):
         flag_check = False
         flag_log = False
 
-        trs = r_collection.find()
+        trs = r_collection.find(fields={'checksnap': True, 'log': True, 'snapshots': True})
         for record in trs:
             if 'checksnap' in record:
                 if fid == record['checksnap']['fid']:
@@ -911,11 +900,8 @@ def __getStore():
     mongo_client = MONGODB_REPLICASET and MongoReplicaSetClient(
         mongo_uri, replicaSet=replicaset, read_preference=ReadPreference.PRIMARY) or MongoClient(mongo_uri)
 
-    mc = memcache.Client(MEMCACHED_URI.split(','))
+    mem = memcache.Client(MEMCACHED_URI.split(','))
 
-    return DataStore(mongo_client.smartServer,
-                     gridfs.GridFS(mongo_client.smartFiles, collection="fs"),
-                     mc,
-                     mongo_client.smartFiles)
+    return DataStore(mongo_client, mem)
 
 store = __getStore()

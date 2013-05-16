@@ -5,20 +5,6 @@ from .worker import worker as w
 from .v0.impl.dbstore import store
 
 @w.task
-def add(x, y):
-    return x + y
-
-
-@w.task
-def mul(x, y):
-    return x * y
-
-
-@w.task
-def xsum(numbers):
-    return sum(numbers)
-
-@w.task
 def ws_del_session(sid):
     '''
     Delete FS according to the sid by using worker task
@@ -41,4 +27,4 @@ def ws_del_dirty():
 
 @w.task
 def ws_check_fs(fid):
-	store.check_fs(fid)
+    store.check_fs(fid)
