@@ -8,6 +8,8 @@ import uuid
 import base64
 from bson.objectid import ObjectId
 from datetime import datetime
+from datetime import timedelta
+
 import pymongo
 from pymongo import MongoClient, MongoReplicaSetClient
 from pymongo import ReadPreference
@@ -41,7 +43,7 @@ class DataStore(object):
     """
     Class DbStore provides the access to MongoDB DataBase
     """
-    def __init__(self, db, fs, mem):
+    def __init__(self, db, fs, mem, fsdb):
         """
         do the database instance init works
         """
@@ -49,17 +51,184 @@ class DataStore(object):
         self._db = db
         self._fs = fs
         self._mc = mem
+        self._fsdb = fsdb
 
     def counter(self, keyname):
         ret = self._db.counter.find_and_modify(query={"_id": keyname}, update={"$inc": {"next": 1}}, new=True, upsert=True)
         return int(ret["next"])
 
-    def isfile(self, fileId):
+    def del_session(self, sid):
         '''
-        If the file exists.
+        Clear test results and the relative files including snapshots, 
+        checksnap and log files according to the sid.
+        By zsf
         '''
-        objId = ObjectId(fileId)
-        return self._fs.exists(objId)
+        r_collection = self._db['testresults']
+
+        #get all the result of the sid
+        trs = r_collection.find({'sid':sid})
+
+        fids = set()
+        for record in trs:
+            if 'snapshots' in record:
+                for snap in record['snapshots']: 
+                    fids.add(snap['fid'])
+            
+            if 'checksnap' in record:
+                fids.add(record['checksnap']['fid'])
+                fids.add(record['log'])
+        
+        #TODO: Improve the speeed of deletion
+        for f in fids:
+            self.deletefile(f)
+
+        #remove test result
+        r_collection.remove({'sid':sid})
+
+    def del_group(self, gid):
+        '''
+        Clear all test results and relative files belong to the gid
+        By zsf        
+        '''
+        s_collection = self._db['testsessions']
+        
+        #get all sessions of gid
+        ss = s_collection.find({'gid':gid})
+
+        #delete all data relative all sid
+        for s in ss:
+            self.del_session(s['sid'])
+
+        #remove all sessions
+        s_collection.remove({'gid':gid})
+
+    def _del_dirty_testsession(self):
+        '''
+        Delete all sessions which gid is not in groups collection
+        By zsf
+        '''
+        s_collection = self._db['testsessions']
+        g_collection = self._db['groups']
+
+        g_sset = set()
+        g_gset = set()
+
+        #get all gids from test session
+        for s in s_collection.find():
+            g_sset.add(s['gid'])
+
+        #get all gids from groups
+        for g in g_collection.find():
+            g_gset.add(g['gid'])
+
+        #delete all sessions which gid is not in groups
+        for t in g_sset - g_gset:
+            s_collection.remove({'gid':t})
+
+    def _del_dirty_testresult(self):
+        '''
+        Delete all test result which sid is not in test session collection
+        '''
+        r_collection = self._db['testresults']
+        s_collection = self._db['testsessions']
+
+        s_sset = set()
+        s_rset = set()
+
+        #get all sids from test session
+        for s in s_collection.find():
+            s_sset.add(s['sid'])
+
+        #get all sids from test results
+        for r in r_collection.find():
+            s_rset.add(r['sid'])
+
+        #delete all test results which sid is not in test session
+        for t in s_rset - s_sset:
+            r_collection.remove({'sid':t})
+
+    def _del_dirty_fs(self):
+        '''
+        Delete all fs which test results has been deleted.
+        '''
+        fs_collection = self._fsdb['fs.files']
+        r_collection = self._db['testresults']
+
+        fid_aset = set()
+        fid_rset = set()
+
+        #Only consider files, created 3 days ago, could be dirty files
+        for f in fs_collection.find({'uploadDate': {'$lt': datetime.now() - timedelta(3)}}):
+            fid_aset.add(str(f['_id']))
+
+        trs = r_collection.find({'$or': [{'result':'fail'}, {'result':'error'}]})
+        for record in trs:
+            if 'snapshots' in record:
+                for snap in record['snapshots']: 
+                    fid_rset.add(snap['fid'])
+            
+            if 'checksnap' in record:
+                fid_rset.add(record['checksnap']['fid'])
+                fid_rset.add(record['log'])
+
+        for tmp_fid in fid_aset - fid_rset:
+            self.deletefile(tmp_fid)
+
+        #tmp_set = fid_aset - fid_rset
+        #print 'All fids: %d'%len(fid_aset)
+        #print 'All fids in results: %d'%len(fid_rset)
+        #print 'Abundant fids: %d'%len(tmp_set)
+
+        #f = open('/tmp/fids_all.txt', 'a')
+        #for r in fid_aset:
+        #    f.write(r+'\n')
+        #f.close()
+
+        #f = open('/tmp/fids_result.txt', 'a')
+        #for r in fid_rset:
+        #    f.write(r+'\n')
+        #f.close()
+
+        #f = open('/tmp/fids_tmp.txt', 'a')
+        #for r in tmp_set:
+        #    f.write(r+'\n')
+        #f.close()
+
+    def del_dirty(self):
+        '''
+        '''
+        self._del_dirty_testsession()
+        self._del_dirty_testresult()
+        self._del_dirty_fs()
+
+    def check_fs(self, fid):
+        r_collection = self._db['testresults']
+        
+        flag_snap = False
+        flag_check = False
+        flag_log = False
+
+        trs = r_collection.find()
+        for record in trs:
+            if 'checksnap' in record:
+                if fid == record['checksnap']['fid']:
+                    flag_check = True
+            
+            if 'log' in record:
+                if fid == record['log']:
+                    flag_log = True
+            
+            if 'snapshots' in record:
+                for snap in record['snapshots']: 
+                    if fid == snap['fid']:
+                        flag_snap = True
+                        break
+
+        print 'Flag_log: ' + str(flag_log)
+        print 'Flag_snap: ' + str(flag_snap)
+        print 'Flag_check: ' + str(flag_check)
+
+        return [flag_log, flag_snap, flag_check]
 
     def getfile(self, fileId):
         '''
@@ -746,6 +915,7 @@ def __getStore():
 
     return DataStore(mongo_client.smartServer,
                      gridfs.GridFS(mongo_client.smartFiles, collection="fs"),
-                     mc)
+                     mc,
+                     mongo_client.smartFiles)
 
 store = __getStore()
