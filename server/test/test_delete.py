@@ -19,7 +19,9 @@ class TestDelete(unittest.TestCase):
 	def setUp(self):
 		self.orig_argv = sys.argv
 		sys.argv = self.orig_argv[0:1]
-		self._mc = MongoClient("mongodb://localhost:27017")
+		from smartserver.v0 import config
+		_config = reload(config)
+		self._mc = MongoClient(_config.MONGODB_URI)
 		self._db_server = self._mc.smartServer
 		self._db_fs = self._mc.smartFiles
 
@@ -42,10 +44,11 @@ class TestDelete(unittest.TestCase):
 		self._f_check = str(self._fs.put('check_data'))
 		self._f_snap = str(self._fs.put('snap_data'))
 		self._f_tmp = str(self._fs.put('tmp_data'))
-		self._c_fs.update({'_id': ObjectId(self._f_log)}, {'$set':{'uploadDate':datetime.now()-timedelta(3)}})
-		self._c_fs.update({'_id': ObjectId(self._f_check)}, {'$set':{'uploadDate':datetime.now()-timedelta(3)}})
-		self._c_fs.update({'_id': ObjectId(self._f_snap)}, {'$set':{'uploadDate':datetime.now()-timedelta(3)}})
-		self._c_fs.update({'_id': ObjectId(self._f_tmp)}, {'$set':{'uploadDate':datetime.now()-timedelta(3)}})
+		_delta = timedelta(3)
+		self._c_fs.update({'_id': ObjectId(self._f_log)}, {'$set':{'uploadDate':datetime.now()-_delta}})
+		self._c_fs.update({'_id': ObjectId(self._f_check)}, {'$set':{'uploadDate':datetime.now()-_delta}})
+		self._c_fs.update({'_id': ObjectId(self._f_snap)}, {'$set':{'uploadDate':datetime.now()-_delta}})
+		self._c_fs.update({'_id': ObjectId(self._f_tmp)}, {'$set':{'uploadDate':datetime.now()-_delta}})
 
 		#Insert 1 group
 		self._c_groups.insert({'gid': 'g001', 'groupname': 'groupname', 'info': 'info'})
@@ -76,10 +79,10 @@ class TestDelete(unittest.TestCase):
 
 
 	def tearDown(self):
-		#self._c_results.remove()
-		#self._c_sessions.remove()
-		#self._c_groups.remove()
-		#self._c_fs.remove()
+		self._c_results.remove()
+		self._c_sessions.remove()
+		self._c_groups.remove()
+		self._c_fs.remove()
 		sys.argv = self.orig_argv
 
 	def testDeleteGroup(self):
