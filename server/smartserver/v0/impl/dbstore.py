@@ -83,10 +83,15 @@ class DataStore(object):
                 fids.add(record['log'])
         
         #TODO: Improve the speeed of deletion
+        if 'N/A' in fids:
+            fids.remove('N/A')
+
+        print 'Begin to delete all the files relative the session: %s'%sid
         for f in fids:
             self.deletefile(f)
 
         #remove test result
+        print 'Begin to delete all the test results relative the session: %s'%sid
         r_collection.remove({'sid':sid})
 
     def del_group(self, gid):
@@ -101,6 +106,7 @@ class DataStore(object):
                                 fields={'sid': True, '_id': False})
 
         #delete all data relative all sid
+        print "Begin to delete all the session data relative the group: %s"%gid
         for s in ss:
             self.del_session(s['sid'])
 
@@ -127,6 +133,7 @@ class DataStore(object):
             g_gset.add(g['gid'])
 
         #delete all sessions which gid is not in groups
+        print 'Begin to clear dirty sessions.'
         for t in g_sset - g_gset:
             s_collection.remove({'gid':t})
 
@@ -149,6 +156,7 @@ class DataStore(object):
             s_rset.add(r['sid'])
 
         #delete all test results which sid is not in test session
+        print 'Begin to clear dirty test results. '
         for t in s_rset - s_sset:
             r_collection.remove({'sid':t})
 
@@ -180,7 +188,12 @@ class DataStore(object):
             if 'log' in record:
                 fid_rset.add(record['log'])
 
-        for tmp_fid in fid_aset - fid_rset:
+        tmp_set = fid_aset - fid_rset
+        if 'N/A' in tmp_set:
+            tmp_set.remove('N/A')
+
+        print 'Begin to clear dirty files. Total: %d' % len(tmp_set)
+        for tmp_fid in tmp_set:
             self.deletefile(tmp_fid)
 
     def del_dirty(self):
@@ -326,7 +339,8 @@ class DataStore(object):
         if group is None:
             return {'errors': {'code': 0,'msg':'Invalid group.'}}
 
-        collections = ['groups', 'group_members', 'testsessions', 'testresults']
+        #collections = ['groups', 'group_members', 'testsessions', 'testresults']
+        collections = ['groups', 'group_members']
         for collec in collections:
             self._db[collec].remove({'gid': gid})
         return {'results': 1}

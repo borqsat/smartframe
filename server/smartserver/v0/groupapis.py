@@ -10,6 +10,8 @@ from .impl.group import *
 from .sendmail import sendVerifyMail, sendInviteMail
 from .plugins import LoginPlugin, ContentTypePlugin
 
+from .. import tasks
+
 appweb = Bottle()
 
 contenttype_plugin = ContentTypePlugin()
@@ -305,7 +307,10 @@ def doDeleteGroup(uid, gid):
     @return: ok-{'results':'OK'}
              error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
-    return deleteGroup(uid, gid)
+    res = deleteGroup(uid, gid)
+    if 'errors' not in res:
+        tasks.ws_del_group.delay(gid)
+    return res
 
 
 @appweb.route('/group/<gid>/test/<sid>/create', method='POST', content_type='application/json')
@@ -448,7 +453,10 @@ def doDeleteGroupTestSession(uid, gid, sid):
             error-{'errors':{'code':value,'msg':(string)info}}
     """
     # TODO we should check if the uid has the permission to perform the operation
-    return deleteTestSession(uid, gid, sid)
+    res = deleteTestSession(uid, gid, sid)
+    if 'errors' not in res:
+        tasks.ws_del_session.delay(sid)
+    return res
 
 
 @appweb.route('/group/<gid>/test/<sid>/results', method='GET')
