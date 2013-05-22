@@ -11,7 +11,7 @@ def ws_del_session(sid):
     '''
     store.del_session(sid)
 
-@w.task
+@w.task 
 def ws_del_group(gid):
     '''
     Delete FS and results according to gid by using worker task
