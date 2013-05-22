@@ -16,10 +16,10 @@ CELERY_TASK_RESULT_EXPIRES = 3600
 
 # Scheduled tasks
 CELERYBEAT_SCHEDULE = {
-    'add-every-30-seconds': {
-        'task': 'smartserver.tasks.add',
-        'schedule': crontab(minute="*/1"),
-        'args': (100, 2)
+    'cleardirty-every-week': {
+        'task': 'smartserver.tasks.ws_del_dirty',
+        'schedule': crontab(minute=0, hour=0, day_of_week='saturday')
+        #'schedule': crontab(minute='*/1')
     },
 }
 
