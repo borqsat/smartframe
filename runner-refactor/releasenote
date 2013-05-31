@@ -1,0 +1,6 @@
+date:2013.05.21
+base version of smartrunner
+
+demo:
+python runtest.py  --plan android_sample/plan/plan --platform android  --product android_sample  --cycle 10
+
