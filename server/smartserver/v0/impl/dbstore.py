@@ -124,18 +124,21 @@ class DataStore(object):
         g_sset = set()
         g_gset = set()
 
+        print 'Begin to find the dirty sid...' + datetime.now().strftime(DATE_FORMAT_STR1)
+
         #get all gids from test session
-        for s in s_collection.find(fields={'gid': True, '_id': False}):
+        for s in s_collection.find(fields={'gid': True}):
             g_sset.add(s['gid'])
 
         #get all gids from groups
-        for g in g_collection.find(fields={'gid': True, '_id': False}):
+        for g in g_collection.find(fields={'gid': True}):
             g_gset.add(g['gid'])
 
         #delete all sessions which gid is not in groups
-        print 'Begin to clear dirty sessions.'
+        print 'Begin to clear dirty sessions...' + datetime.now().strftime(DATE_FORMAT_STR1)
         for t in g_sset - g_gset:
             s_collection.remove({'gid':t})
+        print 'Finish to clear dirty sessions...' + datetime.now().strftime(DATE_FORMAT_STR1)
 
     def _del_dirty_testresult(self):
         '''
@@ -147,18 +150,20 @@ class DataStore(object):
         s_sset = set()
         s_rset = set()
 
+        print 'Begin to find the dirty result...' + datetime.now().strftime(DATE_FORMAT_STR1)
         #get all sids from test session
-        for s in s_collection.find(fields={'sid': True, '_id': False}):
+        for s in s_collection.find(fields={'sid': True}):
             s_sset.add(s['sid'])
 
         #get all sids from test results
-        for r in r_collection.find(fields={'sid': True, '_id': False}):
+        for r in r_collection.find(fields={'sid': True}):
             s_rset.add(r['sid'])
 
         #delete all test results which sid is not in test session
-        print 'Begin to clear dirty test results. '
+        print 'Begin to clear dirty test results... ' + datetime.now().strftime(DATE_FORMAT_STR1)
         for t in s_rset - s_sset:
             r_collection.remove({'sid':t})
+        print 'Finish to clear dirty test results... ' + datetime.now().strftime(DATE_FORMAT_STR1)
 
     def _del_dirty_fs(self):
         '''
@@ -170,6 +175,7 @@ class DataStore(object):
         fid_aset = set()
         fid_rset = set()
 
+        print 'Begin to find dirty fs... ' + datetime.now().strftime(DATE_FORMAT_STR1)
         #Only consider files, created 3 days ago, could be dirty files
         for f in fs_collection.find(spec={'uploadDate': {'$lt': datetime.now() - timedelta(3)}}, 
                                     fields={'_id': True}):
@@ -178,11 +184,11 @@ class DataStore(object):
         trs = r_collection.find(spec={'$or': [{'result':'fail'}, {'result':'error'}]},
                                 fields={'snapshots': True, 'checksnap': True, 'log': True})
         for record in trs:
-            if 'snapshots' in record:
+            if 'snapshots' in record and record['snapshots'] is not None:
                 for snap in record['snapshots']: 
                     fid_rset.add(snap['fid'])
             
-            if 'checksnap' in record:
+            if 'checksnap' in record and record['checksnap'] is not None:
                 fid_rset.add(record['checksnap']['fid'])
 
             if 'log' in record:
@@ -191,10 +197,13 @@ class DataStore(object):
         tmp_set = fid_aset - fid_rset
         if 'N/A' in tmp_set:
             tmp_set.remove('N/A')
+            print 'NA is in dirty fs...'
 
         print 'Begin to clear dirty files. Total: %d' % len(tmp_set)
+        print datetime.now().strftime(DATE_FORMAT_STR1)
         for tmp_fid in tmp_set:
             self.deletefile(tmp_fid)
+        print 'Finish to clear dirty files...' + datetime.now().strftime(DATE_FORMAT_STR1)
 
     def del_dirty(self):
         '''
@@ -814,7 +823,10 @@ class DataStore(object):
             runtime = delta.days * 86400 + delta.seconds
 
         if status == 'pass':
-            for d in snapshots: self.deletefile(d['fid'])
+            if snapshots is not None:
+                for d in snapshots: 
+                    if 'fid' in d:
+                        self.deletefile(d['fid'])
             snapshots = []
             session.update({'gid': gid, 'sid': sid}, {'$inc': {'summary.pass': 1}, '$set': {'runtime': runtime}})
         elif status == 'fail':
@@ -900,10 +912,11 @@ class DataStore(object):
                 checkid = ret['checksnap']['fid']
                 checksnap = {'title':stitle, 'url':checkid}
 
-        for d in snapids:
-            stitle = d['title']
-            fid = d['fid']
-            snaps.append({'title': stitle, 'url': fid})
+        if not snapids is None:
+            for d in snapids:
+                stitle = d['title']
+                fid = d['fid']
+                snaps.append({'title': stitle, 'url': fid})
 
         return {'snaps': snaps, 'checksnap': checksnap}
 

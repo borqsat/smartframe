@@ -18,8 +18,7 @@ CELERY_TASK_RESULT_EXPIRES = 3600
 CELERYBEAT_SCHEDULE = {
     'cleardirty-every-week': {
         'task': 'smartserver.tasks.ws_del_dirty',
-        'schedule': crontab(minute=0, hour=0, day_of_week='saturday')
-        #'schedule': crontab(minute='*/1')
+        'schedule': crontab(minute=0, hour=0, day_of_month=1)
     },
 }
 
