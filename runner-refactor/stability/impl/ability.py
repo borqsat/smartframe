@@ -13,7 +13,7 @@ from os.path import join
 import recognization
 from expectresult import ExpectResult
 
-class Ability:
+class Ability(object):
     '''
     Class to provide the assertion.
     '''
@@ -35,9 +35,9 @@ class Ability:
         @rtype: unittest.TestCase
         @return: a instance of unittest.TestCase which have the ability to interact with device and verify the checkpoint
         '''
-        result = getattr(self, 'result')
+        result, device = getattr(self, 'result'), getattr(self,'device')
         src = os.path.join(result.localpath['ws_testcase'], name)
-        self.device.takeSnapshot(src)
+        device.takeSnapshot(src)
         expect_result = ExpectResult(result.localpath['ws_testcase_right'])
         sub = expect_result.getCurrentCheckPointPath(name)
         assert recognization.isRegionMatch(src,sub)

@@ -8,7 +8,7 @@ Module provides the function to maintain collecion of availiable devices. and th
 '''
 
 import time,sys,os,threading
-from android import Device
+#from android import Device
 
 class DeviceManager(object):
     '''DeviceManager maintains collecion of availiable devices'''
@@ -31,7 +31,6 @@ class DeviceManager(object):
             DeviceManager._mutex.release()
         else:
             pass
-
         if not context is None:
             DeviceManager._instance.setContext(context)
         return DeviceManager._instance
@@ -39,20 +38,19 @@ class DeviceManager(object):
     def setContext(self, context=None):
         '''set application context if exists'''
         self.platform = context
-        #import importlib
-        #android = __import__(self.platform)
-        #print android
-        #a = __import__('android')
-        #print '>>>>>>>>>>>>>>>>>>>>???????????'
-        #print self.platform
-        #self.m = __import__('.%s'%self.platform, fromlist=['Device'])
+        self.moudle = __import__('stability.impl.%s' % self.platform, fromlist=['Device'])
         
-    #@device
     def getDevice(self):
-        '''Get instance of device '''
-        #device = getattr(self.platform, 'Device')
-        self._device = Device()
-        self._device.getConnect()
+        '''
+        Get instance of target device.
+        rtype :the subclass of BaseDevice
+        rparam :the subclass instance  of BaseDevice
+        Exception: throw exception when device init failed or recover failed.
+        '''
+        device = getattr(self.moudle, 'Device')
+        self._device = device()
+        if not self._device.available():
+            self._device.recover()
         self._devices.append(self._device)
         return self._device
 
@@ -61,4 +59,52 @@ class DeviceManager(object):
         Get the device collection list.
         '''
         return self._devices
+
+class BaseDevice(object):
+    '''
+    Abstract class for respresenting device instance ability.
+    The subclass of BaseDevice should extends from this class. and implement available() 
+    recover() method. and provide the ability to interacte with device. E.g: touch , press.
+    takeSnapshot() 
+    '''
+
+    def __init__(self):
+        '''
+        Abstract class for device.
+        Exception: throw exception if device init failed.
+        '''
+        pass
+
+    def __call__(self,*argv,**kwags):
+        return self
+
+    def available(self):
+        '''
+        check the device status.
+        rtype boolean 
+        rparam return True if device avaiable. False if unavailable.
+        '''
+        pass
+
+    def recover(self):
+        '''
+        Recover the device when device unavailable.
+        rtype boolean 
+        rparam return True if device avaiable. False if unavailable.
+        Exception: Throw exception if recover failed.
+        '''
+        pass
+
+    def touch(self,*argv, **kwargs):
+        '''
+        Perform a touch event on the touch point or on the screen region.
+        The touch point specified by type to the screen location specified by x and y. or image or
+        a description of screen element.
+        If the screen region want to touch not found in the current screen snapshot should throw exception.
+        '''
+        pass
+
+    def takeSnapshot(self,*argv, **kwargs):
+        pass
+
 

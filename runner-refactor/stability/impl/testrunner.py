@@ -14,6 +14,41 @@ from testresult import TestResultImpl
 from ability import Ability
 from devicemanager import DeviceManager
 import unittest  
+import functools
+import inspect
+
+def mixIn(base,addition):
+    '''
+    Decorator of function. It mixed Ability to unittest.TestCase
+    '''
+    def deco(function):
+        def wrap(*args, **argkw):
+            assert not hasattr(base, '_mixed_')
+            mixed = []
+            for item, var in Ability.__dict__.items():
+                if not hasattr(base,item):
+                    setattr(base,item,var)
+                    mixed.append(item)
+            base._mixed_ = mixed
+            setattr(base,'result',getattr(args[0],'_result')) 
+            for name,method in inspect.getmembers(base,predicate=inspect.ismethod):
+                if name == 'setUp':
+                    setattr(base,name,_injects(base,method))
+            function(*args, **argkw)
+        return wrap
+    return deco
+
+def _injects(cls,method):
+    @functools.wraps(method)
+    def wrapped(self,*args,**kwargs):
+        try:
+            setattr(cls, 'device', DeviceManager.getInstance('android').getDevice())
+            method(self,*args,**kwargs)
+        except:
+            raise
+        finally:
+            pass
+    return wrapped or method
 
 class TestRunner(object):
     '''
@@ -26,7 +61,8 @@ class TestRunner(object):
         @param result: an instance of unittest.TestResult. Holder for test result information
         '''
         self._result = result
- 
+
+    @mixIn(unittest.TestCase, Ability)
     def run(self,tests):
         '''
         Wrap the unittest.TestCase class. inject ability to interact with device.
@@ -34,34 +70,7 @@ class TestRunner(object):
         @type list
         @param a list of test case methods
         '''
-        _mixIn(unittest.TestCase,Ability)
-        _inject(unittest.TestCase,'device', DeviceManager.getInstance().getDevice())
-        _inject(unittest.TestCase,'result', self._result)
-
         for cycle in range(int(self._result.options['cycle'])):
-            for test in tests: test(self._result)
-
-def _inject(cls,attrbuite_name,impl):
-    '''
-    Inject attribute to the target class
-    '''
-    setattr(cls,attrbuite_name,impl)
-
-def _mixIn(base,addition):
-    '''
-    mixed base class with addition class 
-    '''
-    assert not hasattr(base, '_mixed_')
-    mixed = []
-    for item, var in Ability.__dict__.items():
-        if not hasattr(base,item):
-            setattr(base,item,var)
-            mixed.append(item)
-    base._mixed_ = mixed  
-
-def __mixIn(py_class,mixin_class):
-    '''
-    mixed py_class with mixin_class
-    '''
-    if mixin_class not in py_class.__bases__:
-        py_class.__bases__ = (mixin_class,) + py_class.__bases__
+            for test in tests:
+                print type(test)
+                test(self._result)

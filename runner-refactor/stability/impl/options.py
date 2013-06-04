@@ -66,14 +66,14 @@ class Options(BaseOptions):
             self._showUsage()
             sys.exit(2)
         try:
-            opts, args = getopt.getopt(argv[1:], 'hc', ['help','cycle=','user=','password=','plan=','testcase=','upload','screenmonitor','random','product=','platform='])
+            opts, args = getopt.getopt(argv[1:], 'hc:', ['help','cycle=','user=','password=','plan=','testcase=','upload','screenmonitor','random','product=','platform='])
         except getopt.GetoptError, err:
             print 'parser cmdline error'
             self._showUsage()
             sys.exit(2)
         for opt, arg in opts:
             if opt in ('-h', '--help'):
-                self.showUsage()
+                self._showUsage()
                 sys.exit(2)
             elif opt in ('-c','--cycle'):
                 self['cycle'] = arg
@@ -162,7 +162,6 @@ def test1():
     print op['starttime']
     print op['user']
     print op['password']
-    print op['screenmonitor']
     print op['screenmonitor']
     print op['after_touch_time']
     print op['after_launch_time']

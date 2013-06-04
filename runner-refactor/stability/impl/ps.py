@@ -11,6 +11,8 @@ Module provides the ability to use pubsub.
 from serialize import serializer
 from testuploader import RequestUtils
 from libs.pubsub import pub
+from devicemanager import DeviceManager
+from log import logger
 
 def emit(topic, *args, **kwargs):
     '''
@@ -22,17 +24,21 @@ def on(topic, func):
     '''
     Function to subscribe topic and handler
     '''
-    pub.subscribe(topic, func)
+    pub.subscribe(func, topic)
+    logger.debug('subscribe topic:\'%s\' to method:\'%s\'' % (topic,func.__name__))
 
 
 class Topics(object):
     '''
     Class for representing all topics used in smart runner.
     '''
-    TOPIC_SESSION = 'sessionstatus'
+    TOPIC_DEVICE = 'device.error'
+    TOPIC_SESSION = 'session.status'
     TOPIC_RESULT = 'collectresult'
     TOPIC_SNAPSHOT = 'snapshot'
     TOPIC_MEMTRACK = 'memtrack'
+    #TOPIC_SESSION = 'sessionstatus'
+    #TOPIC_RESULT = 'collectresult'
 
 class Message(object):
     """
@@ -86,6 +92,19 @@ class TopicsHandler(object):
         if message.topic == Topics.SNAPSHOT:
             url = ''
             RequestUtils.send(method='POST',retry_count=3,url=url,data={'data':open(message.data)})
+        else:
+            raise Exception('handler exception')
+
+    @staticmethod
+    def onDeviceError(message):
+        '''
+        Handle the message from TOPIC_DEVICE chanel.
+        @type message: Message
+        @param message: an instance of Message representing a device error
+        '''
+        #global SNAPSHOT_QUEUE
+        if message.topic == Topics.TOPIC_DEVICE:
+            DeviceManager.getInstance().reset()
         else:
             raise Exception('handler exception')
 

@@ -8,35 +8,40 @@ Android device implemention.
 @see: null
 '''
 
-from device import BaseDevice
+from devicemanager import BaseDevice
 from commands import getoutput as call
+from log import logger
+import socket
 
 class Device(BaseDevice):
     def __init__(self):
         '''Andorid Device for Android platform'''
         super(Device,self).__init__()
-        self.impl = None
+        self._con = self.__getConnect()
 
-    def getSerialId(self):
-        '''Return the device serial number from environment export '''
-        pass
+    def __getConnect(self):
+        call('adb shell monkey --port 12345 > /dev/null')
+        call('adb forward tcp:12345 tcp:12345')
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(('127.0.0.1', 12345))
+        return s
 
-    def getConnect(self):
-        '''Connected to real Android Device'''
-        self.impl = None
+    def available(self):
+        return self._con and True or False
 
-    def resumeConnect(self):
-        '''Re-connected to real Android Device'''
-        self.impl = None
+    def recover(self):
+        call('adb kill-server')
+        call('adb start-server')
+        call('adb shell monkey --port 12345 > /dev/null')
+        call('adb forward tcp:12345 tcp:12345')
+        self._con = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._con.connect(('127.0.0.1', 12345))
 
-    def touch(self,x):
-        call('adb shell sh /data/local/tmp/phone.sh')
+    def touch(self,x,y):
+        cmd = '%s %s %s\n'%('tap',x,y)
+        self._con.send(cmd)
 
-    def press(self,key):
-        print ''
 
     def takeSnapshot(self,path):
         call('adb shell screencap /sdcard/sc.png')
-        call('adb pull /sdcard/sc.png ' + path)
-
-
+        call('adb pull /sdcard/sc.png %s' % path)

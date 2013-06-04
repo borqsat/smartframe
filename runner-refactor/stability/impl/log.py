@@ -90,4 +90,5 @@ class Logger:
         if msg is not None:
             self._logger.critical(msg)
 
+#global logger instance
 logger = Logger.getLogger()
