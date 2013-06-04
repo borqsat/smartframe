@@ -29,7 +29,6 @@ class TestBuilder(object):
         if self._option['testcase']:
             return self._getTestSuiteByName(self._option['testcase'])
         if self._option['plan']:
-            print 'read from plan file...'
             return self._getTestSuiteFromFile(self._option['plan'])
 
       
@@ -65,7 +64,6 @@ class TestBuilder(object):
         for (k,v) in tests:
             for i in range(int(v)):
                 names.append(k)
-        print names
         suite = loader.loadTestsFromNames(names) 
         return suite
 

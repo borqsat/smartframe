@@ -72,5 +72,4 @@ class TestRunner(object):
         '''
         for cycle in range(int(self._result.options['cycle'])):
             for test in tests:
-                print type(test)
                 test(self._result)

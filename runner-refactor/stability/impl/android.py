@@ -17,7 +17,10 @@ class Device(BaseDevice):
     def __init__(self):
         '''Andorid Device for Android platform'''
         super(Device,self).__init__()
-        self._con = self.__getConnect()
+        try:
+            self._con = self.__getConnect()
+        except:
+            raise 'Device init failed!'
 
     def __getConnect(self):
         call('adb shell monkey --port 12345 > /dev/null')
@@ -34,8 +37,11 @@ class Device(BaseDevice):
         call('adb start-server')
         call('adb shell monkey --port 12345 > /dev/null')
         call('adb forward tcp:12345 tcp:12345')
-        self._con = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._con.connect(('127.0.0.1', 12345))
+        try:
+            self._con = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._con.connect(('127.0.0.1', 12345))
+        except:
+            raise 'recover failed!'
 
     def touch(self,x,y):
         cmd = '%s %s %s\n'%('tap',x,y)

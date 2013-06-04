@@ -112,11 +112,11 @@ class TestResultImpl(TestResult):
         TestResult.stopTest(self, test)
         end_time = _time()
         if self._error:
-            sys.stderr.write('error\n')
+            sys.stderr.write(' error\n')
         elif self._failure:
-            sys.stderr.write('fail\n')
+            sys.stderr.write(' fail\n')
         else:
-            sys.stderr.write('pass\n')
+            sys.stderr.write(' pass\n')
             
 class TestInfo(object):
 
