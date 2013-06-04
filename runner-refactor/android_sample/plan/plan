@@ -1,0 +1,6 @@
+[tests]
+android_sample.cases.sample.SampleTest.testSMSSend = 5
+#android_sample.cases.sample.SampleTest.testSMSSend2 = 2
+#android_sample.cases.sample.SampleTest.testSMSSend3 = 3
+#android_sample.cases.sample.SampleTest.testSMSSend4 = 4
+#android_sample.cases.sample.SampleTest.testSMSSend5 = 2
