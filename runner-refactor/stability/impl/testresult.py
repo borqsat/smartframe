@@ -9,11 +9,12 @@ Module provides the function to output test result.
 '''
 
 import os,time,sys
-from os.path import join
+from os.path import join,abspath,dirname
 from ps import Topics
 from ps import Message
 from unittest import TestResult
 import constants
+WORK_SPACE = dirname(dirname(dirname(abspath(__file__))))
 
 def collect_result(func):
     '''
@@ -78,8 +79,11 @@ class TestResultImpl(TestResult):
         self._pass = None
         self._success_count = 0
         self._local_storage = {}
-        ws_report = join(self._options['workspace'],'report')
-        ws_result = join(ws_report,'%s-%s' % (self._options['product'], self._options['starttime']))
+        session_start_time = _time()
+        ws = dirname(dirname(dirname(abspath(__file__))))
+        ws_report = join(ws,'report')
+        ws_result = join(ws_report,'%s-%s' % (self._options['product'], session_start_time))
+        self._local_storage['ws'] = ws
         self._local_storage['ws_report'] = ws_report
         self._local_storage['ws_result'] = ws_result
         
@@ -92,7 +96,7 @@ class TestResultImpl(TestResult):
         
         self._local_storage['testcase_starttime'] = self._case_start_time
         self._local_storage['ws_testcase'] = join(self._local_storage['ws_result'], 'all', '%s-%s' % (self._case_name,self._case_start_time))
-        self._local_storage['ws_testcase_right'] = join(self._options['workspace'],self._options['product'],'cases','%s.%s'%(test.__module__.split('.')[2],self._case_name))
+        self._local_storage['ws_testcase_right'] = join(self._local_storage['ws'],self._options['product'],'cases','%s.%s'%(test.__module__.split('.')[2],self._case_name))
         sys.stderr.write('%s %s'%(self._case_start_time,str(test)))
 
     def addSuccess(self, test):
