@@ -19,7 +19,6 @@ class Device(BaseDevice):
         super(Device,self).__init__()
         try:
             self._con = self.__getConnect()
-            raise
         except:
             raise DeviceInitException('device instance init failed!')
 
@@ -52,3 +51,6 @@ class Device(BaseDevice):
     def takeSnapshot(self,path):
         call('adb shell screencap /sdcard/sc.png')
         call('adb pull /sdcard/sc.png %s' % path)
+
+    def grabLog(self,dest):
+        call('adb pull /local/log/logcat.log %s' % dest )

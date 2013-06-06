@@ -52,12 +52,14 @@ class DeviceManager(object):
             self._device = device()
             if not self._device.available():
                 self._device.recover()
+            self._devices.append(self._device)
+            return self._device
         except DeviceInitException,e1:
             print e1
+            return None
         except DeviceRecoverException,e2:
             print e2
-        self._devices.append(self._device)
-        return self._device
+            return None
 
     def getDevices(self):
         '''
@@ -70,7 +72,7 @@ class BaseDevice(object):
     Abstract class for respresenting device instance ability.
     The subclass of BaseDevice should extends from this class. and implement available() 
     recover() method. and provide the ability to interacte with device. E.g: touch , press.
-    takeSnapshot() 
+    takeSnapshot()
     '''
 
     def __init__(self):
@@ -109,7 +111,10 @@ class BaseDevice(object):
         '''
         pass
 
-    def takeSnapshot(self,*argv, **kwargs):
+    def takeSnapshot(self,save_path):
+        pass
+
+    def grabLog(self,dest):
         pass
 
 class DeviceRecoverException(Exception):

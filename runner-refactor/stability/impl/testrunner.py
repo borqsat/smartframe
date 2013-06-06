@@ -30,10 +30,12 @@ def mixIn(base,addition):
                     setattr(base,item,var)
                     mixed.append(item)
             base._mixed_ = mixed
-            setattr(base,'result',getattr(args[0],'_result')) 
-            for name,method in inspect.getmembers(base,predicate=inspect.ismethod):
-                if name == 'setUp':
-                    setattr(base,name,_injects(base,method))
+            setattr(base,'result',getattr(args[0],'_result'))
+            device = DeviceManager.getInstance('android').getDevice()
+            setattr(base, 'device', device)
+            #for name,method in inspect.getmembers(base,predicate=inspect.ismethod):
+            #    if name == 'setUp':
+            #        setattr(base,name,_injects(base,method))
             function(*args, **argkw)
         return wrap
     return deco
@@ -63,13 +65,19 @@ class TestRunner(object):
         self._result = result
 
     @mixIn(unittest.TestCase, Ability)
-    def run(self,tests):
+    def run(self,suites):
         '''
         Wrap the unittest.TestCase class. inject ability to interact with device.
         Run the test suite against the supplied test suites.
         @type list
         @param a list of test case methods
         '''
+        #print suites
         for cycle in range(int(self._result.options['cycle'])):
-            for test in tests:
-                test(self._result)
+            for test in suites:
+                if isinstance(test,unittest.TestSuite):
+                    for t in test:
+                        #print '%s%s%s' % (type(t).__name__,'.',t._testMethodName)
+                        t(self._result)
+                elif isinstance(test,unittest.TestCase):
+                    test(self._result)

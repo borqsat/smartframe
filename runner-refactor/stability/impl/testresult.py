@@ -12,6 +12,7 @@ import os,time,sys
 from os.path import join,abspath,dirname
 from ps import Topics
 from ps import Message
+from ps import on,emit
 from unittest import TestResult
 import constants
 WORK_SPACE = dirname(dirname(dirname(abspath(__file__))))
@@ -24,14 +25,14 @@ def collect_result(func):
         func(*args, **argkw)
         #content = (func.__name__,args)
         if func.__name__ == '__init__':
-            #ws_result = join(args[0].local_storage['ws_report'],'%s-%s'%(args[1]['product'],args[1]['starttime']))
-            #request_file_path = os.path.join(ws_result,'sessionstart.req')
-            #Message(topic=Topics.TOPIC_RESULT, tag='sessionstart' , data = {'starttime': args[1]['starttime']})()
+            #pub session start message  
             pass
         elif func.__name__ == 'addStart':
             #request_file_path = os.path.join(args[0].local_storage['ws_testcase'],'casestart.req')
             #dir_path = ''
-            #Message(topic= Topics.TOPIC_RESULT, tag='casestart', data = {'starttime': args[0]['testcase_starttime'],'casename':''})()
+            sessionstarttime = args[0].localpath['session_start_time']
+            #Message(topic= Topics.TOPIC_RESULT, data = {'sessionstarttime': args[0]['testcase_starttime'],'casename':''})()
+            ##pub case start message
             pass
         elif func.__name__ == 'addSuccess':
             #request_file_path = os.path.join(args[0].local_storage['ws_testcase'],'pass.req')
@@ -52,8 +53,33 @@ def collect_result(func):
             #request_file_path = os.path.join(args[0].local_storage['ws_testcase'],'error.req')
             #dir_path = ''
             #Message(topic=Topics.TOPIC_RESULT, tag='caseresult', data = {'casename':case_name,'result':'fail'})()
+            #catch useful log
+            #pub case result message
             pass
+        return func
+    return wrap
 
+
+def log(func):
+    '''
+    Decorator of function. Pub the message to catch device log.
+    '''
+    def wrap(*args, **argkw):
+        func(*args, **argkw)
+        if func.__name__ == 'addFailure':
+            log_dest = args[0].localpath['ws_testcase']
+            snapshots = args[0].localpath['ws_testcase_right']
+            device = getattr(args[1],'device')
+            device.grabLog(log_dest)
+            #emit(topic='log', data={'result':'fail','dest':log_dest,'snapshots':snapshots})
+            #Message(topic='log',data={'result':'fail','dest':log_dest,'snapshots':snapshots})()
+        elif func.__name__ == 'addError':
+            log_dest = args[0].localpath['ws_testcase']
+            snapshots = args[0].localpath['ws_testcase_right']
+            device = getattr(args[1],'device')
+            device.grabLog(log_dest)
+            #emit(topic='log', data={'result':'error','dest':log_dest,'snapshots':snapshots})
+            #Message(topic='log',data={'result':'error','dest':log_dest,'snapshots':snapshots})()
         return func
     return wrap
 
@@ -84,8 +110,13 @@ class TestResultImpl(TestResult):
         ws_report = join(ws,'report')
         ws_result = join(ws_report,'%s-%s' % (self._options['product'], session_start_time))
         self._local_storage['ws'] = ws
+        self._local_storage['session_start_time'] = ws
         self._local_storage['ws_report'] = ws_report
         self._local_storage['ws_result'] = ws_result
+        if not os.path.exists(ws_report):
+            os.makedirs(ws_report)
+        if not os.path.exists(ws_result):
+            os.makedirs(ws_result)
         
     @collect_result    
     def startTest(self, test):
@@ -93,9 +124,10 @@ class TestResultImpl(TestResult):
         self._error, self._failure = None, None
         self._case_name = _casename(test)
         self._case_start_time = _time()
-        
         self._local_storage['testcase_starttime'] = self._case_start_time
         self._local_storage['ws_testcase'] = join(self._local_storage['ws_result'], 'all', '%s-%s' % (self._case_name,self._case_start_time))
+        if not os.path.exists(self._local_storage['ws_testcase']):
+            os.makedirs(self._local_storage['ws_testcase'])
         self._local_storage['ws_testcase_right'] = join(self._local_storage['ws'],self._options['product'],'cases','%s.%s'%(test.__module__.split('.')[2],self._case_name))
         sys.stderr.write('%s %s'%(self._case_start_time,str(test)))
 
@@ -103,10 +135,13 @@ class TestResultImpl(TestResult):
         TestResult.addSuccess(self, test)
         self._success_count += 1
 
+    @log
     def addFailure(self, test, err):
         TestResult.addFailure(self, test, err)
         self._failure = err
-        
+        print test.id()
+
+    @log  
     def addError(self, test, err):
         TestResult.addError(self, test, err)
         self._error = err
@@ -121,7 +156,8 @@ class TestResultImpl(TestResult):
             sys.stderr.write(' fail\n')
         else:
             sys.stderr.write(' pass\n')
-            
+
+
 class TestInfo(object):
 
     '''

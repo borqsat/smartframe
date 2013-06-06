@@ -18,7 +18,7 @@ def emit(topic, *args, **kwargs):
     '''
     Function to send message to topic
     '''
-    pub.sendMessage(topic, *args, **kwargs)
+    pub.sendMessage(topic,*args, **kwargs)
 
 def on(topic, func):
     '''
@@ -32,13 +32,12 @@ class Topics(object):
     '''
     Class for representing all topics used in smart runner.
     '''
+    TOPIC_LOG = 'log'
     TOPIC_DEVICE = 'device.error'
     TOPIC_SESSION = 'session.status'
     TOPIC_RESULT = 'collectresult'
     TOPIC_SNAPSHOT = 'snapshot'
     TOPIC_MEMTRACK = 'memtrack'
-    #TOPIC_SESSION = 'sessionstatus'
-    #TOPIC_RESULT = 'collectresult'
 
 class Message(object):
     """
@@ -59,7 +58,7 @@ class Message(object):
         self.data  = data
 
     def __call__(self):
-        emit(self.topic,self)
+        emit(topic=self.topic, data=self.data)
 
     def __str__(self):
         return '[Topic: '+ self.topic +',  Data: '+ self.data +']'
@@ -104,9 +103,21 @@ class TopicsHandler(object):
         '''
         #global SNAPSHOT_QUEUE
         if message.topic == Topics.TOPIC_DEVICE:
-            DeviceManager.getInstance().reset()
+            #DeviceManager.getInstance().reset()
+            pass
         else:
             raise Exception('handler exception')
+
+    @staticmethod
+    def onLog(data):
+        '''
+        Handle the message from TOPIC_LOG chanel.
+        @type message: Message
+        @param message: an instance of Message representing a log request
+        '''
+        print data
+        #if message.topic == 'log':
+        #    print '1111111111111'
 
 
 
