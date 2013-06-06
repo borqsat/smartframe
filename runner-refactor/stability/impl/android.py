@@ -8,7 +8,7 @@ Android device implemention.
 @see: null
 '''
 
-from devicemanager import BaseDevice
+from devicemanager import BaseDevice,DeviceInitException,DeviceRecoverException
 from commands import getoutput as call
 from log import logger
 import socket
@@ -19,8 +19,9 @@ class Device(BaseDevice):
         super(Device,self).__init__()
         try:
             self._con = self.__getConnect()
+            raise
         except:
-            raise 'Device init failed!'
+            raise DeviceInitException('device instance init failed!')
 
     def __getConnect(self):
         call('adb shell monkey --port 12345 > /dev/null')
@@ -41,7 +42,7 @@ class Device(BaseDevice):
             self._con = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self._con.connect(('127.0.0.1', 12345))
         except:
-            raise 'recover failed!'
+            raise DeviceRecoverException('device recover failed!')
 
     def touch(self,x,y):
         cmd = '%s %s %s\n'%('tap',x,y)

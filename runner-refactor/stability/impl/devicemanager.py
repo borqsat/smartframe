@@ -38,19 +38,24 @@ class DeviceManager(object):
     def setContext(self, context=None):
         '''set application context if exists'''
         self.platform = context
-        self.moudle = __import__('stability.impl.%s' % self.platform, fromlist=['Device'])
         
     def getDevice(self):
         '''
         Get instance of target device.
         rtype :the subclass of BaseDevice
         rparam :the subclass instance  of BaseDevice
-        Exception: throw exception when device init failed or recover failed.
+        Exception: Throw exception when device init failed or recover failed.
         '''
-        device = getattr(self.moudle, 'Device')
-        self._device = device()
-        if not self._device.available():
-            self._device.recover()
+        moudle = __import__('stability.impl.%s' % self.platform, fromlist=['Device'])
+        device = getattr(moudle, 'Device')
+        try:
+            self._device = device()
+            if not self._device.available():
+                self._device.recover()
+        except DeviceInitException,e1:
+            print e1
+        except DeviceRecoverException,e2:
+            print e2
         self._devices.append(self._device)
         return self._device
 
@@ -71,7 +76,7 @@ class BaseDevice(object):
     def __init__(self):
         '''
         Abstract class for device.
-        Exception: throw exception if device init failed.
+        Exception: throw DeviceInitException if device init failed.
         '''
         pass
 
@@ -91,7 +96,7 @@ class BaseDevice(object):
         Recover the device when device unavailable.
         rtype boolean 
         rparam return True if device avaiable. False if unavailable.
-        Exception: Throw exception if recover failed.
+        Exception: Throw DeviceRecoverException if recover failed.
         '''
         pass
 
@@ -107,4 +112,24 @@ class BaseDevice(object):
     def takeSnapshot(self,*argv, **kwargs):
         pass
 
+class DeviceRecoverException(Exception):
+    '''
+    Raised when attempt to recover a device failed.
+    '''
+    def __init__(self, value):
+        Exception.__init__(self, value)
+        self.value = value
 
+    def __str__(self):
+        return repr(self.value)
+
+class DeviceInitException(Exception):
+    '''
+    Raised when attempt to init a device failed.
+    '''
+    def __init__(self, value):
+        Exception.__init__(self, value)
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
