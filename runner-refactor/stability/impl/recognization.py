@@ -13,8 +13,9 @@ from cv2 import cv
 import sys
 import os
 
-def isRegionMatch(src,sub,threshold=0.1):
-
+def isRegionMatch(src, sub, threshold=0.1):
+    assert os.path.exists(src), 'file:<%s> not found!' % src
+    assert os.path.exists(sub), 'file:<%s> not found!' % src
     for img in [src,sub]: assert os.path.exists(img) , "No such image:  %s" % (img)
     method = cv2.cv.CV_TM_SQDIFF_NORMED
     #Load the image
@@ -32,8 +33,10 @@ def isRegionMatch(src,sub,threshold=0.1):
         #Get the minimum squared difference
         minVal = cv2.minMaxLoc(d)[0]
         #Compared with the expected similarity
-        if minVal < threshold: return True
-        else: return False
+        if minVal < threshold:
+            return True
+        else: 
+            return False
             
     except Exception,e:
         print >> sys.stderr, str(e)

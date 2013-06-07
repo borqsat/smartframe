@@ -8,6 +8,7 @@ Module provides the function to maintain collecion of availiable devices. and th
 '''
 
 import time,sys,os,threading
+from ability import Ability
 #from android import Device
 
 class DeviceManager(object):
@@ -67,23 +68,13 @@ class DeviceManager(object):
         '''
         return self._devices
 
-class BaseDevice(object):
+class BaseDevice(Ability):
     '''
     Abstract class for respresenting device instance ability.
     The subclass of BaseDevice should extends from this class. and implement available() 
     recover() method. and provide the ability to interacte with device. E.g: touch , press.
     takeSnapshot()
     '''
-
-    def __init__(self):
-        '''
-        Abstract class for device.
-        Exception: throw DeviceInitException if device init failed.
-        '''
-        pass
-
-    def __call__(self,*argv,**kwags):
-        return self
 
     def available(self):
         '''
@@ -102,7 +93,7 @@ class BaseDevice(object):
         '''
         pass
 
-    def touch(self,*argv, **kwargs):
+    def touch(self, *args, **kwargs):
         '''
         Perform a touch event on the touch point or on the screen region.
         The touch point specified by type to the screen location specified by x and y. or image or
@@ -111,10 +102,19 @@ class BaseDevice(object):
         '''
         pass
 
-    def takeSnapshot(self,save_path):
+    def takeSnapshot(self, *argv, **kwargs):
+        '''
+        Take device screen shot method. Device should implement this method if want to support screen
+        shot feature.
+        '''
         pass
 
-    def grabLog(self,dest):
+    def catchLog(self, *argv, **kwargs):
+        '''
+        Catch device log method. Device should implement this method if want to support log capture
+        shot feature.
+
+        '''
         pass
 
 class DeviceRecoverException(Exception):

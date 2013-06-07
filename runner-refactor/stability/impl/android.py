@@ -46,11 +46,11 @@ class Device(BaseDevice):
     def touch(self,x,y):
         cmd = '%s %s %s\n'%('tap',x,y)
         self._con.send(cmd)
-
+        return self
 
     def takeSnapshot(self,path):
         call('adb shell screencap /sdcard/sc.png')
         call('adb pull /sdcard/sc.png %s' % path)
 
-    def grabLog(self,dest):
-        call('adb pull /local/log/logcat.log %s' % dest )
+    def catchLog(self,dest):
+        call('adb pull /data/logs/aplog %s' % dest)

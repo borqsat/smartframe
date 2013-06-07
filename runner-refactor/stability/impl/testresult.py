@@ -70,14 +70,14 @@ def log(func):
             log_dest = args[0].localpath['ws_testcase']
             snapshots = args[0].localpath['ws_testcase_right']
             device = getattr(args[1],'device')
-            device.grabLog(log_dest)
+            device.catchLog(log_dest)
             #emit(topic='log', data={'result':'fail','dest':log_dest,'snapshots':snapshots})
             #Message(topic='log',data={'result':'fail','dest':log_dest,'snapshots':snapshots})()
         elif func.__name__ == 'addError':
             log_dest = args[0].localpath['ws_testcase']
             snapshots = args[0].localpath['ws_testcase_right']
             device = getattr(args[1],'device')
-            device.grabLog(log_dest)
+            device.catchLog(log_dest)
             #emit(topic='log', data={'result':'error','dest':log_dest,'snapshots':snapshots})
             #Message(topic='log',data={'result':'error','dest':log_dest,'snapshots':snapshots})()
         return func

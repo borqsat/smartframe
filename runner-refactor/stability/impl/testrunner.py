@@ -12,30 +12,21 @@ _TestResult class extends from unittest.TestResult which holds test result infor
 
 from testresult import TestResultImpl
 from ability import Ability
-from devicemanager import DeviceManager
+from devicemanager import DeviceManager,BaseDevice
 import unittest  
 import functools
 import inspect
 
-def mixIn(base,addition):
+def mixIn(base):
     '''
     Decorator of function. It mixed Ability to unittest.TestCase
     '''
     def deco(function):
-        def wrap(*args, **argkw):
-            assert not hasattr(base, '_mixed_')
-            mixed = []
-            for item, var in Ability.__dict__.items():
-                if not hasattr(base,item):
-                    setattr(base,item,var)
-                    mixed.append(item)
-            base._mixed_ = mixed
-            setattr(base,'result',getattr(args[0],'_result'))
-            device = DeviceManager.getInstance('android').getDevice()
-            setattr(base, 'device', device)
-            #for name,method in inspect.getmembers(base,predicate=inspect.ismethod):
-            #    if name == 'setUp':
-            #        setattr(base,name,_injects(base,method))
+        def wrap(*args, **argkw):        
+            setattr(BaseDevice,'result',getattr(args[0],'_result'))
+            for name,method in inspect.getmembers(base,predicate=inspect.ismethod):
+                if name == 'setUp':
+                    setattr(base,name,_injects(base,method))
             function(*args, **argkw)
         return wrap
     return deco
@@ -64,7 +55,7 @@ class TestRunner(object):
         '''
         self._result = result
 
-    @mixIn(unittest.TestCase, Ability)
+    @mixIn(unittest.TestCase)
     def run(self,suites):
         '''
         Wrap the unittest.TestCase class. inject ability to interact with device.

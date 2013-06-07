@@ -35,9 +35,9 @@ class Ability(object):
         @rtype: unittest.TestCase
         @return: a instance of unittest.TestCase which have the ability to interact with device and verify the checkpoint
         '''
-        result, device = getattr(self, 'result'), getattr(self,'device')
+        result = getattr(self, 'result')
         src = os.path.join(result.localpath['ws_testcase'], name)
-        device.takeSnapshot(src)
+        self.takeSnapshot(path=src)
         expect_result = ExpectResult(result.localpath['ws_testcase_right'])
         sub = expect_result.getCurrentCheckPointPath(name)
         assert recognization.isRegionMatch(src,sub)
@@ -58,11 +58,31 @@ class Ability(object):
         @rtype: boolean
         @return: return ture if the expect check point exists in screen. false if not exists.
         '''
-        isExists = recognization.isRegionMatch(name,origin)
-        return isExists
+        result = getattr(self, 'result')
+        src = os.path.join(result.localpath['ws_testcase'], name)
+        self.takeSnapshot(path=src)
+        expect_result = ExpectResult(result.localpath['ws_testcase_right'])
+        sub = expect_result.getCurrentCheckPointPath(name)
+        is_exists = recognization.isRegionMatch(src,sub)
+        return is_exists
 
     def find(self,text):
         '''
         check text on screen.
         '''
         pass
+
+    def findlog(self,tag):
+        '''
+        Check if the tag can be found from device log.
+        '''
+        pass
+    
+    def touch_image(self,name):
+        result = getattr(self, 'result')
+        src = os.path.join(result.localpath['ws_testcase'], name)
+        self.takeSnapshot(path=src)
+        expect_result = ExpectResult(result.localpath['ws_testcase_right'])
+        sub = expect_result.getCurrentCheckPointPath(name)
+        point = recognization.getRegionCenterPoint(src,sub)
+        device.touch(x=point[0],y=point[1])
