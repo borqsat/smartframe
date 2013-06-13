@@ -1,6 +1,7 @@
-var apiBaseURL = "/smartapi";
-var storeBaseURL = "http://" +  window.location.hostname + ":" + window.location.port + apiBaseURL + "/fs";
-var SocketURL  = "ws://" +  window.location.hostname + ":" + window.location.port + apiBaseURL + "/ws";
+var apiBaseURL = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ":" + window.location.port : "")+"/smartapi";
+var storeBaseURL = apiBaseURL + "/fs";
+var socketURL = apiBaseURL.replace(window.location.protocol, "ws:") + "/ws";
+
 var _appglobal = function () {};
 
 var _ajaxstart=function() {
@@ -137,7 +138,7 @@ function setRunTime(secs) {
 
 function getWebsocket(subcmd){
     try {
-        var ws = new WebSocket(SocketURL+subcmd);
+        var ws = new WebSocket(socketURL+subcmd);
         return ws;
     } catch (ex) {
         return null;
