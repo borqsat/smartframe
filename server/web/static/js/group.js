@@ -332,13 +332,14 @@ function showHistoryDiv(gid, sid, tid) {
 }
 
 function renderSnapshotDiv(gid, sid) {
-    if(ws !== undefined)  ws.close();
+    if(ws !== undefined && ws !== null) {
+        ws.close(); 
+    }
     ws = getWebsocket("/group/"+gid+"/test/"+sid+"/screen");
     if(ws === null) {
-        alert('Your browser don\'t support Websocket connection!');
+        alert('Your browser doesn\'t support Websocket connection!');
         return;
     }
-
     var wd = _appglobal.screensize['width'];
     var ht = _appglobal.screensize['height'];
     $('#snap_div').dialog({
