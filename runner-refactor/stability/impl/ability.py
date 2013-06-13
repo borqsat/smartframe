@@ -67,12 +67,12 @@ class Ability(object):
         return is_exists
 
     def find(self,text):
-        '''
+        '''-
         check text on screen.
         '''
         pass
 
-    def findlog(self,tag):
+    def find_log(self,tag):
         '''
         Check if the tag can be found from device log.
         '''
@@ -85,4 +85,5 @@ class Ability(object):
         expect_result = ExpectResult(result.localpath['ws_testcase_right'])
         sub = expect_result.getCurrentCheckPointPath(name)
         point = recognization.getRegionCenterPoint(src,sub)
-        device.touch(x=point[0],y=point[1])
+        print point
+        self.touch(x=point[0],y=point[1])

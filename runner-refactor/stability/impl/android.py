@@ -22,21 +22,30 @@ class Device(BaseDevice):
         except:
             raise DeviceInitException('device instance init failed!')
 
+    #def __get__(self, obj, type=None):
+    #    print '-----get-----'
+    #    print obj
+    #    print self.__class__()
+    #    print self
+    #    return obj and self.__class__() or self   
+
     def __getConnect(self):
-        call('adb shell monkey --port 12345 > /dev/null')
+        #call('adb shell monkey --port 12345')
         call('adb forward tcp:12345 tcp:12345')
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect(('127.0.0.1', 12345))
         return s
 
     def available(self):
+        print 'avaiable:%s'% self._con and True or False
         return self._con and True or False
 
     def recover(self):
+        print 'recover'
         call('adb kill-server')
         call('adb start-server')
-        call('adb shell monkey --port 12345 > /dev/null')
-        call('adb forward tcp:12345 tcp:12345')
+        #call('adb shell monkey --port 12345 > /dev/null')
+        #call('adb forward tcp:12345 tcp:12345')
         try:
             self._con = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self._con.connect(('127.0.0.1', 12345))
@@ -46,6 +55,7 @@ class Device(BaseDevice):
     def touch(self,x,y):
         cmd = '%s %s %s\n'%('tap',x,y)
         self._con.send(cmd)
+        print self._con.recv(1024)
         return self
 
     def takeSnapshot(self,path):
@@ -54,3 +64,8 @@ class Device(BaseDevice):
 
     def catchLog(self,dest):
         call('adb pull /data/logs/aplog %s' % dest)
+
+    def destory(self):
+        print 'destory'
+        if self._con:
+            self._con.close()

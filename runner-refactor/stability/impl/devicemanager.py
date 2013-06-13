@@ -50,6 +50,7 @@ class DeviceManager(object):
         moudle = __import__('stability.impl.%s' % self.platform, fromlist=['Device'])
         device = getattr(moudle, 'Device')
         try:
+
             self._device = device()
             if not self._device.available():
                 self._device.recover()
@@ -76,6 +77,13 @@ class BaseDevice(Ability):
     takeSnapshot()
     '''
 
+    #def __get__(self, obj, type=None):
+    #    print '-----get-----'
+    #    print obi
+    #    print self.__class__()
+    #    print self
+    #    return obj and self.__class__() or self
+
     def available(self):
         '''
         check the device status.
@@ -93,12 +101,23 @@ class BaseDevice(Ability):
         '''
         pass
 
+    def destory(self, *args, **kwargs):
+        '''
+        release resource related to device instance.
+        '''
+        pass
+
+    def launch(self, *args, **kwargs):
+        '''
+        Start an application.
+        '''
+        pass
+
     def touch(self, *args, **kwargs):
         '''
         Perform a touch event on the touch point or on the screen region.
-        The touch point specified by type to the screen location specified by x and y. or image or
-        a description of screen element.
-        If the screen region want to touch not found in the current screen snapshot should throw exception.
+        The touch point specified by type to the screen location specified by x and y.
+        If the screen region want to be touched not found in the current screen snapshot should throw exception.
         '''
         pass
 

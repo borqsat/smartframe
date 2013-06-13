@@ -19,24 +19,38 @@ import inspect
 
 def mixIn(base):
     '''
-    Decorator of function. It mixed Ability to unittest.TestCase
+    Decorator of function. It mixed Ability to BaseDevice
     '''
     def deco(function):
         def wrap(*args, **argkw):        
             setattr(BaseDevice,'result',getattr(args[0],'_result'))
             for name,method in inspect.getmembers(base,predicate=inspect.ismethod):
                 if name == 'setUp':
-                    setattr(base,name,_injects(base,method))
+                    setattr(base,name,_inject_setup(base,method))
+                if name == 'tearDown':
+                    setattr(base,name,_inject_teardown(base,method))                    
             function(*args, **argkw)
         return wrap
     return deco
 
-def _injects(cls,method):
+def _inject_setup(cls,method):
     @functools.wraps(method)
     def wrapped(self,*args,**kwargs):
         try:
             setattr(cls, 'device', DeviceManager.getInstance('android').getDevice())
-            method(self,*args,**kwargs)
+            method(self, *args, **kwargs)
+        except:
+            raise
+        finally:
+            pass
+    return wrapped or method
+
+def _inject_teardown(cls,method):
+    @functools.wraps(method)
+    def wrapped(self,*args,**kwargs):
+        try:
+            getattr(getattr(cls, 'device'),'destory')()
+            method(self, *args, **kwargs)
         except:
             raise
         finally:
@@ -68,7 +82,6 @@ class TestRunner(object):
             for test in suites:
                 if isinstance(test,unittest.TestSuite):
                     for t in test:
-                        #print '%s%s%s' % (type(t).__name__,'.',t._testMethodName)
                         t(self._result)
                 elif isinstance(test,unittest.TestCase):
                     test(self._result)
