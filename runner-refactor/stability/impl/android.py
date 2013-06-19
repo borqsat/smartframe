@@ -37,7 +37,7 @@ class Device(BaseDevice):
         return s
 
     def available(self):
-        print 'avaiable:%s'% self._con and True or False
+        #print 'avaiable:%s'% self._con and True or False
         return self._con and True or False
 
     def recover(self):
@@ -55,12 +55,13 @@ class Device(BaseDevice):
     def touch(self,x,y):
         cmd = '%s %s %s\n'%('tap',x,y)
         self._con.send(cmd)
-        print self._con.recv(1024)
+        #print self._con.recv(1024)
         return self
 
     def takeSnapshot(self,path):
         call('adb shell screencap /sdcard/sc.png')
         call('adb pull /sdcard/sc.png %s' % path)
+        return True
 
     def catchLog(self,dest):
         call('adb pull /data/logs/aplog %s' % dest)

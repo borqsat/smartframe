@@ -7,35 +7,36 @@ Module provides the ability to serialize information
 @author: borqsat
 @see: null
 '''
+import cPickle as pickle
 
-class serializer(object):
+class Serializer(object):
     '''
     Class for serializing message.
     '''
-    def __init__(self,file_path=None):
-        pass
 
-    def serialize(self,file_path, data):
+    @staticmethod
+    def serialize(file_path, data):
         '''
         function to serialize info
-        @type path: string
-        @params path: abs path of the serial file path
+        @type file_path: string
+        @params file_path: abs path of the serial file path
         @type data: dictionary
         @params data: a dictionary contains the data content need to be sent
         @rtype: boolean
         @return: true if serialize sucess, false if fail
         '''
-        #_serializeWithPickle(data,path,protocol=True)
-        pass
+        with open(file_path, 'wrb') as f:
+            pickle.dump(data, f)
 
-    def unserialize(self):
+    @staticmethod
+    def unserialize(file_path):
         '''
         function to serialize info
-        @type data: Messasge
-        @params data: instance of Message
-        @rtype: 
-        @return: true if serialize sucess, false if fail
+        @type file_path: string
+        @params file_path: abs path of the serial file path
+        @rtype: {}
+        @return: the serial data
         '''
-        #pkl_file = None
-        #__serializeWithPickle(data,pkl_file,protocol=True)
-        pass
+        with open(file_path, 'wrb') as f:
+            data = pickle.load(f)
+        return data

@@ -11,11 +11,47 @@ Module provides the function to output test result.
 import os,time,sys
 from os.path import join,abspath,dirname
 from ps import Topics
-from ps import Message
-from ps import on,emit
+from ps import emit
 from unittest import TestResult
 import constants
+from serialize import Serializer
+import traceback
+
 WORK_SPACE = dirname(dirname(dirname(abspath(__file__))))
+
+def _clsname(cls):
+    return cls.__module__ + "." + cls.__name__
+
+def _casename(test):
+    return '%s%s%s' % (type(test).__name__,'.',test._testMethodName)
+
+def _time():
+    return time.strftime('%Y.%m.%d-%H.%M.%S', time.localtime(time.time()))
+
+def _is_relevant_tb_level(tb):
+    return '__unittest' in tb.tb_frame.f_globals
+
+
+def _count_relevant_tb_levels(tb):
+    length = 0
+    while tb and not _is_relevant_tb_level(tb):
+        length += 1
+        tb = tb.tb_next
+    return length
+
+def _trace_to_string(traceinfo):
+    '''Converts err,test into a string as trace log.'''
+    if not isinstance(traceinfo,tuple):
+        return traceinfo
+    exctype, value, tb = traceinfo[0]
+    # Skip test runner traceback levels
+    while tb and  _is_relevant_tb_level(tb):
+        tb = tb.tb_next
+    if exctype is traceinfo[1].failureException:
+        # Skip assert*() traceback levels
+        length =  _count_relevant_tb_levels(tb)
+        return ''.join(traceback.format_exception(exctype, value, tb, length))
+    return ''.join(traceback.format_exception(exctype, value, tb))
 
 def collect_result(func):
     '''
@@ -23,67 +59,39 @@ def collect_result(func):
     '''
     def wrap(*args, **argkw):
         func(*args, **argkw)
-        #content = (func.__name__,args)
-        if func.__name__ == '__init__':
-            #pub session start message  
-            pass
-        elif func.__name__ == 'addStart':
-            #request_file_path = os.path.join(args[0].local_storage['ws_testcase'],'casestart.req')
-            #dir_path = ''
-            sessionstarttime = args[0].localpath['session_start_time']
-            #Message(topic= Topics.TOPIC_RESULT, data = {'sessionstarttime': args[0]['testcase_starttime'],'casename':''})()
-            ##pub case start message
-            pass
+
+        if func.__name__ == 'addStart':
+            emit(Topics.UPLOAD, data={'directory':args[0].localpath['ws_result']})
+
         elif func.__name__ == 'addSuccess':
-            #request_file_path = os.path.join(args[0].local_storage['ws_testcase'],'pass.req')
-            #dir_path = ''
-            #Message(topic=Topics.TOPIC_RESULT, tag='caseresult', data = {'casename':case_name,'result':'pass'})()
-            pass
+            fpath = join(args[0].localpath['ws_testcase'],'result')
+            Serializer.serialize(file_path=fpath, data={'result':'pass'})
+
         elif func.__name__ == 'addFailure':
-            #request_file_path = os.path.join(args[0].local_storage['ws_testcase'],'failure.req')
-            #dir_path = ''
-            #Message(topic=Topics.TOPIC_RESULT, tag='caseresult' , data = {'casename':case_name,'result':'fail'})()
-            pass
+            log_dest = join(args[0].localpath['ws_testcase'],'log')
+            if not os.path.exists(log_dest):
+                os.makedirs(log_dest)
+            snapshots = args[0].localpath['ws_testcase_right']
+            device = getattr(args[1],'device',None)
+            if device: device.catchLog(log_dest)
+            fpath = join(args[0].localpath['ws_testcase'],'result')
+            traceinfo = _trace_to_string((args[2],args[1]))
+            Serializer.serialize(file_path=fpath, data={'result':'fail','trace':traceinfo})
+
         elif func.__name__ == 'addError':
-            #request_file_path = os.path.join(args[0].local_storage['ws_testcase'],'error.req')
-            #dir_path = ''
-            #Message(topic=Topics.TOPIC_RESULT, tag='caseresult', data = {'casename':case_name,'result':'fail'})()
-            pass
+            log_dest = join(args[0].localpath['ws_testcase'],'log')
+            if not os.path.exists(log_dest):
+                os.makedirs(log_dest)
+            snapshots = args[0].localpath['ws_testcase_right']
+            device = getattr(args[1],'device',None)
+            if device: device.catchLog(log_dest)
+            fpath = join(args[0].localpath['ws_testcase'],'result')
+            traceinfo = _trace_to_string((args[2],args[1]))
+            Serializer.serialize(file_path=fpath, data={'result':'error','trace':traceinfo})
+
         elif func.__name__ == 'stopTest':
-            #request_file_path = os.path.join(args[0].local_storage['ws_testcase'],'error.req')
-            #dir_path = ''
-            #Message(topic=Topics.TOPIC_RESULT, tag='caseresult', data = {'casename':case_name,'result':'fail'})()
-            #catch useful log
-            #pub case result message
-            pass
-        return func
-    return wrap
+            emit(Topics.UPLOAD, data={'directory':args[0].localpath['ws_result']})
 
-
-def log(func):
-    '''
-    Decorator of function. Pub the message to catch device log.
-    '''
-    def wrap(*args, **argkw):
-        func(*args, **argkw)
-        if func.__name__ == 'addFailure':
-            log_dest = args[0].localpath['ws_testcase']
-            snapshots = args[0].localpath['ws_testcase_right']
-            device = getattr(args[1],'device')
-            device.catchLog(log_dest)
-            #move rightsnaps and fail snaps to fail folder 
-            #TODO
-            #emit(topic='log', data={'result':'fail','dest':log_dest,'snapshots':snapshots})
-            #Message(topic='log',data={'result':'fail','dest':log_dest,'snapshots':snapshots})()
-        elif func.__name__ == 'addError':
-            log_dest = args[0].localpath['ws_testcase']
-            snapshots = args[0].localpath['ws_testcase_right']
-            device = getattr(args[1],'device')
-            device.catchLog(log_dest)
-            #move rightsnaps and fail snaps to fail folder 
-            #TODO 
-            #emit(topic='log', data={'result':'error','dest':log_dest,'snapshots':snapshots})
-            #Message(topic='log',data={'result':'error','dest':log_dest,'snapshots':snapshots})()
         return func
     return wrap
 
@@ -135,17 +143,18 @@ class TestResultImpl(TestResult):
         self._local_storage['ws_testcase_right'] = join(self._local_storage['ws'],self._options['product'],'cases','%s.%s'%(test.__module__.split('.')[2],self._case_name))
         sys.stderr.write('%s %s'%(self._case_start_time,str(test)))
 
+    @collect_result
     def addSuccess(self, test):
         TestResult.addSuccess(self, test)
         self._success_count += 1
 
-    @log
+    @collect_result
     def addFailure(self, test, err):
         TestResult.addFailure(self, test, err)
         self._failure = err
-        print test.id()
+        #print test.id()
 
-    @log  
+    @collect_result 
     def addError(self, test, err):
         TestResult.addError(self, test, err)
         self._error = err
@@ -192,12 +201,3 @@ class TestInfo(object):
         info = _TestInfo(test, time)
         info._error = error
         return info
-
-def _clsname(cls):
-    return cls.__module__ + "." + cls.__name__
-
-def _casename(test):
-    return '%s%s%s' % (type(test).__name__,'.',test._testMethodName)
-
-def _time():
-    return time.strftime('%Y.%m.%d-%H.%M.%S', time.localtime(time.time()))

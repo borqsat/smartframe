@@ -12,10 +12,9 @@ import cv2
 from cv2 import cv
 import sys
 import os
+from log import logger
 
 def isRegionMatch(src, sub, threshold=0.1):
-    assert os.path.exists(src), 'file:<%s> not found!' % src
-    assert os.path.exists(sub), 'file:<%s> not found!' % src
     for img in [src,sub]: assert os.path.exists(img) , "No such image:  %s" % (img)
     method = cv2.cv.CV_TM_SQDIFF_NORMED
     #Load the image
@@ -42,8 +41,7 @@ def isRegionMatch(src, sub, threshold=0.1):
         print >> sys.stderr, str(e)
         return False
     
-def getRegionCenterPoint(src,sub,threshold):
-    
+def getRegionCenterPoint(src,sub,threshold=0.1):
     for img in [src,sub]: assert os.path.exists(img) , "No such image:  %s" % (img)
     method = cv2.cv.CV_TM_SQDIFF_NORMED
     #Load the image

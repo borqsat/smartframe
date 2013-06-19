@@ -7,8 +7,7 @@ Module define the ability need to be inject to test case.
 @author: borqsat
 @see: null
 '''
-
-import os
+import os,time
 from os.path import join
 import recognization
 from expectresult import ExpectResult
@@ -17,7 +16,7 @@ class Ability(object):
     '''
     Class to provide the assertion.
     '''
-    def expect(self,name=None,interval=None,timeout=None,similarity=0.7,msg=None):
+    def expect(self,name=None,interval=3,timeout=9,similarity=0.7,msg=None):
         '''
         Allows to search for a expected image in an image file that you provide (e.g. a screenshot taken and saved in a file before)
         Check whether the expected image was found that satisfy the minimum similarity requirement. If found return self,
@@ -36,12 +35,16 @@ class Ability(object):
         @return: a instance of unittest.TestCase which have the ability to interact with device and verify the checkpoint
         '''
         result = getattr(self, 'result')
-        src = os.path.join(result.localpath['ws_testcase'], name)
-        self.takeSnapshot(path=src)
         expect_result = ExpectResult(result.localpath['ws_testcase_right'])
-        sub = expect_result.getCurrentCheckPointPath(name)
-        assert recognization.isRegionMatch(src,sub)
-        return self
+        sub_path = expect_result.getCurrentCheckPointPath(name)
+        src_path = join(result.localpath['ws_testcase'], name)
+        begin = time.time()
+        while (time.time() - begin < timeout):
+            self.takeSnapshot(path=src_path)
+            if recognization.isRegionMatch(src_path,sub_path):
+                return self
+            time.sleep(interval)
+        assert False, msg and 'Fail Reason: Image \'%s\' can not be found on screen!' % os.path.basename(sub_path) or msg 
 
     def exists(self,name=None,interval=None,timeout=None,similarity=0.7):
         '''
@@ -53,13 +56,13 @@ class Ability(object):
         @param interval: The interval time after one check. Default value is 2 seconds.
         @type timeout: int
         @param timeout: The time of waitting the screen snapshot.default value is 4 seconds. See "runner/stability/sysconfig"
-        @type similarity:float
+        @type similarity: float
         @param similarity: The minimum similarity a match should have. If omitted, the default is used
         @rtype: boolean
         @return: return ture if the expect check point exists in screen. false if not exists.
         '''
         result = getattr(self, 'result')
-        src = os.path.join(result.localpath['ws_testcase'], name)
+        src = join(result.localpath['ws_testcase'], name)
         self.takeSnapshot(path=src)
         expect_result = ExpectResult(result.localpath['ws_testcase_right'])
         sub = expect_result.getCurrentCheckPointPath(name)
@@ -80,10 +83,11 @@ class Ability(object):
     
     def touch_image(self,name):
         result = getattr(self, 'result')
-        src = os.path.join(result.localpath['ws_testcase'], name)
+        src = join(result.localpath['ws_testcase'], name)
         self.takeSnapshot(path=src)
         expect_result = ExpectResult(result.localpath['ws_testcase_right'])
         sub = expect_result.getCurrentCheckPointPath(name)
-        point = recognization.getRegionCenterPoint(src,sub)
+        point = recognization.getRegionCenterPoint(src=src,sub=sub)
         print point
         self.touch(x=point[0],y=point[1])
+        return self

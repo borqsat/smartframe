@@ -8,7 +8,6 @@ Module provides the ability to use pubsub.
 @see: null
 '''
 
-from serialize import serializer
 from testuploader import RequestUtils
 from libs.pubsub import pub
 from devicemanager import DeviceManager
@@ -32,92 +31,34 @@ class Topics(object):
     '''
     Class for representing all topics used in smart runner.
     '''
-    TOPIC_LOG = 'log'
-    TOPIC_DEVICE = 'device.error'
+    UPLOAD = 'upload'
     TOPIC_SESSION = 'session.status'
-    TOPIC_RESULT = 'collectresult'
     TOPIC_SNAPSHOT = 'snapshot'
     TOPIC_MEMTRACK = 'memtrack'
-
-class Message(object):
-    """
-    A simple container object for the components of a message: the 
-    topic and the user data. Each listener called by sendMessage(topic, data)
-    gets an instance of Message. The given 'data' is accessed
-    via Message.data, while the topic name is available in Message.topic::
-    
-        def listener(msg):
-            print "data is ", msg.data
-            print "topic name is ", msg.topic
-            print msg
-            
-    The example shows how a message can be converted to string.
-    """
-    def __init__(self, topic, data):
-        self.topic = topic
-        self.data  = data
-
-    def __call__(self):
-        emit(topic=self.topic, data=self.data)
-
-    def __str__(self):
-        return '[Topic: '+ self.topic +',  Data: '+ self.data +']'
 
 class TopicsHandler(object):
     '''
     Class for handle the topic resuqest.
     '''
     @staticmethod
-    def onTopicResult(message):
+    def onUpload(data):
         '''
-        Handle the message from TOPIC_RESULT chanel. Persist data to local file.
-        @type message: Message
-        @param message: an instance of Message representing a test result
-                        data {result: TCresult,name: TCname,time=TCtime}
+        Handle the message from upload chanel.
+        @type data: {}
+        @param data: a dictionary contains the result path
         '''
-        if message.topic == Topics.TOPIC_RESULT:
-            serializer.serialize(data=message.data)
-        else:
-            raise Exception('handler exception')
+        #TestUploader.upload()
+        pass
 
     @staticmethod
-    def onSnapshot(message):
+    def onSnapshot(data):
         '''
-        Handle the message from TOPIC_SNAPSHOT chanel.
-        @type message: Message
-        @param message: an instance of Message representing a snapshot
+        Handle the data from snapshot chanel.
+        @type data: binary
+        @param data: a binary file of snapshot
         '''
-        #global SNAPSHOT_QUEUE
-        if message.topic == Topics.SNAPSHOT:
-            url = ''
-            RequestUtils.send(method='POST',retry_count=3,url=url,data={'data':open(message.data)})
-        else:
-            raise Exception('handler exception')
+        pass
 
-    @staticmethod
-    def onDeviceError(message):
-        '''
-        Handle the message from TOPIC_DEVICE chanel.
-        @type message: Message
-        @param message: an instance of Message representing a device error
-        '''
-        #global SNAPSHOT_QUEUE
-        if message.topic == Topics.TOPIC_DEVICE:
-            #DeviceManager.getInstance().reset()
-            pass
-        else:
-            raise Exception('handler exception')
-
-    @staticmethod
-    def onLog(data):
-        '''
-        Handle the message from TOPIC_LOG chanel.
-        @type message: Message
-        @param message: an instance of Message representing a log request
-        '''
-        print data
-        #if message.topic == 'log':
-        #    print '1111111111111'
 
 
 
