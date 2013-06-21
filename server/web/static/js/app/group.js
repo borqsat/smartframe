@@ -151,7 +151,6 @@ function renderTestSessionDiv(div_id, test_session){
     $product_table.append($th);
     $product_table.append($tbody);
     $cycle_panel.append($product_table);
-
     test_session.sort(function(a,b){return b.id - a.id});
     for(var k = 0; k < test_session.length;k++){
             var value = test_session[k];
@@ -308,9 +307,9 @@ function createDetailTable(div, ids){
               '<th align="left" width="24%">TestCase</th>'+
               '<th align="left" width="15%">StartTime</th>'+
               '<th align="left" width="6%">Result</th>'+
-              '<th align="left" width="40%">Traceinfo</th>'+
               '<th align="left" width="4%">Log</th>'+
               '<th align="left" width="6%">Image</th>'+
+              '<th align="left" width="40%">Comments</th>'+
               '</tr></thead>';
     var $tbody = '<tbody></tbody>';
     $tb.append($th);
@@ -387,8 +386,8 @@ function sortTestCases(data) {
 }
 
 function fillDetailTable(gid, sid, data, ids, tag) {
-    var detail_table = $("#"+ids+" > tbody").html('');
     var tablerows = '';
+    var detail_table = $("#"+ids+" > tbody").html('');
     var len = data.length;
     for (var i = 0; i < data.length; i++){
           var citem = data[i];
@@ -396,8 +395,10 @@ function fillDetailTable(gid, sid, data, ids, tag) {
           var ctime = citem['starttime'];
           var cname = citem['casename'];
           var cresult = citem['result'];
-          var ctraceinfo = citem['traceinfo'];
-          var clog = citem['log']
+          //var ctraceinfo = citem['traceinfo'];
+          var ctraceinfo = "<button id=\"combtn_"+ctid+"\" onclick=\"showComment("+ctid+")\">Comments</button>"
+          var clog = citem['log'];
+          var comResult = citem['comResult'];
           if(tag !== 'total' && tag !== cresult) continue;
           var trId = "tr_"+ctid;
           if(cresult === 'fail'){
@@ -406,26 +407,22 @@ function fillDetailTable(gid, sid, data, ids, tag) {
                                         "<td>"+cname+"</td>"+              
                                         "<td>"+ctime+"</td>"+
                                         "<td><font color=\"red\">"+cresult+"<font></td>"+
-                                        "<td>"+
-                                        "\""+ctraceinfo+"\""+
-                                        "</td>"+
                                         "<td><a href=\""+storeBaseURL+"/log/"+clog+"\">log</a></td>"+
                                         "<td><a href=\"javascript:showHistoryDiv('"+gid+"','"+sid+"','"+ctid+"');\">image</a></td>"+
-                                        "</tr>";
-
+                                        "<td>"+ctraceinfo+"</td>" +                                  
+                                        "</tr>";                            
+              tablerows += fillCommentDiv(comResult,ctid);                         
          } else if (cresult === 'error') {
                 tablerows += "<tr id=\""+trId+"\">"+
                                      "<td>"+ctid+"</td>"+
                                      "<td>"+cname+"</td>"+
                                      "<td>"+ctime+"</td>"+
                                      "<td><font color=\"red\">"+cresult+"<font></td>"+
-                                     "<td>"+
-                                     "\""+ctraceinfo+"\""+
-                                     "</td>"+
                                      "<td></td>"+
                                      "<td></td>"+
+                                     "<td>"+ctraceinfo+"</td>"+                              
                                      "</tr>";
-
+                tablerows += fillCommentDiv(comResult,ctid);
          } else if (cresult === 'running' || cresult === 'pass'){
                  if (cresult == 'running'){
                     tablerows += "<tr id=\""+trId+"\">"+
@@ -448,10 +445,137 @@ function fillDetailTable(gid, sid, data, ids, tag) {
                                         "<td></td>"+
                                         "</tr>";
                  }    
-          } 
+          }
     }
     detail_table.append(tablerows);
 }
+
+function fillCommentDiv(comResult,ctid){
+    var val = {0:" ", 1:" ", 2:" ", 3:" ", 4:" ", 5:" ", 6:" ", 7:" ", 8:" ", 9:" ", 10:" "};
+    var commentDiv=    "<tr id=\"comDiv_"+ctid+"\" style=\"display:none\">"+
+                          "<td>"+
+                             "<p><strong>Issue Type: </strong></p>"+
+                             "<input id=\"PhoneHang\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"PhoneHang\" "+val[0]+">Phone hang</input>"+
+                             "<input id=\"UiFreeze\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"UiFreeze\" "+val[1]+">UI freeze</input>"+
+                             "<input id=\"SystemCrash\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"SystemCrash\" "+val[2]+">System crash</input>"+
+                             "<input id=\"ForceClose\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"ForceClose\" "+val[3]+">Force close</input>"+
+                             "<input id=\"ANR\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"ANR\" "+val[4]+">ANR</input>"+
+                             "<p></p>"+
+                             "<p><strong>Result: </strong>"+
+                             "<input id=\"Pass\" type=\"radio\" name=\"caseResult"+ctid+"\" value=\"Pass\" "+val[5]+">Pass</input>"+
+                             "<input id=\"Fail\" type=\"radio\" name=\"caseResult"+ctid+"\" value=\"Fail\" "+val[6]+">Fail</input>"+
+                             "<input id=\"Block\" type=\"radio\" name=\"caseResult"+ctid+"\" value=\"Block\" "+val[7]+">Block</input>"+ 
+                             "</p>"+
+                             "<p></p>"+                                  
+                             "<p><strong>End of this session:</strong>"+
+                             "<input id=\"EndYes\" type=\"radio\" name=\"endSession"+ctid+"\" value=\"Yes\" "+val[8]+">Yes</input>"+
+                             "<input id=\"EndNo\" type=\"radio\" name=\"endSession"+ctid+"\" value=\"No\" "+val[9]+">No</input>"+
+                             "</p>"+
+                          "</td>"+
+                          "<td>"+
+                             "<textarea id=\"commentInfo\" name=\"commentInfo"+ctid+"\" align=\"middle\" rows=\"5\" cols=\"100\" placeholder=\"Please comment here...\">"+val[10]+"</textarea>"+
+                          "</td>"+
+                        "</tr>";
+    if(comResult == undefined){
+      return commentDiv;
+    }
+    else{
+      if(comResult['issueType'] != undefined){
+        switch(comResult['issueType']){
+         case "PhoneHang": val[0]="checked"; break;
+         case "UiFreeze" : val[1]="checked"; break;
+         case "SystemCrash" : val[2]="checked"; break;
+         case "ForceClose" : val[3]="checked"; break;
+         case "ANR"      : val[4]="checked"; break;
+         default: break;
+        }
+      }
+      if(comResult['caseResult'] != undefined){
+        switch(comResult['caseResult']){
+         case "Pass" : val[5]="checked"; break;
+         case "Fail" : val[6]="checked"; break;
+         case "Block": val[7]="checked"; break;
+         default: break;
+        }
+      }
+      if(caseResult['endSession'] != undefined){
+        switch(comResult['endSession']){
+         case "Yes" : val[8]="checked"; break;
+         case "No"  : val[9]="checked"; break;
+         default: break;
+        }
+      }
+      val[10]=comResult['commentInfo'];
+      var commentDiv=    "<tr id=\"comDiv_"+ctid+"\" style=\"display:none\">"+
+                          "<td>"+
+                             "<p><strong>Issue Type: </strong></p>"+
+                             "<input id=\"PhoneHang\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"PhoneHang\" "+val[0]+">Phone hang</input>"+
+                             "<input id=\"UiFreeze\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"UiFreeze\" "+val[1]+">UI freeze</input>"+
+                             "<input id=\"SystemCrash\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"SystemCrash\" "+val[2]+">System crash</input>"+
+                             "<input id=\"ForceClose\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"ForceClose\" "+val[3]+">Force close</input>"+
+                             "<input id=\"ANR\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"ANR\" "+val[4]+">ANR</input>"+
+                             "<p></p>"+
+                             "<p><strong>Result: </strong>"+
+                             "<input id=\"Pass\" type=\"radio\" name=\"caseResult"+ctid+"\" value=\"Pass\" "+val[5]+">Pass</input>"+
+                             "<input id=\"Fail\" type=\"radio\" name=\"caseResult"+ctid+"\" value=\"Fail\" "+val[6]+">Fail</input>"+
+                             "<input id=\"Block\" type=\"radio\" name=\"caseResult"+ctid+"\" value=\"Block\" "+val[7]+">Block</input>"+ 
+                             "</p>"+
+                             "<p></p>"+                                  
+                             "<p><strong>End of this session:</strong>"+
+                             "<input id=\"EndYes\" type=\"radio\" name=\"endSession"+ctid+"\" value=\"Yes\" "+val[8]+">Yes</input>"+
+                             "<input id=\"EndNo\" type=\"radio\" name=\"endSession"+ctid+"\" value=\"No\" "+val[9]+">No</input>"+
+                             "</p>"+
+                          "</td>"+
+                          "<td>"+
+                             "<textarea id=\"commentInfo\" name=\"commentInfo"+ctid+"\" align=\"middle\" rows=\"5\" cols=\"100\" placeholder=\"Please comment here...\">"+val[10]+"</textarea>"+
+                          "</td>"+
+                        "</tr>";
+      return commentDiv;
+    }
+}
+
+function showComment(ctid){
+  var wd = _appglobal.screensize['width']
+  var ht = _appglobal.screensize['height']
+  abc = "<>"
+  $("tr#comDiv_"+ctid+"").append($abc)
+  $("tr#comDiv_"+ctid+"").dialog({title: "Comments of Case:"+ctid,
+                                height: ht-350,
+                                width: wd+300,
+                                resizable:false,
+                                modal: true,
+                                buttons:{
+                                   "Commit":function(){
+                                       var comResult = {};
+                                       comResult['ctid'] = ctid;                                       
+                                       $("tr#comDiv_"+ctid+" input[name='issueType"+ctid+"']").each(function(i,obj){if(obj.checked){comResult['issueType']=obj.value}});
+                                       $("tr#comDiv_"+ctid+" input[name='caseResult"+ctid+"']").each(function(i,obj){if(obj.checked){comResult['caseResult']=obj.value}});
+                                       $("tr#comDiv_"+ctid+" input[name='endSession"+ctid+"']").each(function(i,obj){if(obj.checked){comResult['endSession']=obj.value}});
+                                       comResult['commentInfo'] = $("tr#comDiv_"+ctid+" textarea[name='commentInfo"+ctid+"']").val();
+                                       alert("Issue Type is:" + comResult['issueType'] + "\nCase result is:" + comResult['caseResult'] + "\nEnd of session: " + comResult['endSession'] + "\nComments are: " + comResult['commentInfo']);
+                                       /* implement upload logic here.
+                                       invokeWebApiEx("URL to send comment result",
+                                                      comResult,
+                                                      afterCommit
+                                                      );
+                                        */                                        
+                                       $("#combtn_"+ctid+"").attr("style", "color:blue");
+                                       $(this).dialog("close");
+                                                  }
+                                        }
+  });
+}
+
+// function afterCommit(data){
+//   var ret = data['error'];
+//   if (ret != undefined){
+//     alert(ret['msg']);
+//   }
+//   else{
+//     alert("Commit successfully!");
+//     window.location = "group.html";
+//   }
+// }
 
 function pollSessionStatus(gid, sid) {
     invokeWebApi('/group/' + gid + '/test/' + sid + '/poll',
