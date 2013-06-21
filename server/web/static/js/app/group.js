@@ -537,8 +537,6 @@ function fillCommentDiv(comResult,ctid){
 function showComment(ctid){
   var wd = _appglobal.screensize['width']
   var ht = _appglobal.screensize['height']
-  abc = "<>"
-  $("tr#comDiv_"+ctid+"").append($abc)
   $("tr#comDiv_"+ctid+"").dialog({title: "Comments of Case:"+ctid,
                                 height: ht-350,
                                 width: wd+300,
