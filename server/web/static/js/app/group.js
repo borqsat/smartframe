@@ -452,34 +452,7 @@ function fillDetailTable(gid, sid, data, ids, tag) {
 
 function fillCommentDiv(comResult,ctid){
     var val = {0:" ", 1:" ", 2:" ", 3:" ", 4:" ", 5:" ", 6:" ", 7:" ", 8:" ", 9:" ", 10:" "};
-    var commentDiv=    "<tr id=\"comDiv_"+ctid+"\" style=\"display:none\">"+
-                          "<td>"+
-                             "<p><strong>Issue Type: </strong></p>"+
-                             "<input id=\"PhoneHang\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"PhoneHang\" "+val[0]+">Phone hang</input>"+
-                             "<input id=\"UiFreeze\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"UiFreeze\" "+val[1]+">UI freeze</input>"+
-                             "<input id=\"SystemCrash\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"SystemCrash\" "+val[2]+">System crash</input>"+
-                             "<input id=\"ForceClose\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"ForceClose\" "+val[3]+">Force close</input>"+
-                             "<input id=\"ANR\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"ANR\" "+val[4]+">ANR</input>"+
-                             "<p></p>"+
-                             "<p><strong>Result: </strong>"+
-                             "<input id=\"Pass\" type=\"radio\" name=\"caseResult"+ctid+"\" value=\"Pass\" "+val[5]+">Pass</input>"+
-                             "<input id=\"Fail\" type=\"radio\" name=\"caseResult"+ctid+"\" value=\"Fail\" "+val[6]+">Fail</input>"+
-                             "<input id=\"Block\" type=\"radio\" name=\"caseResult"+ctid+"\" value=\"Block\" "+val[7]+">Block</input>"+ 
-                             "</p>"+
-                             "<p></p>"+                                  
-                             "<p><strong>End of this session:</strong>"+
-                             "<input id=\"EndYes\" type=\"radio\" name=\"endSession"+ctid+"\" value=\"Yes\" "+val[8]+">Yes</input>"+
-                             "<input id=\"EndNo\" type=\"radio\" name=\"endSession"+ctid+"\" value=\"No\" "+val[9]+">No</input>"+
-                             "</p>"+
-                          "</td>"+
-                          "<td>"+
-                             "<textarea id=\"commentInfo\" name=\"commentInfo"+ctid+"\" align=\"middle\" rows=\"5\" cols=\"100\" placeholder=\"Please comment here...\">"+val[10]+"</textarea>"+
-                          "</td>"+
-                        "</tr>";
-    if(comResult == undefined){
-      return commentDiv;
-    }
-    else{
+    if (comResult != undefined){
       if(comResult['issueType'] != undefined){
         switch(comResult['issueType']){
          case "PhoneHang": val[0]="checked"; break;
@@ -505,8 +478,9 @@ function fillCommentDiv(comResult,ctid){
          default: break;
         }
       }
-      val[10]=comResult['commentInfo'];
-      var commentDiv=    "<tr id=\"comDiv_"+ctid+"\" style=\"display:none\">"+
+      val[10]=comResult['commentInfo'];      
+    }
+    var commentDiv=    "<tr id=\"comDiv_"+ctid+"\" style=\"display:none\">"+
                           "<td>"+
                              "<p><strong>Issue Type: </strong></p>"+
                              "<input id=\"PhoneHang\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"PhoneHang\" "+val[0]+">Phone hang</input>"+
@@ -530,8 +504,7 @@ function fillCommentDiv(comResult,ctid){
                              "<textarea id=\"commentInfo\" name=\"commentInfo"+ctid+"\" align=\"middle\" rows=\"5\" cols=\"100\" placeholder=\"Please comment here...\">"+val[10]+"</textarea>"+
                           "</td>"+
                         "</tr>";
-      return commentDiv;
-    }
+    return commentDiv;
 }
 
 function showComment(ctid){
