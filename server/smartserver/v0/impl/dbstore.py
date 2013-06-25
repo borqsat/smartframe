@@ -646,8 +646,13 @@ class DataStore(object):
                                                        'runtime': d['runtime'],
                                                        'deviceid': d['deviceid']})
 
-        tmpres = {'results':{} }
+        tmpres = {'results':result}
         return tmpres 
+
+    def readTestReport(self,cid,gid):
+        """
+        read list of test session records in database
+        """
 
     def readTestSessionInfo(self, gid, sid):
         """

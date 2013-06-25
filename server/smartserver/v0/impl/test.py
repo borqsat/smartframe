@@ -17,11 +17,19 @@ def deleteTestSession(uid, gid, sid):
     return {'results':1}
 
 def getTestSessionList(gid):
+
     rdata = store.readTestSessionList(gid)
     #if not rdata['results'] is None :
     if len(rdata['results'])>0 :
         #return {'results':rdata}
         return rdata
+    else:
+        return {'errors':{'code':404,'msg':'None result.'}}
+
+def getTestCycleReport(gid,cid):
+    rdata = store.readTestReport(gid,cid)
+    if not rdata is None :
+        return {'results':rdata}
     else:
         return {'errors':{'code':404,'msg':'None result.'}}
 

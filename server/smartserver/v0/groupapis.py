@@ -573,7 +573,12 @@ def doGetGroupTestSessions(gid):
     @return:ok-{'results':{'count':(int)count, 'sessions':[ {planname':(string)value,'starttime':(string)value, 'result':{'total':(int)value, 'pass':(int)value, 'fail':(int)value, 'error':(int)value}, 'runtime':(string)value},... ] }}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    return getTestSessionList(gid)
+    cid = request.params.get('cid')
+    if cid is None:
+        return getTestSessionList(gid)
+    else:
+        return getTestCycleReport(git, cid)
+
 
 if __name__ == '__main__':
     print 'WebServer Serving on 8080...'

@@ -85,20 +85,35 @@ function createNewCycle(gid, sid){
             );
 }
 
+function deleteCycleById(gid,sid) {
+    if(confirm('Confirm to delete this session?')) {
+        invokeWebApi('/group/'+gid+'/test/'+sid+'/delete',
+                    prepareData({}),
+                    function(data){
+                       showTestSummary(gid);
+                    });
+    }
+}
+
 function showCycleListDiv(gid, sid, cyclelist1) {
     var $cyclelist_table = $('<table>').attr('class','table table-bordered table-striped table-hover').attr('style','display:none');
     var cyclelist = new Array();
     cyclelist =  cyclelist1.split(',');
 
+    //alert('cyclelist.length   '+cyclelist[1])
     for (var i = 0; i < cyclelist.length; i++) {
         var cid = cyclelist[i];
+//<a href=\"#/group/"+value.gid+"/session/"+value.sid+"\">"+key+"</a>
         $tr = "<tr>"+
-                  "<td>"+cid+"</td><td><a href=\"\" >delete</a></td>"+ 
+                  "<td>"+cid+"</td><td><a href=\"deleteCycle()\" >delete</a></td>"+ 
               "</tr>";
         $cyclelist_table.append($tr);
     };
 
+    //var $tbottom = "<input value=\'new cycle\' type=\'button\' onClick=\"javascript:createNewCycle(\'"+gid+"\',\'"+sid+"\')\"/>";
+    //$cyclelist_table.append($tbottom);
     $("#"+sid).append($cyclelist_table);
+    
     $cyclelist_table.dialog({title:"Choose cycles",
                               height: 800,
                               width: 200,
@@ -190,7 +205,60 @@ function deleteSessionById(gid,sid) {
                     });
     }
 }
+/***
+function renderTestSessionDiv(div_id, test_session){
+    var $cycle_panel = $("#"+div_id).html('');
+    var $product_table = $('<table>').attr('class','table table-bordered table-striped table-hover');
+    var $th =     '<thead><tr>'+
+                      '<th width="5%">id</th>'+
+                      '<th width="10%">product</th>'+
+                      '<th width="5%">build</th>'+
+                      '<th width="10%">device</th>'+
+                      '<th width="7%">planname</th>'+
+                      '<th width="8%">tester</th>'+ 
+                      '<th width="15%">statrtime</th>'+
+                      '<th width="15%">runtime</th>'+
+                      '<th width="5%">all</th>'+
+                      '<th width="5%">pass</th>'+
+                      '<th width="5%">fail</th>'+
+                      '<th width="5%">error</th>'+
+                      '<th width="5%"></th>'+
+                      '</tr></thead>';
+    var $tbody = '<tbody></tbody>';
+    $product_table.append($th);
+    $product_table.append($tbody);
+    $cycle_panel.append($product_table);
 
+    test_session.sort(function(a,b){return b.id - a.id});
+    for(var k = 0; k < test_session.length;k++){
+            var value = test_session[k];
+            var key = value.id;
+            var allId = "all_"+key;
+            var failId = 'fail_'+key;
+            var passId = 'pass_'+key;
+            var errorId = 'error_'+key;
+            if($("#"+allId).length <= 0){
+                    $tr = "<tr>"+
+                      "<td><a href=\"#/group/"+value.gid+"/session/"+value.sid+"\">"+key+"</a></td>"+
+                      "<td>"+value.deviceinfo.product+"</td>"+      
+                      "<td>"+value.deviceinfo.revision+"</td>"+
+                      "<td>"+value.deviceid+"</td>"+
+                      "<td>"+value.planname+"</td>"+                    
+                      "<td>"+value.tester+"</td>"+
+                      "<td>"+value.starttime+"</td>"+
+                      "<td>"+setRunTime(value.runtime)+"</td>"+
+                      "<td>"+value.summary.total+"</td>"+
+                      "<td>"+value.summary.pass+"</td>"+
+                      "<td>"+value.summary.fail+"</td>"+
+                      "<td>"+value.summary.error+"</td>"+
+                      "<td><a href=\"javascript:deleteSessionById('"+value.gid+"','"+value.sid+"')\">[X]</a></td>"+
+                      "</tr>";
+               $product_table.append($tr);
+           }
+    }
+
+}
+**/
 function renderTestSessionDiv_devicelist(div_id, test_session){
     var $cycle_panel = $("#"+div_id).html('');
     var $product_table = $('<table>').attr('class','table table-bordered table-striped table-hover');
@@ -198,7 +266,7 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
                       '<th width="5%">Running&End</th>'+
                       '<th width="3%">SelectCycle</th>'+
                       '<th width="5%">Cid</th>'+
-                      //'<th width="2%">id</th>'+
+                      '<th width="2%">id</th>'+
                       '<th width="5%">product</th>'+
                       '<th width="10%">build</th>'+
                       '<th width="10%">device</th>'+
@@ -241,6 +309,7 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
                 "<td>"+status+"</td>"+
                       "<td><a id="+sid+" href=\"javascript:showCycleListDiv('"+value.gid+"','"+sid+"','"+_appglobal.cyclelist+"')\">AddCycle</a></td>"+
                       "<td>"+cid+"</td>"+ 
+                      "<td><a href=\"#/group/"+value.gid+"/session/"+value.sid+"\">"+key+"</a></td>"+
                       "<td>"+product+"</td>"+      
                       "<td>"+revision+"</td>"+
                       "<td>"+value.deviceid+"</td>"+                   
@@ -300,13 +369,58 @@ function renderTestSessionDiv_cyclelist(div_id, test_session){
             
         };
     };
+
+/***
+    test_session.sort(function(a,b){return b.id - a.id});
+    for(var k = 0; k < test_session.length;k++){
+            var value = test_session[k];
+            var key = value.id;
+            var allId = "all_"+key;
+            var failId = 'fail_'+key;
+            var passId = 'pass_'+key;
+            var errorId = 'error_'+key;
+            if($("#"+allId).length <= 0){
+                    $tr = "<tr>"+
+                      "<td>"+value.status+"</td>"+   
+                      "<td><a href=\"\">AddCycle</a></td>"+   
+                      "<td>"+value.cid+"</td>"+ 
+                      "<td><a href=\"#/group/"+value.gid+"/session/"+value.sid+"\">"+key+"</a></td>"+
+                      "<td>"+value.deviceinfo.product+"</td>"+      
+                      "<td>"+value.deviceinfo.revision+"</td>"+
+                      "<td>"+value.deviceid+"</td>"+
+                      //"<td>"+value.planname+"</td>"+                    
+                      "<td>"+value.tester+"</td>"+
+                      "<td>"+value.starttime+"</td>"+
+                      "<td>"+setRunTime(value.runtime)+"</td>"+
+                      //"<td>"+value.summary.total+"</td>"+
+                      //"<td>"+value.summary.pass+"</td>"+
+                      //"<td>"+value.summary.fail+"</td>"+
+                      //"<td>"+value.summary.error+"</td>"+
+                      "<td><a href=\"javascript:deleteSessionById('"+value.gid+"','"+value.sid+"')\">[X]</a></td>"+
+                      "</tr>";
+               $product_table.append($tr);
+           }
+    }
+**/
 }
 
 
 function renderTestSessionView(data) {
     var run_session_data = [];
     var stop_session_data = [];
-  
+
+    // data =  {results:[{'cid':'01', 'starttime':'20130607','endtime':'20130613','count':2,'livecount':'1','revision':'build_vb1','product':'Victorybay', 'sessions':
+    //                   [{'id':'1','sid':'1', 'gid':'1' , 'tester':'xj' ,'planname':'vb','starttime':'20130607','endtime':'20130610','runtime':'30','summary':'aaaa','deviceid':'01'},
+    //                    {'id':'2','sid':'2', 'gid':'2' , 'tester':'ch' ,'planname':'vb','starttime':'20130608','endtime':'','runtime':'33','summary':'bbbb','deviceid':'02'}
+    //                   ]},
+    //                   {'cid':'02', 'starttime':'20130609','endtime':'20130614','count':3 , 'livecount':'0' , 'revision':'build_rhb1','product':'RHB','sessions':
+    //                   [{'id':'3','sid':'3', 'gid':'3' , 'tester':'zy' ,'planname':'rhb','starttime':'20130609','endtime':'20130612','runtime':'30','summary':'aaaa','deviceid':'03'},
+    //                    {'id':'4','sid':'4', 'gid':'4' , 'tester':'lina' ,'planname':'rhb','starttime':'20130610','endtime':'20130613','runtime':'33','summary':'bbbb','deviceid':'04'},
+    //                    {'id':'5','sid':'5', 'gid':'5' , 'tester':'hur' ,'planname':'rhb','starttime':'20130611','endtime':'20130614','runtime':'33','summary':'bbbb','deviceid':'05'}
+    //                   ]
+    //                   }
+    //         ]}
+
      var sdata = data.results;
      if(sdata === undefined) 
          return;
@@ -496,6 +610,7 @@ function sortTestCases(data) {
     return datacases;
 }
 
+
 function fillDetailTable(gid, sid, data, ids, tag) {
     var tablerows = '';
     var detail_table = $("#"+ids+" > tbody").html('');
@@ -570,7 +685,7 @@ function fillCommentDiv(comResult,ctid){
       if(comResult['caseResult'] !== undefined){
           val[comResult['caseResult']] = "checked";
       }
-      if(caseResult['endSession'] !== undefined){
+      if(comResult['endSession'] !== undefined){
           val[comResult['endSession']] = "checked";
       }
       if(val['commentInfo'] !== undefined){
@@ -640,9 +755,10 @@ function afterCommit(data){
   }
   else{
     alert("Commit successfully!");
-    window.location = "group.html";
+    //window.location = "group.html";
   }
 }
+
 
 function pollSessionStatus(gid, sid) {
     invokeWebApi('/group/' + gid + '/test/' + sid + '/poll',
@@ -863,7 +979,7 @@ var AppRouter = Backbone.Router.extend({
         showTestSummary(gid);
     },
     showSessionView: function(gid,sid){
-        checkLogIn();
+        checkLogIn();   
         $('#group-div').hide();
         $('#session-div').show();
         $('#session-name').show();
