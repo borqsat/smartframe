@@ -71,8 +71,7 @@
                      </div>
                 </div>
             </div>
-            
-            <!--content section here-->
+
             <div id="board" class="clearfix">       
                 <div id="session-div">
                     <div width="100%">
@@ -101,16 +100,19 @@
                     </div>
                 </div>
 
+
                 <div id="group-div">
                     <ul class="nav nav-tabs">
-                       <li id="tabrun" class="active"><a href="javascript:viewRun();">Running</a></li>
-                       <li id="tabstop"><a href="javascript:viewStop();">Stopped</a>
-                       </li>
+                       <!--<li id="tabstop"><a href="javascript:viewStop();">Stopped</a></li>-->
+                       <li id="tabdeviceslist" class="active"><a href="javascript:viewAllDeviceList();">DeviceList</a></li>
+                       <li id="tabsummary"><a href="javascript:viewSummary();">CycleList</a></li>
                     </ul>
-                    <div id="run_cycle_panel"></div>
-                    <div id="stop_cycle_panel" style="display:none"></div>
+                    <!--<div id="run_cycle_panel"></div>-->
+                    <div id="devicelist_panel"></div>
+                    <div id="cyclelist_panel" style="display:none"></div>
                 </div>
-            </div>
+
+            </div> 
         </div> 
     </div>
 </div>

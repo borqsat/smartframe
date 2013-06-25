@@ -4,9 +4,9 @@ def createTestSession(gid, uid, sid, planname,starttime, deviceid, deviceinfo):
     store.createTestSession(gid, sid, uid, planname, starttime, deviceid, deviceinfo)
     return {'results':1}
 
-def updateTestSession(gid, sid, value):
-    store.updateTestSession(gid, sid, value)
-    return {'results':1}     
+def updateTestSession(gid, sid, endtime):
+    store.updateTestSession(gid, sid, endtime)
+    return {'results':1}
 
 def deleteTestSession(uid, gid, sid):
     from .group import isGroupAdmin
@@ -18,10 +18,8 @@ def deleteTestSession(uid, gid, sid):
 
 def getTestSessionList(gid):
     rdata = store.readTestSessionList(gid)
-    #if not rdata['results'] is None :
-    if len(rdata['results'])>0 :
-        #return {'results':rdata}
-        return rdata
+    if not rdata is None :
+        return {'results':rdata}
     else:
         return {'errors':{'code':404,'msg':'None result.'}}
 
@@ -63,8 +61,8 @@ def getTestCaseInfo(gid, sid, tid):
     else:
         return {'errors':{'code':404,'msg':'None reuslt.'}}
 
-def updateCaseResult(gid, sid, tid,results):
-    store.updateTestCaseResult(gid, sid, tid, results)
+def updateCaseResult(gid, sid, tid,status,traceinfo, endtime):
+    store.updateTestCaseResult(gid, sid, tid, status,traceinfo,endtime)
     return {'results':1}
 
 def uploadCaseResultFile(gid, sid, tid, rawdata, ftype='png', ctype=''):

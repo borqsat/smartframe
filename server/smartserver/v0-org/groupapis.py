@@ -378,7 +378,7 @@ def doUpdateCaseResult(gid, sid, tid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    return updateCaseResult(gid, sid, tid, request.json)
+    return updateCaseResult(gid, sid, tid, request.json['result'], request.json['traceinfo'], request.json['time'])
 
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/fileupload', method='PUT', content_type=['application/zip','image/png'], login=False)
@@ -431,7 +431,7 @@ def doUpdateGroupTestSession(gid, sid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    return updateTestSession(gid, sid,request.json)
+    return updateTestSession(gid, sid, request.json['endtime'])
 
 
 @appweb.route('/group/<gid>/test/<sid>/delete', method='GET')

@@ -76,6 +76,50 @@ function deletemembersById(id, uid,role){
     }
 }
 
+function createNewCycle(gid, sid){
+    invokeWebApiEx('/group/'+gid+'/test/'+sid+"/update",
+              prepareData({'cid':0}),
+              function(data) {
+                 //
+              }
+            );
+}
+
+function showCycleListDiv(gid, sid, cyclelist1) {
+    var $cyclelist_table = $('<table>').attr('class','table table-bordered table-striped table-hover').attr('style','display:none');
+    var cyclelist = new Array();
+    cyclelist =  cyclelist1.split(',');
+
+    for (var i = 0; i < cyclelist.length; i++) {
+        var cid = cyclelist[i];
+        $tr = "<tr>"+
+                  "<td>"+cid+"</td><td><a href=\"\" >delete</a></td>"+ 
+              "</tr>";
+        $cyclelist_table.append($tr);
+    };
+
+    $("#"+sid).append($cyclelist_table);
+    $cyclelist_table.dialog({title:"Choose cycles",
+                              height: 800,
+                              width: 200,
+                              resizable:false,
+                              buttons:{
+                                "new cycle":function() { 
+                                    invokeWebApiEx('/group/'+gid+'/test/'+sid+"/update",
+                                    prepareData({'cid':0}),
+                                    function(data) {
+                                         showTestSummary(gid);
+                                      }
+                                    );
+                                    $(this).dialog("close");
+                              },
+                                "use selected cycle":function(){}
+                              },
+                              modal: true
+                            });
+}
+
+
 function showTestSummary(id) {
     $('#session-div').tab();
     invokeWebApi('/group/'+id+'/testsummary',
@@ -85,20 +129,38 @@ function showTestSummary(id) {
                       _appglobal.t2 = setTimeout("showTestSummary(\""+id+"\")",60000);
                   }
                 );
+
+    $("#add-cycle")
+            .button()
+            .click(function() {
+                invokeWebApi('/account/list',
+                      prepareData({}),
+                      function (data){
+                        data = data.results;
+                        $('#dialog-user #name').html('');
+                        var users = data['users'];
+                        var userlist = [];
+                        $.each(users, function(i, o) {
+                            if(_appglobal.members.indexOf(o['username']) < 0)
+                                $('#dialog-user #name').append('<option value="'+o['uid']+'">' + o['username']+ '</option>')
+                        })                        
+                        $("#dialog-user").dialog("open");
+                      })
+            }); 
 }
 
-function viewRun(){
-    $('#tabrun').addClass('active');
-    $('#tabstop').removeClass('active');
-    $('#run_cycle_panel').show();
-    $('#stop_cycle_panel').hide();    
+function viewSummary(){
+    $('#tabsummary').addClass('active');
+    $('#tabdeviceslist').removeClass('active');
+    $('#cyclelist_panel').show();
+    $('#devicelist_panel').hide();    
 }
 
-function viewStop(){
-    $('#tabrun').removeClass('active');
-    $('#tabstop').addClass('active');
-    $('#run_cycle_panel').hide();
-    $('#stop_cycle_panel').show();    
+function viewAllDeviceList(){
+    $('#tabsummary').removeClass('active');
+    $('#tabdeviceslist').addClass('active');
+    $('#cyclelist_panel').hide();
+    $('#devicelist_panel').show();   
 }
 
 function viewLatest(){
@@ -129,79 +191,128 @@ function deleteSessionById(gid,sid) {
     }
 }
 
-function renderTestSessionDiv(div_id, test_session){
+function renderTestSessionDiv_devicelist(div_id, test_session){
     var $cycle_panel = $("#"+div_id).html('');
     var $product_table = $('<table>').attr('class','table table-bordered table-striped table-hover');
     var $th =     '<thead><tr>'+
-                      '<th width="5%">id</th>'+
-                      '<th width="10%">product</th>'+
-                      '<th width="5%">build</th>'+
+                      '<th width="5%">Running&End</th>'+
+                      '<th width="3%">SelectCycle</th>'+
+                      '<th width="5%">Cid</th>'+
+                      //'<th width="2%">id</th>'+
+                      '<th width="5%">product</th>'+
+                      '<th width="10%">build</th>'+
                       '<th width="10%">device</th>'+
-                      '<th width="7%">planname</th>'+
                       '<th width="8%">tester</th>'+ 
                       '<th width="15%">statrtime</th>'+
                       '<th width="15%">runtime</th>'+
-                      '<th width="5%">all</th>'+
-                      '<th width="5%">pass</th>'+
-                      '<th width="5%">fail</th>'+
-                      '<th width="5%">error</th>'+
                       '<th width="5%"></th>'+
                       '</tr></thead>';
     var $tbody = '<tbody></tbody>';
     $product_table.append($th);
     $product_table.append($tbody);
     $cycle_panel.append($product_table);
-    test_session.sort(function(a,b){return b.id - a.id});
+    
+    _appglobal.cyclelist = [];//new Array();
+    for(var s = 0; s < test_session.length;s++){
+        var cid = test_session[s].cid;
+        _appglobal.cyclelist.push(cid);
+    }
+    //test_session.sort(function(a,b){return b.cid - a.cid});
+    test_session.sort(function(a,b){return b.endtime - a.cid});
+
+
     for(var k = 0; k < test_session.length;k++){
-            var value = test_session[k];
-            var key = value.id;
-            var allId = "all_"+key;
-            var failId = 'fail_'+key;
-            var passId = 'pass_'+key;
-            var errorId = 'error_'+key;
-            if($("#"+allId).length <= 0){
-                    $tr = "<tr>"+
-                      "<td><a href=\"#/group/"+value.gid+"/session/"+value.sid+"\">"+key+"</a></td>"+
-                      "<td>"+value.deviceinfo.product+"</td>"+      
-                      "<td>"+value.deviceinfo.revision+"</td>"+
-                      "<td>"+value.deviceid+"</td>"+
-                      "<td>"+value.planname+"</td>"+                    
+        var cid = test_session[k].cid;
+        var count = test_session[k].count;
+        var starttime = test_session[k].starttime;
+        var product = test_session[k].product;
+        var revision = test_session[k].revision;
+
+        for (var i = 0 ; i < test_session[k].sessions.length; i++) {
+            var value = test_session[k].sessions[i];
+            var key = value.id ;
+            var sid = value.sid;
+            var endtime = value.endtime;
+            var status = 'running';
+
+            if (endtime !== '' && endtime !== 'N/A')
+                status = 'end';
+            $tr = "<tr>"+
+                "<td>"+status+"</td>"+
+                      "<td><a id="+sid+" href=\"javascript:showCycleListDiv('"+value.gid+"','"+sid+"','"+_appglobal.cyclelist+"')\">AddCycle</a></td>"+
+                      "<td>"+cid+"</td>"+ 
+                      "<td>"+product+"</td>"+      
+                      "<td>"+revision+"</td>"+
+                      "<td>"+value.deviceid+"</td>"+                   
                       "<td>"+value.tester+"</td>"+
                       "<td>"+value.starttime+"</td>"+
                       "<td>"+setRunTime(value.runtime)+"</td>"+
-                      "<td>"+value.summary.total+"</td>"+
-                      "<td>"+value.summary.pass+"</td>"+
-                      "<td>"+value.summary.fail+"</td>"+
-                      "<td>"+value.summary.error+"</td>"+
                       "<td><a href=\"javascript:deleteSessionById('"+value.gid+"','"+value.sid+"')\">[X]</a></td>"+
                       "</tr>";
                $product_table.append($tr);
-           }
-    }
-
+        };
+    };
 }
+
+function renderTestSessionDiv_cyclelist(div_id, test_session){
+    var $cycle_panel = $("#"+div_id).html('');
+    var $product_table = $('<table>').attr('class','table table-bordered table-striped table-hover');
+    var $th =     '<thead><tr>'+
+                      '<th width="5%">Product</th>'+
+                      '<th width="7%">Test Cycle</th>'+
+                      '<th width="10%">Build/Image ID</th>'+
+                      '<th width="10%">Device count</th>'+
+                      '<th width="10%">Strat running date/time</th>'+
+                      '<th width="10%">End running date/time</th>'+
+                      '<th width="10%">Living Device count</th>'+
+                      '<th width="10%">Report Link</th>'+ 
+                      '<th width="10%">Failure Link</th>'+
+                      '</tr></thead>';
+    var $tbody = '<tbody></tbody>';
+    $product_table.append($th);
+    $product_table.append($tbody);
+    $cycle_panel.append($product_table);
+
+    test_session.sort(function(a,b){return a.cid - b.cid});
+    for(var k = 0; k < test_session.length;k++){
+        var cid = test_session[k].cid;
+        var count = test_session[k].count;
+        var livecount = test_session[k].livecount;
+        var starttime = test_session[k].starttime;
+        var endtime = test_session[k].endtime;
+        var product = test_session[k].product;
+        var revision = test_session[k].revision;
+        $tr = "<tr>"+
+            "<td>"+product+"</td>"+ 
+            "<td>"+cid+"</td>"+      
+            "<td>"+revision+"</td>"+
+            "<td>"+count+"</td>"+                   
+            "<td>"+starttime+"</td>"+
+            "<td>"+endtime+"</td>"+
+            "<td>"+livecount+"</td>"+
+            "<td><a href=\"\">Report</a></td>"+
+            "<td><a href=\"\">Failure detail</a></td>"
+            "</tr>";
+        $product_table.append($tr);
+        for (var i = 0 ; i < test_session[k].sessions.length; i++) {
+            var value = test_session[k].sessions[i];
+           
+            
+        };
+    };
+}
+
 
 function renderTestSessionView(data) {
     var run_session_data = [];
     var stop_session_data = [];
-    var sdata = data.results;
-    if(sdata === undefined) 
-        return;
-    else
-        sdata = sdata.sessions;
-    if(sdata === undefined) return;
-
-    for(var k = 0; k < sdata.length; k = k+1){
-         var item = sdata[k];
-         var endtime = item.endtime;
-         if (endtime !== '' && endtime !== 'N/A')
-             stop_session_data.push(item);
-         else 
-             run_session_data.push(item);
-    }
-
-    renderTestSessionDiv('run_cycle_panel', run_session_data);
-    renderTestSessionDiv('stop_cycle_panel', stop_session_data);
+  
+     var sdata = data.results;
+     if(sdata === undefined) 
+         return;
+    
+    renderTestSessionDiv_cyclelist('cyclelist_panel', data.results);
+    renderTestSessionDiv_devicelist('devicelist_panel', data.results);
 }
 
 function renderCaseSnaps(gid, sid, tid){
@@ -396,9 +507,9 @@ function fillDetailTable(gid, sid, data, ids, tag) {
           var cname = citem['casename'];
           var cresult = citem['result'];
           //var ctraceinfo = citem['traceinfo'];
-          var ctraceinfo = "<button id=\"combtn_"+ctid+"\" onclick=\"showComment("+ctid+")\">Comments</button>"
+          var ctraceinfo = "<button id=\"combtn_"+ctid+"\" onclick=\"showComment('"+gid+"','"+sid+"','"+ctid+"')\">Comments</button>"
           var clog = citem['log'];
-          var comResult = citem['comResult'];
+          var comResult = citem['comments'];
           if(tag !== 'total' && tag !== cresult) continue;
           var trId = "tr_"+ctid;
           if(cresult === 'fail'){
@@ -451,68 +562,55 @@ function fillDetailTable(gid, sid, data, ids, tag) {
 }
 
 function fillCommentDiv(comResult,ctid){
-    var val = {0:" ", 1:" ", 2:" ", 3:" ", 4:" ", 5:" ", 6:" ", 7:" ", 8:" ", 9:" ", 10:" "};
-    if (comResult != undefined){
-      if(comResult['issueType'] != undefined){
-        switch(comResult['issueType']){
-         case "PhoneHang": val[0]="checked"; break;
-         case "UiFreeze" : val[1]="checked"; break;
-         case "SystemCrash" : val[2]="checked"; break;
-         case "ForceClose" : val[3]="checked"; break;
-         case "ANR"      : val[4]="checked"; break;
-         default: break;
-        }
+    var val = {};
+    if(comResult !== undefined){
+      if(comResult['issueType'] !== undefined){
+          val[comResult['issueType']] = "checked";
       }
-      if(comResult['caseResult'] != undefined){
-        switch(comResult['caseResult']){
-         case "Pass" : val[5]="checked"; break;
-         case "Fail" : val[6]="checked"; break;
-         case "Block": val[7]="checked"; break;
-         default: break;
-        }
+      if(comResult['caseResult'] !== undefined){
+          val[comResult['caseResult']] = "checked";
       }
-      if(caseResult['endSession'] != undefined){
-        switch(comResult['endSession']){
-         case "Yes" : val[8]="checked"; break;
-         case "No"  : val[9]="checked"; break;
-         default: break;
-        }
+      if(caseResult['endSession'] !== undefined){
+          val[comResult['endSession']] = "checked";
       }
-      val[10]=comResult['commentInfo'];      
+      if(val['commentInfo'] !== undefined){
+          val['commentInfo'] = comResult['commentInfo'];
+      }
+    }
+    else{
+      val['commentInfo'] = "";
     }
     var commentDiv=    "<tr id=\"comDiv_"+ctid+"\" style=\"display:none\">"+
                           "<td>"+
                              "<p><strong>Issue Type: </strong></p>"+
-                             "<input id=\"PhoneHang\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"PhoneHang\" "+val[0]+">Phone hang</input>"+
-                             "<input id=\"UiFreeze\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"UiFreeze\" "+val[1]+">UI freeze</input>"+
-                             "<input id=\"SystemCrash\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"SystemCrash\" "+val[2]+">System crash</input>"+
-                             "<input id=\"ForceClose\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"ForceClose\" "+val[3]+">Force close</input>"+
-                             "<input id=\"ANR\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"ANR\" "+val[4]+">ANR</input>"+
+                             "<input id=\"PhoneHang\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"PhoneHang\" "+val['PhoneHang']+">Phone hang</input>"+
+                             "<input id=\"UiFreeze\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"UiFreeze\" "+val['UiFreeze']+">UI freeze</input>"+
+                             "<input id=\"SystemCrash\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"SystemCrash\" "+val['SystemCrash']+">System crash</input>"+
+                             "<input id=\"ForceClose\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"ForceClose\" "+val['ForceClose']+">Force close</input>"+
+                             "<input id=\"ANR\" type=\"radio\" name=\"issueType"+ctid+"\" value=\"ANR\" "+val['ANR']+">ANR</input>"+
                              "<p></p>"+
                              "<p><strong>Result: </strong>"+
-                             "<input id=\"Pass\" type=\"radio\" name=\"caseResult"+ctid+"\" value=\"Pass\" "+val[5]+">Pass</input>"+
-                             "<input id=\"Fail\" type=\"radio\" name=\"caseResult"+ctid+"\" value=\"Fail\" "+val[6]+">Fail</input>"+
-                             "<input id=\"Block\" type=\"radio\" name=\"caseResult"+ctid+"\" value=\"Block\" "+val[7]+">Block</input>"+ 
+                             "<input id=\"Pass\" type=\"radio\" name=\"caseResult"+ctid+"\" value=\"Pass\" "+val['Pass']+">Pass</input>"+
+                             "<input id=\"Fail\" type=\"radio\" name=\"caseResult"+ctid+"\" value=\"Fail\" "+val['Fail']+">Fail</input>"+
+                             "<input id=\"Block\" type=\"radio\" name=\"caseResult"+ctid+"\" value=\"Block\" "+val['Block']+">Block</input>"+ 
                              "</p>"+
                              "<p></p>"+                                  
                              "<p><strong>End of this session:</strong>"+
-                             "<input id=\"EndYes\" type=\"radio\" name=\"endSession"+ctid+"\" value=\"Yes\" "+val[8]+">Yes</input>"+
-                             "<input id=\"EndNo\" type=\"radio\" name=\"endSession"+ctid+"\" value=\"No\" "+val[9]+">No</input>"+
+                             "<input id=\"EndYes\" type=\"radio\" name=\"endSession"+ctid+"\" value=\"Yes\" "+val['Yes']+">Yes</input>"+
+                             "<input id=\"EndNo\" type=\"radio\" name=\"endSession"+ctid+"\" value=\"No\" "+val['No']+">No</input>"+
                              "</p>"+
                           "</td>"+
                           "<td>"+
-                             "<textarea id=\"commentInfo\" name=\"commentInfo"+ctid+"\" align=\"middle\" rows=\"5\" cols=\"100\" placeholder=\"Please comment here...\">"+val[10]+"</textarea>"+
+                             "<textarea id=\"commentInfo\" name=\"commentInfo"+ctid+"\" align=\"middle\" rows=\"5\" cols=\"100\" placeholder=\"Please comment here...\">"+val['commentInfo']+"</textarea>"+
                           "</td>"+
                         "</tr>";
     return commentDiv;
 }
 
-function showComment(ctid){
-  var wd = _appglobal.screensize['width']
-  var ht = _appglobal.screensize['height']
+function showComment(gid, sid, ctid){
   $("tr#comDiv_"+ctid+"").dialog({title: "Comments of Case:"+ctid,
-                                height: ht-350,
-                                width: wd+300,
+                                height: 230,
+                                width: 670,
                                 resizable:false,
                                 modal: true,
                                 buttons:{
@@ -523,13 +621,11 @@ function showComment(ctid){
                                        $("tr#comDiv_"+ctid+" input[name='caseResult"+ctid+"']").each(function(i,obj){if(obj.checked){comResult['caseResult']=obj.value}});
                                        $("tr#comDiv_"+ctid+" input[name='endSession"+ctid+"']").each(function(i,obj){if(obj.checked){comResult['endSession']=obj.value}});
                                        comResult['commentInfo'] = $("tr#comDiv_"+ctid+" textarea[name='commentInfo"+ctid+"']").val();
-                                       alert("Issue Type is:" + comResult['issueType'] + "\nCase result is:" + comResult['caseResult'] + "\nEnd of session: " + comResult['endSession'] + "\nComments are: " + comResult['commentInfo']);
-                                       /* implement upload logic here.
-                                       invokeWebApiEx("URL to send comment result",
-                                                      comResult,
+                                       //alert("Issue Type is:" + comResult['issueType'] + "\nCase result is:" + comResult['caseResult'] + "\nEnd of session: " + comResult['endSession'] + "\nComments are: " + comResult['commentInfo']);
+                                       invokeWebApiEx("/group/"+gid+"/test/"+sid+"/case/"+ctid+"/update",
+                                                      prepareData({'comments':comResult}),
                                                       afterCommit
-                                                      );
-                                        */                                        
+                                                      );                                       
                                        $("#combtn_"+ctid+"").attr("style", "color:blue");
                                        $(this).dialog("close");
                                                   }
@@ -537,16 +633,16 @@ function showComment(ctid){
   });
 }
 
-// function afterCommit(data){
-//   var ret = data['error'];
-//   if (ret != undefined){
-//     alert(ret['msg']);
-//   }
-//   else{
-//     alert("Commit successfully!");
-//     window.location = "group.html";
-//   }
-// }
+function afterCommit(data){
+  var ret = data['error'];
+  if (ret !== undefined){
+    alert(ret['msg']);
+  }
+  else{
+    alert("Commit successfully!");
+    window.location = "group.html";
+  }
+}
 
 function pollSessionStatus(gid, sid) {
     invokeWebApi('/group/' + gid + '/test/' + sid + '/poll',
@@ -767,7 +863,7 @@ var AppRouter = Backbone.Router.extend({
         showTestSummary(gid);
     },
     showSessionView: function(gid,sid){
-        checkLogIn();   
+        checkLogIn();
         $('#group-div').hide();
         $('#session-div').show();
         $('#session-name').show();

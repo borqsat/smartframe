@@ -65,6 +65,7 @@ class DataStore(object):
         By zsf
         '''
         r_collection = self._db['testresults']
+
         #get all the result of the sid
         trs = r_collection.find(spec={'sid':sid}, 
                                 fields={'snapshots': True, 'checksnap': True, 'log': True, '_id': False})
@@ -80,7 +81,7 @@ class DataStore(object):
 
             if 'log' in record:
                 fids.add(record['log'])
-
+        
         #TODO: Improve the speeed of deletion
         if 'N/A' in fids:
             fids.remove('N/A')
@@ -110,7 +111,7 @@ class DataStore(object):
             self.del_session(s['sid'])
 
         #remove all sessions
-        s_collection.remove({'gid' : gid})
+        s_collection.remove({'gid':gid})
 
     def _del_dirty_testsession(self):
         '''
@@ -514,7 +515,7 @@ class DataStore(object):
         """
         write a test session record in database
         """
-        vid = self.counter('group' + gid)       
+        vid = self.counter('group' + gid)
         sessions = self._db['testsessions']
         if deviceid is None:
             deviceid = 'N/A'
@@ -524,27 +525,14 @@ class DataStore(object):
                          'summary': {'total': 0, 'pass': 0, 'fail': 0, 'error': 0},
                          'deviceid': deviceid, 'deviceinfo': devinfo})
 
-    def updateTestSession(self, gid, sid, value):
+    def updateTestSession(self, gid, sid, endtime):
         """
         write a test session record in database
         """
-        result = {}
+        self.clearCache(str('sid:' + sid + ':snap'))
+        self.clearCache(str('sid:' + sid + ':snaptime'))
         session = self._db['testsessions']
-        if 'cid' in value:
-            cid = value['cid']
-            if cid < 0:
-                cid = ''
-            elif cid == 0:
-                cid = self.counter('cid')
-
-            result['cid'] = cid
-
-        if 'endtime' in value:
-            result['endtime'] = value['endtime']
-            self.clearCache(str('sid:' + sid + ':snap'))
-            self.clearCache(str('sid:' + sid + ':snaptime'))
-
-        session.update({'gid': gid, 'sid': sid}, {'$set': result})
+        session.update({'gid': gid, 'sid': sid}, {'$set': {'endtime': endtime}})
 
     def deleteTestSession(self, gid, sid):
         """
@@ -577,24 +565,14 @@ class DataStore(object):
         user = 'N/A'
         session = self._db['testsessions']
         rdata = session.find({'gid': gid})
-        result = []
-        cidTag = {}
+        result = {}
         dtnow = datetime.now()
-        
-        tmpi=0
-        for tmpCid in session.find({'gid': gid}).distinct('cid'):
-            result.append({'cid':tmpCid,'count':0,'livecount':0,'starttime':'--','endtime':'--','product':'--','revision':'--','sessions':[]})
-            cidTag[tmpCid]=tmpi
-            tmpi+=1
-        result.append({'cid':'','count':0,'livecount':0,'starttime':'--','endtime':'--','product':'--','revision':'--','sessions':[]})
-        cidTag['None']=tmpi
-
+        lists = []
         for d in rdata:
             if d['endtime'] == 'N/A':
                 dttime = self.getCache(str('sid:' + d['sid'] + ':uptime'))
                 if dttime is None:
-                    #idletime = IDLE_TIME_OUT
-                    d['endtime'] = ''
+                    idletime = IDLE_TIME_OUT
                 else:
                     try:
                         idle = datetime.strptime(dttime, DATE_FORMAT_STR1)
@@ -603,51 +581,27 @@ class DataStore(object):
                     delta = dtnow - idle
                     idletime = delta.days * 86400 + delta.seconds
 
-                    if idletime >= IDLE_TIME_OUT:
-                        d['endtime'] = dttime
-            
+                if idletime >= IDLE_TIME_OUT:
+                    d['endtime'] = 'idle'
+
             retuser = users.find_one({'uid': d['tester']})
             if not retuser is None:
                 user = retuser['username']
 
-            if 'cid' in d:
-                result[cidTag[d['cid']]]['count'] += 1
-                result[cidTag[d['cid']]]['product']=d['deviceinfo']['product']
-                result[cidTag[d['cid']]]['revision']=d['deviceinfo']['revision'] 
-                
-                if result[cidTag[d['cid']]]['starttime']=='--' or \
-                datetime.strptime(d['starttime'],DATE_FORMAT_STR)<datetime.strptime(result[cidTag[d['cid']]]['starttime'],DATE_FORMAT_STR):
-
-                    result[cidTag[d['cid']]]['starttime']=d['starttime']
-
-                if result[cidTag[d['cid']]]['endtime'] == '--' or d['endtime']=='N/A' or datetime.strptime(d['endtime'], DATE_FORMAT_STR)>datetime.strptime(result[cidTag[d['cid']]]['endtime'], DATE_FORMAT_STR):
-                    
-                    result[cidTag[d['cid']]]['endtime']=d['endtime']
-                    
-                if d['endtime']=='N/A' :
-                    result[cidTag[d['cid']]]['livecount'] += 1
-                
-                result[cidTag[d['cid']]]['sessions'].append({'id': d['id'],
+            lists.append({'id': d['id'],
                          'sid': d['sid'],
                          'gid': d['gid'],
                          'tester': user,
+                         'planname': d['planname'],
                          'starttime': d['starttime'],
                          'endtime': d['endtime'],
                          'runtime': d['runtime'],
-                         'deviceid': d['deviceid']})
-            else:
-                result[cidTag['None']]['count'] += 1 
-                result[cidTag['None']]['sessions'].append({'id': d['id'],
-                                                       'sid': d['sid'],
-                                                       'gid': d['gid'],
-                                                       'tester': user,
-                                                       'starttime': d['starttime'],
-                                                       'endtime': d['endtime'],
-                                                       'runtime': d['runtime'],
-                                                       'deviceid': d['deviceid']})
-
-        tmpres = {'results':{} }
-        return tmpres 
+                         'summary': d['summary'],
+                         'deviceid': d['deviceid'],
+                         'deviceinfo': d['deviceinfo']})
+        result['count'] = len(lists)
+        result['sessions'] = lists
+        return result
 
     def readTestSessionInfo(self, gid, sid):
         """
@@ -839,27 +793,16 @@ class DataStore(object):
         session = self._db['testsessions']
         session.update({'gid': gid, 'sid': sid}, {'$inc': {'summary.total': 1}})
 
-    def updateTestCaseResult(self, gid, sid, tid, results):
+    def updateTestCaseResult(self, gid, sid, tid, status, traceinfo, endtime):
         """
         update a test case resut record in database
         If case get failed, write snapshot png files in GridFS
         """
-        comments={}
-        caseresult = self._db['testresults']
-
-        if 'comments' in results:
-            comments=results['comments']
-            return caseresult.update({'gid': gid, 'sid': sid, 'tid': int(tid)},  {'$set': {'comments': comments}} )
-        
-        status=results['status']
-        traceinfo=results['traceinfo']
-        endtime=results['endtime']
-
         timestamp = datetime.now().strftime(DATE_FORMAT_STR1)
         self.setCache(str('sid:' + sid + ':uptime'), timestamp)
         snapshots = self.getCache(str('sid:' + sid + ':tid:' + tid + ':snaps'))
         self.clearCache(str('sid:' + sid + ':tid:' + tid + ':snaps'))
-        
+        caseresult = self._db['testresults']
         session = self._db['testsessions']
         status = status.lower()
         runtime = 0
@@ -890,7 +833,7 @@ class DataStore(object):
             session.update({'gid': gid, 'sid': sid}, {'$inc': {'summary.fail': 1}, '$set': {'runtime': runtime}})
         else:
             session.update({'gid': gid, 'sid': sid}, {'$inc': {'summary.error': 1}, '$set': {'runtime': runtime}})
-        
+
         caseresult.update({'gid': gid, 'sid': sid, 'tid': int(tid)},  {'$set': {'result': status, 'traceinfo': traceinfo,'endtime': endtime, 'snapshots': snapshots}} )
 
     def writeTestLog(self, gid, sid, tid, logfile):
