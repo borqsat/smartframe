@@ -29,7 +29,7 @@ def crossDomianHook():
 
 
 @appweb.error(405)
-def method_not_allowed(res):
+def method_not_allowed(res): # workaround to support cross-domain request
     if request.method == 'OPTIONS':
         new_res = HTTPResponse()
         new_res.set_header('Access-Control-Allow-Origin', '*')
@@ -40,13 +40,6 @@ def method_not_allowed(res):
     res.headers['Allow'] += ', OPTIONS'
     return request.app.default_error_handler(res)
 
-#@appweb.route('/<p:re:[.\w\/]*>', method='OPTIONS', login=False)
-#def options(p):
-#    print "options...", p
-#    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE"
-#    if request.headers.get("Access-Control-Request-Headers"):
-#        response.headers["Access-Control-Allow-Headers"] = request.headers["Access-Control-Request-Headers"]
-#
 
 @appweb.route('/account/register', method='POST', content_type='application/json', login=False)
 def doRegister():
