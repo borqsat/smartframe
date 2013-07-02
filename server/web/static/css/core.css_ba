@@ -1,32 +1,30 @@
 @charset "utf-8";
 html,body,input,select,textarea{font:14px/18px "Helvetica Neue",Arial,Helvetica,sans-serif;color:#393939;}
 html{font-size:100%;-webkit-text-size-adjust:100%;}
-.sitenav { padding: 0 0; margin: 0 0;}
-.sitenav ul{ list-style:none;}
-.sitenav li { float: left; position:relative; padding: 0 5px; }
-.sitenav li a { float:left; display: block; padding: 0 3px;  } 
-.sitenav li a:hover { text-decoration: underline; color: #f00; }  
-.sitenav li:hover {  background: #eee; border: 1px solid #ccc; border-bottom: 0; }
-.sitenav li:hover .panel { display: block; width: 100px; }
-.sitenav li b { display: block; float: left; width: 0; height: 0; margin-top: 8px; border-width: 3px;
-border-style: solid; border-color: #666 #ccc #ccc #ccc ; font-size: 0; line-height: 0; }
-.sitenav li:hover b { margin-top: 8px; border-width: 3px; border-color: #fff #fff #666 #fff; }
-.panel { display: none;  background: #eee; border: 1px solid #ccc; border-top:none; line-height: 21px; }
-.dropanel1 { position: absolute; left: -1px; top: 16px; z-index: 1999;}
 
+.navtt, .navtt ul { list-style-type:none; margin:0; padding:0; }
+.navtt a { text-decoration:none; }
+.navtt { font-family: arial, sans-serif; font-size:12px; width:10px; margin:100 auto; }
+.navtt a { background:url(images/box.gif) no-repeat right center; }
+.right ul ul a { background:url(images/box3.gif) no-repeat right center; }
+.right ul ul a.top2 { background:url(images/box3.gif) no-repeat right top; }
+.navtt a b { color:#fff; font-weight:normal; display:block; padding:5px 10px 5px 15px; }
+.navtt .down b { background: transparent url(images/arrow2.gif) no-repeat 115px 11px; }
 
-.textarea-inner {height: 100%; width:97%;}
-.hint {display:none; 
-	   position: relative; 
-	   border:1px solid;
-	   padding:0px 3px;
-	   color:#333333;
-	   height:35px;
-	   line-height: 0px;
-	   background: #CFCFCF; }
-.dl-inner {margin-bottom: 0px; line-height: 0px;}	   
-.dt-inner {line-height:0px; margin-bottom: 2px;}	   
-.dd-inner { margin-right: 0px; margin-bottom: 0px; margin-top: 0px;line-height: 0px;}	   
+.navtt .droptt, .navtt a { width:130px; }
+.navtt ul li { max-width:130px; } 
+.navtt a { margin-right:-129px; }
+/* DO NOT CHANGE ANYTHING BELOW */
+.navtt li { float:left; } /* fixes IE bugs, and allows for clearing */
+.navtt ul { float:left; position:relative; z-index:20; } /* necessary for float drop and to stack the <ul>s */
+.navtt ul li { clear:left; } /* must clear the floated list item inside sublist */
+.navtt a { position:relative; display:block; } /* needs to have a position, to be above the rest */
+.navtt a.main { float:left; /* necessary for float drop */ margin-top:10000px; } /* bring the top level links back into view */
+.navtt .droptt, .navtt .fly { margin-top:-10000px; } /* hide the sub links and their containers, opera has low upper limits */
+.navtt a:hover, .navtt a:focus, .navtt a:active { margin-right:0; z-index:10; outline:0; }
+.navtt a:hover b, .navtt a:focus b, .navtt a:active b { color:#000; cursor:pointer; } /* this is for keyboard tabbing color change */
+.navtt ul:hover, .navtt ul ul:hover { clear:left; } /* to stop intermittent sub link :hover problems */
+
 
 p{margin:0;}
 ol,ul{list-style:none;margin:0;padding:0;}

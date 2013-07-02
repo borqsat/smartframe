@@ -1,7 +1,7 @@
 from dbstore import store
 
-def createTestSession(gid, uid, sid, planname,starttime, deviceid, deviceinfo):
-    store.createTestSession(gid, sid, uid, planname, starttime, deviceid, deviceinfo)
+def createTestSession(gid, uid, sid, value):
+    store.createTestSession(gid, sid, uid, value)
     return {'results':1}
 
 def updateTestSession(gid, sid, value):
@@ -27,6 +27,7 @@ def getTestSessionList(gid):
         return {'errors':{'code':404,'msg':'None result.'}}
 
 def getTestCycleReport(gid,cid):
+
     rdata = store.readTestReport(gid,cid)
     if not rdata is None :
         return {'results':rdata}

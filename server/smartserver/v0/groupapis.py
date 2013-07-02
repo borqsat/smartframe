@@ -331,8 +331,7 @@ def doCreateGroupTestSession(gid, sid, uid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    return createTestSession(gid, uid, sid, request.json['planname'], request.json['starttime'],
-                             request.json['deviceid'], request.json['deviceinfo'])
+    return createTestSession(gid, uid, sid, request.json)
 
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/create', method='POST', content_type='application/json')
@@ -573,11 +572,11 @@ def doGetGroupTestSessions(gid):
     @return:ok-{'results':{'count':(int)count, 'sessions':[ {planname':(string)value,'starttime':(string)value, 'result':{'total':(int)value, 'pass':(int)value, 'fail':(int)value, 'error':(int)value}, 'runtime':(string)value},... ] }}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    cid = request.params.get('cid')
+    cid=request.params.get('cid')
     if cid is None:
         return getTestSessionList(gid)
-    else:
-        return getTestCycleReport(git, cid)
+    else: 
+        return getTestCycleReport(gid,cid)
 
 
 if __name__ == '__main__':
