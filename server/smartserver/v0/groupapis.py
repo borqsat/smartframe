@@ -1,7 +1,7 @@
 from gevent import monkey
 monkey.patch_all()
 
-from bottle import request, response, Bottle
+from bottle import request, response, Bottle, HTTPResponse
 from gevent.pywsgi import WSGIServer
 
 from .impl.test import *
@@ -21,6 +21,24 @@ login_plugin = LoginPlugin(getuserid=getUserId,
                            request_token_param="token",
                            login=True)  # login is required by default
 appweb.install(login_plugin)
+
+
+@appweb.hook("after_request")
+def crossDomianHook():
+    response.headers["Access-Control-Allow-Origin"] = "*"
+
+
+@appweb.error(405)
+def method_not_allowed(res): # workaround to support cross-domain request
+    if request.method == 'OPTIONS':
+        new_res = HTTPResponse()
+        new_res.set_header('Access-Control-Allow-Origin', '*')
+        new_res.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE"
+        if request.headers.get("Access-Control-Request-Headers"):
+            new_res.headers["Access-Control-Allow-Headers"] = request.headers["Access-Control-Request-Headers"]
+        return new_res
+    res.headers['Allow'] += ', OPTIONS'
+    return request.app.default_error_handler(res)
 
 
 @appweb.route('/account/register', method='POST', content_type='application/json', login=False)
