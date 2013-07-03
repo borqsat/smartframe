@@ -591,9 +591,6 @@ class DataStore(object):
         cidTag['None']=tmpi
         
         for d in rdata:
-            # tmpedt=caseresult.find({'sid':d['sid'],'comments.endsession':1},{'endtime':1})
-            # if tmpedt.count(True)>0:
-            #    d['endtime']=tmpedt[0]['endtime']
             if 'failtime' in d :
                 d['endtime']=d['failtime']
 
@@ -609,6 +606,8 @@ class DataStore(object):
 
                     if idletime >= IDLE_TIME_OUT:
                         d['endtime'] = dttime
+                else:
+                    d['endtime'] = ''
 
             if d['endtime'] == 'N/A':
                 d['status'] = 'running'
@@ -629,14 +628,14 @@ class DataStore(object):
 
                     result[cidTag[d['cid']]]['starttime']=d['starttime']
 
-                if result[cidTag[d['cid']]]['endtime'] != 'N/A' and (result[cidTag[d['cid']]]['endtime'] == '--' or d['endtime']=='N/A' or datetime.strptime(d['endtime'], DATE_FORMAT_STR)>datetime.strptime(result[cidTag[d['cid']]]['endtime'], DATE_FORMAT_STR)):
+                if result[cidTag[d['cid']]]['endtime'] != 'N/A' and d['endtime'] != '' \
+                and (result[cidTag[d['cid']]]['endtime'] == '--' or d['endtime']=='N/A' or datetime.strptime(d['endtime'], DATE_FORMAT_STR)>datetime.strptime(result[cidTag[d['cid']]]['endtime'], DATE_FORMAT_STR)):
                     
                     result[cidTag[d['cid']]]['endtime']=d['endtime']
                     
                 if d['endtime']=='N/A' :
                     result[cidTag[d['cid']]]['livecount'] += 1
                 
-                print "cid,", d['cid']
                 result[cidTag[d['cid']]]['sessions'].append({'id': d['id'],
                          'sid': d['sid'],
                          'gid': d['gid'],
@@ -667,36 +666,41 @@ class DataStore(object):
         """
         DATE_FORMAT_STR = "%Y.%m.%d-%H.%M.%S"
         DATE_FORMAT_STR1 = "%Y/%m/%d %H:%M" 
+        DATE_FORMAT_STR2 = "%Y-%m-%d %H:%M:%S"
         session = self._db['testsessions']
         caseresult = self._db['testresults']
         sidList=[]
         res1 = {'product':'--','count':0,'starttime':'--','endtime':'--','failcnt':0,'totaldur':0} 
         res2 = []
         res3 = []
-        
+        res4 = []
         
         rdata = session.find({'gid': gid,'cid':int(cid)})
         for d in rdata:
-            #tmpedt = caseresult.find({'sid':d['sid'],'comments.endsession':1},{'endtime':1}).limit(1) 
-            #if tmpedt.count(True)>0:
-            #    d['endtime']=tmpedt[0]['endtime']
             if 'failtime' in d :
                 d['endtime']=d['failtime']
 
             if d['endtime'] == 'N/A':
                 dttime = self.getCache(str('sid:' + d['sid'] + ':uptime'))
                 if dttime is not None:
-                    try:
-                        idle = datetime.strptime(dttime, DATE_FORMAT_STR1)
-                    except:
-                        idle = datetime.strptime(dttime, DATE_FORMAT_STR)
+                    tmpNum=dttime.count('-')
+                    if tmpNum==0:
+                      idle = datetime.strptime(dttime, DATE_FORMAT_STR1)
+                    elif tmpNum==1:
+                      idle = datetime.strptime(dttime, DATE_FORMAT_STR)
+                    else :
+                      idle = datetime.strptime(dttime, DATE_FORMAT_STR2) 
+                      
                     delta = dtnow - idle
                     idletime = delta.days * 86400 + delta.seconds
 
                     if idletime >= IDLE_TIME_OUT:
                         d['endtime'] = dttime
-            if d['endtime'] == '' :
-                d['endtime'] == 'N/A'
+                else:
+                    d['endtime'] = ''
+
+            if d['endtime'] == '':
+                d['endtime'] = 'N/A'
 
             sidList.append(d['sid'])
             res1['product']=d['deviceinfo']['product']
@@ -706,7 +710,7 @@ class DataStore(object):
             try:
                 tmpEndTime=(d['endtime']=='N/A') and caseresult.find({'sid':d['sid']}).sort('tid',pymongo.DESCENDING).limit(1)[0]['starttime'] or d['endtime']
             except:
-                 tmpEndTime=datetime.strftime(datetime.now(), DATE_FORMAT_STR)
+                tmpEndTime=datetime.strftime(datetime.now(), DATE_FORMAT_STR)
 
             tmpDur=(datetime.strptime(tmpEndTime, DATE_FORMAT_STR)-datetime.strptime(d['starttime'], DATE_FORMAT_STR)).seconds/3600.0
             res1['totaldur']+=tmpDur
@@ -720,6 +724,7 @@ class DataStore(object):
 
             tmpR3 ={}
             tmpR3['imei']=d['deviceid']
+            tmpR3['sid']=d['sid']
             tmpR3['starttime']=datetime.strftime(datetime.strptime(d['starttime'], DATE_FORMAT_STR),DATE_FORMAT_STR1)
             tmpR3['endtime']=(d['endtime']=='N/A') and d['endtime'] or datetime.strftime(datetime.strptime(d['endtime'], DATE_FORMAT_STR), DATE_FORMAT_STR1)
             tmpR3['failcount']=0
@@ -739,11 +744,37 @@ class DataStore(object):
         rdata2=caseresult.group({'comments.issuetype':1},{'sid':{'$in':sidList},'comments.caseresult':'fail'},{'cnt':0},'function(obj,prev){prev.cnt+=1;}')
         for d in rdata2:
             res2.append({'issuetype':d['comments.issuetype'],'count':d['cnt']})
+
+        rdata4=caseresult.group({'casename':1,'domain':1},{'sid':{'$in':sidList}},{'totalcnt':0,'passcnt':0,'failcnt':0},'''
+  function(obj,prev){
+    prev.totalcnt+=1;
+    if(obj.result=='pass'){
+      prev.passcnt+=1;
+    }else if('comments' in obj && obj.comments.caseresult=='fail'){
+      prev.failcnt+=1;
+    }
+  }
+  ''')
+        domainTag={}
+        tmpi=0
+        for d in rdata4:
+            if d['domain'] not in domainTag:
+                domainTag[d['domain']]=tmpi
+                tmpi+=1
+            res4.append({'domain':d['domain'],'totalcnt':0,'passcnt':0,'failcnt':0,'blockcnt':0,'detail':[]})
+            tmpj=domainTag[d['domain']]
+            res4[tmpj]['totalcnt']+=d['totalcnt']
+            res4[tmpj]['passcnt']+=d['passcnt']
+            res4[tmpj]['failcnt']+=d['failcnt']
+            tmpBlock=d['totalcnt']-d['passcnt']-d['failcnt']
+            res4[tmpj]['blockcnt']+=tmpBlock
+            res4[tmpj]['detail'].append({'casename':d['casename'],'totalcnt':d['totalcnt'],'passcnt':d['passcnt'],'failcnt':d['failcnt'],'blockcnt':tmpBlock})
         
-        result={}
+        result = {}
         result['cylesummany']=res1
         result['issuesummany']=res2
         result['issuedetail']=res3
+        result['domain']=res4
         return result
 
 
