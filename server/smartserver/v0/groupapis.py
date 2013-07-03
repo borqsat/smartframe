@@ -349,8 +349,7 @@ def doCreateGroupTestSession(gid, sid, uid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    return createTestSession(gid, uid, sid, request.json['planname'], request.json['starttime'],
-                             request.json['deviceid'], request.json['deviceinfo'])
+    return createTestSession(gid, uid, sid, request.json)
 
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/create', method='POST', content_type='application/json')
@@ -396,7 +395,7 @@ def doUpdateCaseResult(gid, sid, tid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    return updateCaseResult(gid, sid, tid, request.json['result'], request.json['traceinfo'], request.json['time'])
+    return updateCaseResult(gid, sid, tid, request.json)
 
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/fileupload', method='PUT', content_type=['application/zip','image/png'], login=False)
@@ -449,7 +448,7 @@ def doUpdateGroupTestSession(gid, sid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    return updateTestSession(gid, sid, request.json['endtime'])
+    return updateTestSession(gid, sid,request.json)
 
 
 @appweb.route('/group/<gid>/test/<sid>/delete', method='GET')
@@ -591,7 +590,12 @@ def doGetGroupTestSessions(gid):
     @return:ok-{'results':{'count':(int)count, 'sessions':[ {planname':(string)value,'starttime':(string)value, 'result':{'total':(int)value, 'pass':(int)value, 'fail':(int)value, 'error':(int)value}, 'runtime':(string)value},... ] }}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    return getTestSessionList(gid)
+    cid=request.params.get('cid')
+    if cid is None:
+        return getTestSessionList(gid)
+    else: 
+        return getTestCycleReport(gid,cid)
+
 
 if __name__ == '__main__':
     print 'WebServer Serving on 8080...'
