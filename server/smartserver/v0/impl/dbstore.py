@@ -674,6 +674,7 @@ class DataStore(object):
         res2 = []
         res3 = []
         res4 = []
+        dtnow = datetime.now()
         
         rdata = session.find({'gid': gid,'cid':int(cid)})
         for d in rdata:
