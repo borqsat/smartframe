@@ -986,7 +986,7 @@ class DataStore(object):
             
         status=results['result']
         traceinfo=results['traceinfo']
-        endtime=results['endtime']
+        endtime=results['time']
 
         timestamp = datetime.now().strftime(DATE_FORMAT_STR1)
         self.setCache(str('sid:' + sid + ':uptime'), timestamp)
