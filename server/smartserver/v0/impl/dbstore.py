@@ -732,7 +732,7 @@ class DataStore(object):
             tmpR3['totaldur']=tmpDur
             tmpR3['caselist']=[]
             tmpFailTime=datetime.strptime(tmpEndTime, DATE_FORMAT_STR)
-            rdata3=caseresult.find({'sid':d['sid'],'comments.caseresult':'fail'})
+            rdata3=caseresult.find({'sid':d['sid'],'comments.caseresult':{'$in':['fail','Fail']}})
             for d3 in rdata3:
                 if datetime.strptime(d3['starttime'], DATE_FORMAT_STR)<tmpFailTime:
                     tmpFailTime=datetime.strptime(d3['starttime'], DATE_FORMAT_STR)
@@ -742,7 +742,7 @@ class DataStore(object):
             tmpR3['faildur']=(tmpFailTime-datetime.strptime(d['starttime'], DATE_FORMAT_STR)).seconds/3600.0
             res3.append(tmpR3) 
 
-        rdata2=caseresult.group({'comments.issuetype':1},{'sid':{'$in':sidList},'comments.caseresult':'fail'},{'cnt':0},'function(obj,prev){prev.cnt+=1;}')
+        rdata2=caseresult.group({'comments.issuetype':1},{'sid':{'$in':sidList},'comments.caseresult':{'$in':['fail','Fail']} },{'cnt':0},'function(obj,prev){prev.cnt+=1;}')
         for d in rdata2:
             res2.append({'issuetype':d['comments.issuetype'],'count':d['cnt']})
 
@@ -751,7 +751,7 @@ class DataStore(object):
     prev.totalcnt+=1;
     if(obj.result=='pass'){
       prev.passcnt+=1;
-    }else if('comments' in obj && obj.comments.caseresult=='fail'){
+    }else if('comments' in obj && obj.comments.caseresult.toLowerCase()=='fail'){
       prev.failcnt+=1;
     }
   }
@@ -980,20 +980,19 @@ class DataStore(object):
         if 'comments' in results:
             comments=results['comments']
             if comments['endsession'] == 1 :
-                tmpt = caseresult.find({'gid': gid, 'sid': sid, 'tid': int(tid)})
+                tmpt = caseresult.find_one({'gid': gid, 'sid': sid, 'tid': int(tid)})
                 self._db['testsessions'].update({'gid': gid, 'sid': sid},{'$set': {'failtime': tmpt['endtime']}})
             return caseresult.update({'gid': gid, 'sid': sid, 'tid': int(tid)},  {'$set': {'comments': comments}} )
             
-
-        status=results['status']
+        status=results['result']
         traceinfo=results['traceinfo']
-        endtime=results['endtime']
+        endtime=results['time']
 
         timestamp = datetime.now().strftime(DATE_FORMAT_STR1)
         self.setCache(str('sid:' + sid + ':uptime'), timestamp)
         snapshots = self.getCache(str('sid:' + sid + ':tid:' + tid + ':snaps'))
         self.clearCache(str('sid:' + sid + ':tid:' + tid + ':snaps'))
-        
+    
         session = self._db['testsessions']
         status = status.lower()
         runtime = 0
@@ -1024,8 +1023,9 @@ class DataStore(object):
             session.update({'gid': gid, 'sid': sid}, {'$inc': {'summary.fail': 1}, '$set': {'runtime': runtime}})
         else:
             session.update({'gid': gid, 'sid': sid}, {'$inc': {'summary.error': 1}, '$set': {'runtime': runtime}})
-        
+    
         caseresult.update({'gid': gid, 'sid': sid, 'tid': int(tid)},  {'$set': {'result': status, 'traceinfo': traceinfo,'endtime': endtime, 'snapshots': snapshots}} )
+
 
     def writeTestLog(self, gid, sid, tid, logfile):
         """
