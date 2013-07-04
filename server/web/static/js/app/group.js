@@ -561,11 +561,6 @@ function sortTestCases(data) {
     return datacases;
 }
 
-function upperFirstChar(word){
-    return word.substring(0,1).toUpperCase() + word.substring(1);
-}
-
-
 function fillDetailTable(gid, sid, data, ids, tag) {
     var tablerows = '';
     var detail_table = $("#"+ids+" > tbody").html('');
@@ -582,23 +577,14 @@ function fillDetailTable(gid, sid, data, ids, tag) {
           var trId = "tr_"+ctid;
           var ctraceinfo = "<img src=\"./static/css/images/edit.png\" onclick=\"javascript:showComment('"+gid+"','"+sid+"','"+ctid+"')\" id=\"combtn_"+ctid+"\" align=\"right\" alt=\"edit\"></img>";
           if(comResult !== undefined){
-             if (comResult['endsession'] === 0){
-                var sessionCom = "";
-             }
-             else{
-                var sessionCom = " :: Yes";
-             }
-             if (comResult['commentinfo'] !== undefined){
-                var hintInfo = comResult['commentinfo'];
-             }
-             else{
-                var hintInfo = "No comments";
-             }
-             var showComment = ""+upperFirstChar(comResult['caseresult'])+" :: "+upperFirstChar(comResult['issuetype'])+""+sessionCom+"";
+             if (comResult['endsession'] === 0){var sessionCom = "";}
+             else{var sessionCom = " :: Yes";}
+             var hintInfo = comResult['commentinfo'];
+             var showComment = ""+comResult['caseresult']+" :: "+comResult['issuetype']+""+sessionCom+"";
           }
           else{
              var showComment = "";
-             var hintInfo = "No comments";
+             var hintInfo = "";
           }
           if(cresult === 'fail'){
               tablerows += "<tr id=\""+trId+"\">"+
@@ -613,7 +599,7 @@ function fillDetailTable(gid, sid, data, ids, tag) {
                                         ""+ctraceinfo+""+
                                         "<br><div id=\"hint_"+ctid+"\" style=\"display:none\">"+hintInfo+"</div>"+
                                         "</td></tr>";                            
-              tablerows += fillCommentDiv(comResult,ctid);                         
+              tablerows += fillCommentDiv(comResult,ctid, gid, sid);                         
          } else if (cresult === 'error') {
                 tablerows += "<tr id=\""+trId+"\">"+
                                      "<td>"+ctid+"</td>"+
@@ -623,10 +609,11 @@ function fillDetailTable(gid, sid, data, ids, tag) {
                                      "<td></td>"+
                                      "<td></td>"+
                                      "<td>"+
-                                     "<span id=\"span_"+ctid+"\">"+showComment+"</span>"+                                     
+                                     "<span id=\"span_"+ctid+"\" onmouseover=\"showHint('"+ctid+"')\" onmouseout=\"hideHint('"+ctid+"')\">"+showComment+"</span>"+
                                      ""+ctraceinfo+""+
+                                     "<br><div id=\"hint_"+ctid+"\" style=\"display:none\">"+hintInfo+"</div>"+
                                      "</td></tr>";
-                tablerows += fillCommentDiv(comResult,ctid);
+                tablerows += fillCommentDiv(comResult,ctid, gid, sid);
          } else if (cresult === 'running' || cresult === 'pass'){
                  if (cresult == 'running'){
                     tablerows += "<tr id=\""+trId+"\">"+
@@ -658,100 +645,83 @@ function showHint(ctid){$("#hint_"+ctid).slideDown('slow');}
 
 function hideHint(ctid){$("#hint_"+ctid).hide('slow');}
 
-function fillCommentDiv(comResult,ctid){
+function fillCommentDiv(comResult,ctid, gid, sid){
     var val = {};
     if(comResult !== undefined){
-      if(comResult['issuetype'] !== undefined){
-          val[comResult['issuetype']] = "checked";
-      }
-      if(comResult['caseresult'] !== undefined){
-          val[comResult['caseresult']] = "checked";
-      }
-      if(comResult['endsession'] === '1'){
-          val[comResult['endsession']] = "checked";
-      }
-      if(comResult['commentinfo'] !== undefined){
-          val['commentinfo'] = comResult['commentinfo'];
-      }
-      else{
-          val['commentinfo'] = "";
-      }
+      val[comResult['issuetype']] = "selected";
+      val[comResult['caseresult']] = "selected";
+      if(comResult['endsession'] === 1){val['1'] = "checked";}
+      val['commentinfo'] = comResult['commentinfo'];
     }
     else{
       val['commentinfo'] = "";
     }
-    var commentDiv=    "<tr id=\"comDiv_"+ctid+"\" style=\"display:none\">"+
-                          "<td width=\"55%\">"+
-                             "<dl class=\"dl-inner\"><dt class=\"dt-inner\"><strong>Issue Type: </strong></dt>"+
-                             "<dd class=\"dd-inner\"><input id=\"PhoneHang\" type=\"radio\" name=\"issuetype"+ctid+"\" value=\"PhoneHang\" "+val['PhoneHang']+">PhoneHang  </input>"+
-                             "<input id=\"UiFreeze\" type=\"radio\" name=\"issuetype"+ctid+"\" value=\"UIFreeze\" "+val['UIFreeze']+">UIFreeze  </input>"+
-                             "<input id=\"SystemCrash\" type=\"radio\" name=\"issuetype"+ctid+"\" value=\"SystemCrash\" "+val['SystemCrash']+">SystemCrash  </input>"+
-                             "<br>"+
-                             "<input id=\"ForceClose\" type=\"radio\" name=\"issuetype"+ctid+"\" value=\"ForceClose\" "+val['ForceClose']+">ForceClose  </input>"+
-                             "<input id=\"ANR\" type=\"radio\" name=\"issuetype"+ctid+"\" value=\"ANR\" "+val['ANR']+">ANR  </input>"+
-                             "<input id=\"Others\" type=\"radio\" name=\"issuetype"+ctid+"\" value=\"Others\" "+val['Others']+">Others  </input>"+
-                             "</dd>"+
-                             "<dt class=\"dt-inner\"><strong>Result: </strong></dt>"+
-                             "<dd class=\"dd-inner\"><input id=\"Fail\" type=\"radio\" name=\"caseresult"+ctid+"\" value=\"fail\" "+val['fail']+">Fail  </input>"+
-                             "<input id=\"Block\" type=\"radio\" name=\"caseresult"+ctid+"\" value=\"block\" "+val['block']+">Block  </input>"+
-                             "</dd>"+                                  
-                             "<dt class=\"dt-inner\"><strong>Session ends here?  </strong><input id=\"endsession\" type=\"checkbox\" name=\"endsession"+ctid+"\" value=\"1\" "+val['1']+"></input></dt>"+
-                             "</dl>"+
-                          "</td>"+
-                          "<td width=\"45%\">"+
-                             "<textarea id=\"commentInfo\" name=\"commentinfo"+ctid+"\" class=\"textarea-inner\" placeholder=\"Please comment here...\" cols=\"200\">"+val['commentinfo']+"</textarea>"+
-                          "</td>"+
-                        "</tr>";
+
+    var commentDiv = "<tr id=\"comDiv_"+ctid+"\" style=\"display:none\"><td colspan=\"7\"><form class=\"form-inner\">"+
+                       "<div class=\"row\">"+
+                         "<div class=\"span4\">"+
+                            "<textarea name=\"commentinfo"+ctid+"\" id=\"commentInfo\" class=\"input-xlarge span4\" rows=\"9\" placeholder=\"Please comments here...\">"+val['commentinfo']+"</textarea>"+
+                         "</div>"+
+                         "<div class=\"span3\">"+
+                            "<label>Issue Type</label>"+
+                            "<select class=\"span3\">"+
+                               "<option value=\"na\" name=\"issuetype"+ctid+"\" selected=\"\">Choose One:</option>"+
+                               "<option id=\"PhoneHang\" name=\"issuetype"+ctid+"\" value=\"PhoneHang\" "+val['PhoneHang']+">PhoneHang</option>"+
+                               "<option id=\"ForceClose\" name=\"issuetype"+ctid+"\" value=\"ForceClose\" "+val['ForceClose']+">ForceClose</option>"+
+                               "<option id=\"ANR\" name=\"issuetype"+ctid+"\" value=\"ANR\" "+val['ANR']+">ANR</option>"+
+                               "<option id=\"SystemCrash\" name=\"issuetype"+ctid+"\" value=\"SystemCrash\" "+val['SystemCrash']+">SystemCrash</option>"+
+                               "<option id=\"UiFreeze\" name=\"issuetype"+ctid+"\" value=\"UIFreeze\" "+val['UIFreeze']+">UIFreeze</option>"+
+                               "<option id=\"Others\" name=\"issuetype"+ctid+"\" value=\"Others\" "+val['Others']+">Others</option>"+
+                            "</select>"+
+                        "<label>Case Result</label>"+
+                        "<select class=\"span3\">"+
+                          "<option value=\"na\" name=\"caseresult"+ctid+"\" selected=\"\">Choose One:</option>"+
+                          "<option id=\"Fail\" name=\"caseresult"+ctid+"\" value=\"Fail\" "+val['Fail']+">Fail</option>"+
+                          "<option id=\"Block\" name=\"caseresult"+ctid+"\" value=\"Block\" "+val['Block']+">Block</option>"+
+                        "</select>"+
+                        "<label class=\"checkbox\" for=\"endsession\">"+
+                        "<span>Session ends here?</span><input id=\"endsession"+ctid+"\" type=\"checkbox\" "+val['1']+">"+
+                        "</label><br>"+
+                        "<input id=\"btn_"+ctid+"\" onclick=\"submitUpdate('"+ctid+"', '"+gid+"', '"+sid+"')\" type=\"button\" class=\"pull-right\" value=\"Commit\"></input>"+
+                      "</div>"+
+                   "</div></form></td></tr>";
+
     return commentDiv;
+}
+
+function submitUpdate(ctid, gid, sid){
+  var comResult = {};
+  $("option[name='issuetype"+ctid+"']").each(function(i,obj){if(obj.selected){comResult['issuetype']=obj.value;}});
+  $("option[name='caseresult"+ctid+"']").each(function(i,obj){if(obj.selected){comResult['caseresult']=obj.value;}});
+  $("input#endsession"+ctid+"").each(function(i,obj){if(obj.checked){comResult['endsession'] = 1;}
+                                                     else{comResult['endsession'] = 0;}});
+  comResult['commentinfo'] = $("textarea[name='commentinfo"+ctid+"']").val();
+  if (comResult['issuetype'] === 'na' || comResult['caseresult'] === 'na' || comResult['commentinfo'] === undefined){
+    alert("IssueType, CaseResult and Comments are all expected to be provided!");
+    return
+  }
+  invokeWebApiEx("/group/"+gid+"/test/"+sid+"/case/"+ctid+"/update",
+                 prepareData({'comments':comResult}),
+                 afterCommit);
+
+  if (comResult['endsession'] === 0){var sessionCom = "";}
+  else{var sessionCom = " :: Yes";}
+  var $hintInfo = comResult['commentinfo'];
+  var $showComment = ""+comResult['caseresult']+" :: "+comResult['issuetype']+""+sessionCom+"";
+  $("span#span_"+ctid).html("");
+  $("span#span_"+ctid).append($showComment);
+  $("div#hint_"+ctid).html("");
+  $("div#hint_"+ctid).append($hintInfo);
+
+  $("#comDiv_"+ctid+"").dialog('close');
 }
 
 function showComment(gid, sid, ctid){
   $("tr#comDiv_"+ctid+"").dialog({title: "Comments of Case:"+ctid,
-                                height: 120,
-                                width: 600,
+                                height: 310,
+                                width: 595,
                                 resizable:false,
-                                modal: true,
-                                buttons:{
-                                   "Commit":function(){
-                                       var comResult = {};
-                                       comResult['ctid'] = ctid;                                       
-                                       $("tr#comDiv_"+ctid+" input[name='issuetype"+ctid+"']").each(function(i,obj){if(obj.checked){comResult['issuetype']=obj.value}});
-                                       $("tr#comDiv_"+ctid+" input[name='caseresult"+ctid+"']").each(function(i,obj){if(obj.checked){comResult['caseresult']=obj.value}});
-                                       $("tr#comDiv_"+ctid+" input[name='endsession"+ctid+"']").each(function(i,obj){
-                                                                                                                      if(obj.checked){comResult['endsession']=obj.value;}
-                                                                                                                      else{
-                                                                                                                           comResult['endsession'] = 0;
-                                                                                                                      }});
-                                       comResult['commentinfo'] = $("tr#comDiv_"+ctid+" textarea[name='commentinfo"+ctid+"']").val();
-                                       if (comResult['issuetype'] === undefined || comResult['caseresult'] === undefined || comResult['commentinfo'] === undefined){
-                                          alert("IssueType, CaseResult and Comments are all expected to be provided!");
-                                          return
-                                       }
-                                       invokeWebApiEx("/group/"+gid+"/test/"+sid+"/case/"+ctid+"/update",
-                                                      prepareData({'comments':comResult}),
-                                                      afterCommit
-                                                      );
-
-                                       if (comResult['endsession'] === 0){
-                                           var sessionCom = ""; 
-                                       }
-                                       else{
-                                           var sessionCom = " :: Yes";
-                                       }
-                                       var $hintInfo = "No comments";
-                                       if (comResult['commentinfo'] !== undefined){
-                                           $hintInfo = comResult['commentinfo'];
-                                       }
-                                       var $showComment = ""+upperFirstChar(comResult['caseresult'])+" :: "+upperFirstChar(comResult['issuetype'])+""+sessionCom+"";
-                                       $("span#span_"+ctid).html("");
-                                       $("span#span_"+ctid).append($showComment);
-                                       $("div#hint_"+ctid).html("");
-                                       $("div#hint_"+ctid).append($hintInfo);
-
-                                       $(this).dialog("close");
-                                                  }
-                                        }
-  });
+                                modal: true});
 }
 
 function afterCommit(data){
