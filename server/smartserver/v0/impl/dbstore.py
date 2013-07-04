@@ -39,7 +39,24 @@ DATE_FORMAT_STR1 = "%Y-%m-%d %H:%M:%S"
 DATE_FORMAT_STR = "%Y.%m.%d-%H.%M.%S"
 IDLE_TIME_OUT = 1800
 
+
+def _compareDateTime(dt1, dt2):
+    date1 = None
+    date2 = None
+    try:
+        date1 = datetime.strptime(dt1, DATE_FORMAT_STR)
+    except:
+        date1 = datetime.strptime(dt1, DATE_FORMAT_STR1)
+
+    try:
+        date2 = datetime.strptime(dt2, DATE_FORMAT_STR)
+    except:
+        date2 = datetime.strptime(dt2, DATE_FORMAT_STR1)
+    return date1 > date2
+
+
 class DataStore(object):
+
     """
     Class DbStore provides the access to MongoDB DataBase
     """
@@ -55,62 +72,63 @@ class DataStore(object):
         self._mc = mem
 
     def counter(self, keyname):
-        ret = self._db.counter.find_and_modify(query={"_id": keyname}, update={"$inc": {"next": 1}}, new=True, upsert=True)
+        ret = self._db.counter.find_and_modify(query={
+                                               "_id": keyname}, update={"$inc": {"next": 1}}, new=True, upsert=True)
         return int(ret["next"])
 
     def del_session(self, sid):
         '''
-        Clear test results and the relative files including snapshots, 
+        Clear test results and the relative files including snapshots,
         checksnap and log files according to the sid.
         By zsf
         '''
         r_collection = self._db['testresults']
-        #get all the result of the sid
-        trs = r_collection.find(spec={'sid':sid}, 
+        # get all the result of the sid
+        trs = r_collection.find(spec={'sid': sid},
                                 fields={'snapshots': True, 'checksnap': True, 'log': True, '_id': False})
 
         fids = set()
         for record in trs:
             if 'snapshots' in record:
-                for snap in record['snapshots']: 
+                for snap in record['snapshots']:
                     fids.add(snap['fid'])
-            
+
             if 'checksnap' in record:
                 fids.add(record['checksnap']['fid'])
 
             if 'log' in record:
                 fids.add(record['log'])
 
-        #TODO: Improve the speeed of deletion
+        # TODO: Improve the speeed of deletion
         if 'N/A' in fids:
             fids.remove('N/A')
 
-        print 'Begin to delete all the files relative the session: %s'%sid
+        print 'Begin to delete all the files relative the session: %s' % sid
         for f in fids:
             self.deletefile(f)
 
-        #remove test result
-        print 'Begin to delete all the test results relative the session: %s'%sid
-        r_collection.remove({'sid':sid})
+        # remove test result
+        print 'Begin to delete all the test results relative the session: %s' % sid
+        r_collection.remove({'sid': sid})
 
     def del_group(self, gid):
         '''
         Clear all test results and relative files belong to the gid
-        By zsf        
+        By zsf
         '''
         s_collection = self._db['testsessions']
-        
-        #get all sessions of gid
-        ss = s_collection.find(spec={'gid': gid}, 
+
+        # get all sessions of gid
+        ss = s_collection.find(spec={'gid': gid},
                                 fields={'sid': True, '_id': False})
 
-        #delete all data relative all sid
-        print "Begin to delete all the session data relative the group: %s"%gid
+        # delete all data relative all sid
+        print "Begin to delete all the session data relative the group: %s" % gid
         for s in ss:
             self.del_session(s['sid'])
 
-        #remove all sessions
-        s_collection.remove({'gid' : gid})
+        # remove all sessions
+        s_collection.remove({'gid': gid})
 
     def _del_dirty_testsession(self):
         '''
@@ -125,18 +143,18 @@ class DataStore(object):
 
         print 'Begin to find the dirty sid...' + datetime.now().strftime(DATE_FORMAT_STR1)
 
-        #get all gids from test session
+        # get all gids from test session
         for s in s_collection.find(fields={'gid': True}):
             g_sset.add(s['gid'])
 
-        #get all gids from groups
+        # get all gids from groups
         for g in g_collection.find(fields={'gid': True}):
             g_gset.add(g['gid'])
 
-        #delete all sessions which gid is not in groups
+        # delete all sessions which gid is not in groups
         print 'Begin to clear dirty sessions...' + datetime.now().strftime(DATE_FORMAT_STR1)
         for t in g_sset - g_gset:
-            s_collection.remove({'gid':t})
+            s_collection.remove({'gid': t})
         print 'Finish to clear dirty sessions...' + datetime.now().strftime(DATE_FORMAT_STR1)
 
     def _del_dirty_testresult(self):
@@ -150,18 +168,18 @@ class DataStore(object):
         s_rset = set()
 
         print 'Begin to find the dirty result...' + datetime.now().strftime(DATE_FORMAT_STR1)
-        #get all sids from test session
+        # get all sids from test session
         for s in s_collection.find(fields={'sid': True}):
             s_sset.add(s['sid'])
 
-        #get all sids from test results
+        # get all sids from test results
         for r in r_collection.find(fields={'sid': True}):
             s_rset.add(r['sid'])
 
-        #delete all test results which sid is not in test session
+        # delete all test results which sid is not in test session
         print 'Begin to clear dirty test results... ' + datetime.now().strftime(DATE_FORMAT_STR1)
         for t in s_rset - s_sset:
-            r_collection.remove({'sid':t})
+            r_collection.remove({'sid': t})
         print 'Finish to clear dirty test results... ' + datetime.now().strftime(DATE_FORMAT_STR1)
 
     def _del_dirty_fs(self):
@@ -175,18 +193,20 @@ class DataStore(object):
         fid_rset = set()
 
         print 'Begin to find dirty fs... ' + datetime.now().strftime(DATE_FORMAT_STR1)
-        #Only consider files, created 3 days ago, could be dirty files
-        for f in fs_collection.find(spec={'uploadDate': {'$lt': datetime.now() - timedelta(3)}}, 
+        # Only consider files, created 3 days ago, could be dirty files
+        for f in fs_collection.find(
+            spec={'uploadDate': {'$lt': datetime.now() - timedelta(3)}},
                                     fields={'_id': True}):
             fid_aset.add(str(f['_id']))
 
-        trs = r_collection.find(spec={'$or': [{'result':'fail'}, {'result':'error'}]},
+        trs = r_collection.find(
+            spec={'$or': [{'result': 'fail'}, {'result': 'error'}]},
                                 fields={'snapshots': True, 'checksnap': True, 'log': True})
         for record in trs:
             if 'snapshots' in record and record['snapshots'] is not None:
-                for snap in record['snapshots']: 
+                for snap in record['snapshots']:
                     fid_rset.add(snap['fid'])
-            
+
             if 'checksnap' in record and record['checksnap'] is not None:
                 fid_rset.add(record['checksnap']['fid'])
 
@@ -213,23 +233,24 @@ class DataStore(object):
 
     def check_fs(self, fid):
         r_collection = self._db['testresults']
-        
+
         flag_snap = False
         flag_check = False
         flag_log = False
 
-        trs = r_collection.find(fields={'checksnap': True, 'log': True, 'snapshots': True})
+        trs = r_collection.find(fields={
+                                'checksnap': True, 'log': True, 'snapshots': True})
         for record in trs:
             if 'checksnap' in record:
                 if fid == record['checksnap']['fid']:
                     flag_check = True
-            
+
             if 'log' in record:
                 if fid == record['log']:
                     flag_log = True
-            
+
             if 'snapshots' in record:
-                for snap in record['snapshots']: 
+                for snap in record['snapshots']:
                     if fid == snap['fid']:
                         flag_snap = True
                         break
@@ -312,11 +333,13 @@ class DataStore(object):
         pswd = m.hexdigest()
         m.update('%08d' % self.counter('userid'))
         uid = m.hexdigest()
-        users.insert({'uid': uid, 'appid': appid, 'username': user, 'password': pswd, 'active': False, 'info': info})
+        users.insert({'uid': uid, 'appid': appid, 'username':
+                     user, 'password': pswd, 'active': False, 'info': info})
         m = hashlib.md5()
         m.update(str(uuid.uuid1()))
         token = m.hexdigest()
-        tokens.insert({'uid': uid, 'appid': '02', 'token': token, 'expires': '300000'})
+        tokens.insert({'uid': uid, 'appid': '02',
+                      'token': token, 'expires': '300000'})
         return {'uid': uid, 'token': token}
 
     def createGroup(self, groupname, info):
@@ -347,7 +370,8 @@ class DataStore(object):
         if group is None:
             return {'errors': {'code': 0,'msg':'Invalid group.'}}
 
-        #collections = ['groups', 'group_members', 'testsessions', 'testresults']
+        # collections = ['groups', 'group_members', 'testsessions',
+        # 'testresults']
         collections = ['groups', 'group_members']
         for collec in collections:
             self._db[collec].remove({'gid': gid})
@@ -398,8 +422,10 @@ class DataStore(object):
                 username = ''
                 for k in retuser:
                     username = k['username']
-                lstmember.append({'uid': d['uid'], 'username': username, 'role': d['role']})
-            result = {'gid': t['gid'], 'groupname': t['groupname'], 'info': t['info'], 'members': lstmember}
+                lstmember.append({'uid': d[
+                                 'uid'], 'username': username, 'role': d['role']})
+            result = {'gid': t['gid'], 'groupname': t[
+                'groupname'], 'info': t['info'], 'members': lstmember}
         return result
 
     # TODO cache policy...
@@ -419,7 +445,8 @@ class DataStore(object):
                 retname = groups.find_one({'gid': d['gid']})
                 if not retname is None:
                     groupname = retname['groupname']
-                ingroups.append({'gid': d['gid'], 'groupname': groupname, 'role': d['role']})
+                ingroups.append({'gid': d[
+                                'gid'], 'groupname': groupname, 'role': d['role']})
 
             sessions = self._db['testsessions']
             rettests = sessions.find({'tester': uid})
@@ -427,8 +454,10 @@ class DataStore(object):
                 retname = groups.find_one({'gid': d['gid']})
                 if not retname is None:
                     groupname = retname['groupname']
-                intests.append({'sessionid': d['id'], 'sid': d['sid'], 'groupname': groupname, 'gid': d['gid']})
-            result = {'uid': retuser['uid'], 'username': retuser['username'], 'info': retuser['info'],
+                intests.append({'sessionid': d['id'], 'sid': d[
+                               'sid'], 'groupname': groupname, 'gid': d['gid']})
+            result = {
+                'uid': retuser['uid'], 'username': retuser['username'], 'info': retuser['info'],
                       'inGroups': ingroups, 'inTests': intests}
         return result
 
@@ -453,9 +482,11 @@ class DataStore(object):
     def userExists(self, username, password):
         users = self._db['users']
         if '@' in username:
-            rdata = users.find_one({'info.email': username, 'password': password})
+            rdata = users.find_one({
+                                   'info.email': username, 'password': password})
         else:
-            rdata = users.find_one({'username': username, 'password': password})
+            rdata = users.find_one({
+                                   'username': username, 'password': password})
         if not rdata is None:
             return rdata['uid']
         else:
@@ -503,7 +534,8 @@ class DataStore(object):
         m = hashlib.md5()
         m.update(str(uuid.uuid1()))
         token = m.hexdigest()
-        tokens.insert({'appid': appid, 'uid': uid, 'info': info, 'token': token, 'expires': expires})
+        tokens.insert({'appid': appid, 'uid': uid,
+                      'info': info, 'token': token, 'expires': expires})
         return {'token': token, 'uid': uid}
 
     def deleteToken(self, token):
@@ -514,15 +546,16 @@ class DataStore(object):
         """
         write a test session record in database
         """
-        vid = self.counter('group' + gid)       
+        vid = self.counter('group' + gid)
         sessions = self._db['testsessions']
+        deviceid = value['deviceid']
         if deviceid is None:
             deviceid = 'N/A'
         sessions.insert({'id': vid, 'gid': gid, 'sid': sid,
                          'tester': uid, 'planname': value['planname'],
                          'starttime': value['starttime'], 'endtime': 'N/A', 'runtime': 0,
                          'summary': {'total': 0, 'pass': 0, 'fail': 0, 'error': 0},
-                         'deviceid': value['deviceid'], 'deviceinfo': value['deviceinfo'], 'domain':value['domain']})
+                         'deviceid': deviceid, 'deviceinfo': value['deviceinfo'], 'domain': value['domain']})
 
     def updateTestSession(self, gid, sid, value):
         """
@@ -560,7 +593,7 @@ class DataStore(object):
         #     if 'snapshots' in record:
         #         snapshots = record['snapshots']
         #         for snap in snapshots: self.deletefile(snap['fid'])
-            
+
         #     if 'checksnap' in record:
         #         checksnap = record['checksnap']
         #         self.deletefile(checksnap['fid'])
@@ -576,23 +609,23 @@ class DataStore(object):
         users = self._db['users']
         user = 'N/A'
         session = self._db['testsessions']
-        #caseresult = self._db['testresults']
+        # caseresult = self._db['testresults']
         rdata = session.find({'gid': gid})
         result = []
         cidTag = {}
         dtnow = datetime.now()
-        
-        tmpi=0
+
+        tmpi = 0
         for tmpCid in session.find({'gid': gid}).distinct('cid'):
-            result.append({'cid':tmpCid,'count':0,'livecount':0,'starttime':'--','endtime':'--','product':'--','revision':'--','sessions':[]})
-            cidTag[tmpCid]=tmpi
-            tmpi+=1
-        result.append({'cid':'','count':0,'livecount':0,'starttime':'--','endtime':'--','product':'--','revision':'--','sessions':[]})
-        cidTag['None']=tmpi
-        
+            result.append({'cid': tmpCid,'count':0,'livecount':0,'starttime':'--','endtime':'--','product':'--','revision':'--','sessions':[]})
+            cidTag[tmpCid] = tmpi
+            tmpi += 1
+        result.append({'cid': '','count':0,'livecount':0,'starttime':'--','endtime':'--','product':'--','revision':'--','sessions':[]})
+        cidTag['None'] = tmpi
+
         for d in rdata:
-            if 'failtime' in d :
-                d['endtime']=d['failtime']
+            if 'failtime' in d:
+                d['endtime'] = d['failtime']
 
             if d['endtime'] == 'N/A':
                 dttime = self.getCache(str('sid:' + d['sid'] + ':uptime'))
@@ -613,29 +646,31 @@ class DataStore(object):
                 d['status'] = 'running'
             else:
                 d['status'] = 'end'
-            
+
             retuser = users.find_one({'uid': d['tester']})
             if not retuser is None:
                 user = retuser['username']
 
             if 'cid' in d:
                 result[cidTag[d['cid']]]['count'] += 1
-                result[cidTag[d['cid']]]['product']=d['deviceinfo']['product']
-                result[cidTag[d['cid']]]['revision']=d['deviceinfo']['revision'] 
-                
-                if result[cidTag[d['cid']]]['starttime']=='--' or \
-                datetime.strptime(d['starttime'],DATE_FORMAT_STR)<datetime.strptime(result[cidTag[d['cid']]]['starttime'],DATE_FORMAT_STR):
+                result[cidTag[d['cid']]][
+                    'product'] = d['deviceinfo']['product']
+                result[cidTag[d['cid']]][
+                    'revision'] = d['deviceinfo']['revision']
 
-                    result[cidTag[d['cid']]]['starttime']=d['starttime']
+                if result[cidTag[d['cid']]]['starttime'] == '--' or \
+                _compareDateTime(result[cidTag[d['cid']]]['starttime'], d['starttime']):
+
+                    result[cidTag[d['cid']]]['starttime'] = d['starttime']
 
                 if result[cidTag[d['cid']]]['endtime'] != 'N/A' and d['endtime'] != '' \
-                and (result[cidTag[d['cid']]]['endtime'] == '--' or d['endtime']=='N/A' or datetime.strptime(d['endtime'], DATE_FORMAT_STR)>datetime.strptime(result[cidTag[d['cid']]]['endtime'], DATE_FORMAT_STR)):
-                    
-                    result[cidTag[d['cid']]]['endtime']=d['endtime']
-                    
-                if d['endtime']=='N/A' :
+                and (result[cidTag[d['cid']]]['endtime'] == '--' or d['endtime'] == 'N/A' or _compareDateTime(d['endtime'], result[cidTag[d['cid']]]['endtime'])):
+
+                    result[cidTag[d['cid']]]['endtime'] = d['endtime']
+
+                if d['endtime'] == 'N/A':
                     result[cidTag[d['cid']]]['livecount'] += 1
-                
+
                 result[cidTag[d['cid']]]['sessions'].append({'id': d['id'],
                          'sid': d['sid'],
                          'gid': d['gid'],
@@ -646,7 +681,7 @@ class DataStore(object):
                          'runtime': d['runtime'],
                          'deviceid': d['deviceid']})
             else:
-                result[cidTag['None']]['count'] += 1 
+                result[cidTag['None']]['count'] += 1
                 result[cidTag['None']]['sessions'].append({'id': d['id'],
                                                        'sid': d['sid'],
                                                        'gid': d['gid'],
@@ -657,41 +692,42 @@ class DataStore(object):
                                                        'runtime': d['runtime'],
                                                        'deviceid': d['deviceid']})
 
-        tmpres = {'results' : result}
-        return tmpres 
+        tmpres = {'results': result}
+        return tmpres
 
-    def readTestReport(self,gid,cid):
+    def readTestReport(self, gid, cid):
         """
         give a cycle report data
         """
         DATE_FORMAT_STR = "%Y.%m.%d-%H.%M.%S"
-        DATE_FORMAT_STR1 = "%Y/%m/%d %H:%M" 
+        DATE_FORMAT_STR1 = "%Y/%m/%d %H:%M"
         DATE_FORMAT_STR2 = "%Y-%m-%d %H:%M:%S"
         session = self._db['testsessions']
         caseresult = self._db['testresults']
-        sidList=[]
-        res1 = {'product':'--','count':0,'starttime':'--','endtime':'--','failcnt':0,'totaldur':0} 
+        sidList = []
+        res1 = {'product': '--','count':0,'starttime':
+            '--','endtime':'--','failcnt':0,'totaldur':0}
         res2 = []
         res3 = []
         res4 = []
         dtnow = datetime.now()
-        
+
         rdata = session.find({'gid': gid,'cid':int(cid)})
         for d in rdata:
-            if 'failtime' in d :
-                d['endtime']=d['failtime']
+            if 'failtime' in d:
+                d['endtime'] = d['failtime']
 
             if d['endtime'] == 'N/A':
                 dttime = self.getCache(str('sid:' + d['sid'] + ':uptime'))
                 if dttime is not None:
-                    tmpNum=dttime.count('-')
-                    if tmpNum==0:
-                      idle = datetime.strptime(dttime, DATE_FORMAT_STR1)
-                    elif tmpNum==1:
-                      idle = datetime.strptime(dttime, DATE_FORMAT_STR)
-                    else :
-                      idle = datetime.strptime(dttime, DATE_FORMAT_STR2) 
-                      
+                    tmpNum = dttime.count('-')
+                    if tmpNum == 0:
+                        idle = datetime.strptime(dttime, DATE_FORMAT_STR1)
+                    elif tmpNum == 1:
+                        idle = datetime.strptime(dttime, DATE_FORMAT_STR)
+                    else:
+                        idle = datetime.strptime(dttime, DATE_FORMAT_STR2)
+
                     delta = dtnow - idle
                     idletime = delta.days * 86400 + delta.seconds
 
@@ -704,49 +740,59 @@ class DataStore(object):
                 d['endtime'] = 'N/A'
 
             sidList.append(d['sid'])
-            res1['product']=d['deviceinfo']['product']
-            res1['buildid']=d['deviceinfo']['revision']
-            res1['count']+=1
-            
+            res1['product'] = d['deviceinfo']['product']
+            res1['buildid'] = d['deviceinfo']['revision']
+            res1['count'] += 1
+
             try:
-                tmpEndTime=(d['endtime']=='N/A') and caseresult.find({'sid':d['sid']}).sort('tid',pymongo.DESCENDING).limit(1)[0]['starttime'] or d['endtime']
+                tmpEndTime = (d['endtime'] == 'N/A') and caseresult.find({'sid': d['sid']}).sort(
+                    'tid', pymongo.DESCENDING).limit(1)[0]['starttime'] or d['endtime']
             except:
-                tmpEndTime=datetime.strftime(datetime.now(), DATE_FORMAT_STR)
+                tmpEndTime = datetime.strftime(datetime.now(), DATE_FORMAT_STR)
 
-            tmpDur=(datetime.strptime(tmpEndTime, DATE_FORMAT_STR)-datetime.strptime(d['starttime'], DATE_FORMAT_STR)).seconds/3600.0
-            res1['totaldur']+=tmpDur
+            tmpDur = (datetime.strptime(tmpEndTime, DATE_FORMAT_STR) - datetime.strptime(
+                d['starttime'], DATE_FORMAT_STR)).seconds / 3600.0
+            res1['totaldur'] += tmpDur
 
-            if res1['starttime'] == '--' or datetime.strptime(d['starttime'], DATE_FORMAT_STR)<datetime.strptime(res1['starttime'], DATE_FORMAT_STR1):
-                res1['starttime']=datetime.strftime(datetime.strptime(d['starttime'], DATE_FORMAT_STR),DATE_FORMAT_STR1)
+            if res1['starttime'] == '--' or datetime.strptime(d['starttime'], DATE_FORMAT_STR) < datetime.strptime(res1['starttime'], DATE_FORMAT_STR1):
+                res1['starttime'] = datetime.strftime(datetime.strptime(
+                    d['starttime'], DATE_FORMAT_STR), DATE_FORMAT_STR1)
             if res1['endtime'] != 'N/A':
-                if res1['endtime'] == '--' or d['endtime']=='N/A' or datetime.strptime(d['endtime'], DATE_FORMAT_STR)>datetime.strptime(res1['endtime'], DATE_FORMAT_STR1):
-                    res1['endtime']=(d['endtime']=='N/A') and d['endtime'] or datetime.strftime(datetime.strptime(d['endtime'], DATE_FORMAT_STR), DATE_FORMAT_STR1)
-            
+                if res1['endtime'] == '--' or d['endtime'] == 'N/A' or datetime.strptime(d['endtime'], DATE_FORMAT_STR) > datetime.strptime(res1['endtime'], DATE_FORMAT_STR1):
+                    res1['endtime'] = (d['endtime'] == 'N/A') and d['endtime'] or datetime.strftime(
+                        datetime.strptime(d['endtime'], DATE_FORMAT_STR), DATE_FORMAT_STR1)
 
-            tmpR3 ={}
-            tmpR3['imei']=d['deviceid']
-            tmpR3['sid']=d['sid']
-            tmpR3['starttime']=datetime.strftime(datetime.strptime(d['starttime'], DATE_FORMAT_STR),DATE_FORMAT_STR1)
-            tmpR3['endtime']=(d['endtime']=='N/A') and d['endtime'] or datetime.strftime(datetime.strptime(d['endtime'], DATE_FORMAT_STR), DATE_FORMAT_STR1)
-            tmpR3['failcount']=0
-            tmpR3['totaldur']=tmpDur
-            tmpR3['caselist']=[]
-            tmpFailTime=datetime.strptime(tmpEndTime, DATE_FORMAT_STR)
-            rdata3=caseresult.find({'sid':d['sid'],'comments.caseresult':{'$in':['fail','Fail']}})
+            tmpR3 = {}
+            tmpR3['imei'] = d['deviceid']
+            tmpR3['sid'] = d['sid']
+            tmpR3['starttime'] = datetime.strftime(datetime.strptime(
+                d['starttime'], DATE_FORMAT_STR), DATE_FORMAT_STR1)
+            tmpR3['endtime'] = (d['endtime'] == 'N/A') and d['endtime'] or datetime.strftime(
+                datetime.strptime(d['endtime'], DATE_FORMAT_STR), DATE_FORMAT_STR1)
+            tmpR3['failcount'] = 0
+            tmpR3['totaldur'] = tmpDur
+            tmpR3['caselist'] = []
+            tmpFailTime = datetime.strptime(tmpEndTime, DATE_FORMAT_STR)
+            rdata3 = caseresult.find({'sid': d[
+                                   'sid'],'comments.caseresult':{'$in':['fail', 'Fail']}})
             for d3 in rdata3:
-                if datetime.strptime(d3['starttime'], DATE_FORMAT_STR)<tmpFailTime:
-                    tmpFailTime=datetime.strptime(d3['starttime'], DATE_FORMAT_STR)
-                tmpR3['caselist'].append({'happentime':datetime.strftime(datetime.strptime(d3['starttime'], DATE_FORMAT_STR),DATE_FORMAT_STR1),'issuetype':d3['comments']['issuetype'],'comments':d3['comments']['commentinfo']})
-                res1['failcnt']+=1
-                tmpR3['failcount']+=1
-            tmpR3['faildur']=(tmpFailTime-datetime.strptime(d['starttime'], DATE_FORMAT_STR)).seconds/3600.0
-            res3.append(tmpR3) 
+                if datetime.strptime(d3['starttime'], DATE_FORMAT_STR) < tmpFailTime:
+                    tmpFailTime = datetime.strptime(
+                        d3['starttime'], DATE_FORMAT_STR)
+                tmpR3['caselist'].append({'happentime': datetime.strftime(datetime.strptime(d3[
+                                         'starttime'], DATE_FORMAT_STR), DATE_FORMAT_STR1),'issuetype':d3['comments']['issuetype'],'comments':d3['comments']['commentinfo']})
+                res1['failcnt'] += 1
+                tmpR3['failcount'] += 1
+            tmpR3['faildur'] = (tmpFailTime - datetime.strptime(
+                d['starttime'], DATE_FORMAT_STR)).seconds / 3600.0
+            res3.append(tmpR3)
 
-        rdata2=caseresult.group({'comments.issuetype':1},{'sid':{'$in':sidList},'comments.caseresult':{'$in':['fail','Fail']} },{'cnt':0},'function(obj,prev){prev.cnt+=1;}')
+        rdata2 = caseresult.group({'comments.issuetype': 1}, {'sid': {'$in': sidList},'comments.caseresult':{
+                                '$in': ['fail', 'Fail']}}, {'cnt': 0}, 'function(obj,prev){prev.cnt+=1;}')
         for d in rdata2:
-            res2.append({'issuetype':d['comments.issuetype'],'count':d['cnt']})
+            res2.append({'issuetype': d['comments.issuetype'],'count':d['cnt']})
 
-        rdata4=caseresult.group({'casename':1,'domain':1},{'sid':{'$in':sidList}},{'totalcnt':0,'passcnt':0,'failcnt':0},'''
+        rdata4 = caseresult.group({'casename': 1,'domain':1}, {'sid':{'$in':sidList}}, {'totalcnt':0,'passcnt':0,'failcnt':0}, '''
   function(obj,prev){
     prev.totalcnt+=1;
     if(obj.result=='pass'){
@@ -756,28 +802,29 @@ class DataStore(object):
     }
   }
   ''')
-        domainTag={}
-        tmpi=0
+        domainTag = {}
+        tmpi = 0
         for d in rdata4:
             if d['domain'] not in domainTag:
-                domainTag[d['domain']]=tmpi
-                tmpi+=1
-            res4.append({'domain':d['domain'],'totalcnt':0,'passcnt':0,'failcnt':0,'blockcnt':0,'detail':[]})
-            tmpj=domainTag[d['domain']]
-            res4[tmpj]['totalcnt']+=d['totalcnt']
-            res4[tmpj]['passcnt']+=d['passcnt']
-            res4[tmpj]['failcnt']+=d['failcnt']
-            tmpBlock=d['totalcnt']-d['passcnt']-d['failcnt']
-            res4[tmpj]['blockcnt']+=tmpBlock
-            res4[tmpj]['detail'].append({'casename':d['casename'],'totalcnt':d['totalcnt'],'passcnt':d['passcnt'],'failcnt':d['failcnt'],'blockcnt':tmpBlock})
-        
-        result = {}
-        result['cylesummany']=res1
-        result['issuesummany']=res2
-        result['issuedetail']=res3
-        result['domain']=res4
-        return result
+                domainTag[d['domain']] = tmpi
+                tmpi += 1
+            res4.append({'domain': d[
+                        'domain'],'totalcnt':0,'passcnt':0,'failcnt':0,'blockcnt':0,'detail':[]})
+            tmpj = domainTag[d['domain']]
+            res4[tmpj]['totalcnt'] += d['totalcnt']
+            res4[tmpj]['passcnt'] += d['passcnt']
+            res4[tmpj]['failcnt'] += d['failcnt']
+            tmpBlock = d['totalcnt'] - d['passcnt'] - d['failcnt']
+            res4[tmpj]['blockcnt'] += tmpBlock
+            res4[tmpj]['detail'].append({'casename': d['casename'],'totalcnt':d[
+                                        'totalcnt'],'passcnt':d['passcnt'],'failcnt':d['failcnt'],'blockcnt':tmpBlock})
 
+        result = {}
+        result['cylesummany'] = res1
+        result['issuesummany'] = res2
+        result['issuedetail'] = res3
+        result['domain'] = res4
+        return result
 
     def readTestSessionInfo(self, gid, sid):
         """
@@ -835,7 +882,8 @@ class DataStore(object):
 
     def isSessionUpdated(self, gid, sid, tid):
         tResult = self._db['testresults']
-        record = tResult.find_one({'gid': gid,'sid':sid,'tid':{'$gt':int(tid)}})
+        record = tResult.find_one({
+                                  'gid': gid,'sid':sid,'tid':{'$gt':int(tid)}})
         if record is None:
             return 0
         else:
@@ -857,8 +905,9 @@ class DataStore(object):
 
         tResult = self._db['testresults']
         specs = {'gid': gid,'sid':sid}
-        fields = {'_id': False,'gid':False,'sid':False,'log':False,'checksnap':False,'snapshots':False}
-        records = tResult.find(spec=specs, fields=fields, 
+        fields = {'_id': False,'gid':False,'sid':False,
+            'log': False,'checksnap':False,'snapshots':False}
+        records = tResult.find(spec=specs, fields=fields,
                                limit=int(maxCount), sort=[('tid', pymongo.DESCENDING)])
         cases = []
         for record in records:
@@ -879,7 +928,7 @@ class DataStore(object):
         paging = {}
         total = 0
         if type in ret['summary']:
-            total = ret['summary'][type] 
+            total = ret['summary'][type]
         else:
             return None
         if (total % pagesize != 0):
@@ -895,7 +944,8 @@ class DataStore(object):
         else:
             specs = {'sid': sid,'result':type}
         fields = {'_id': False,'gid':False,'sid':False}
-        records = tResult.find(spec=specs, fields=fields, skip=int((page-1)*pagesize), 
+        records = tResult.find(
+            spec=specs, fields=fields, skip=int((page - 1) * pagesize),
                                limit=int(pagesize), sort=[('tid', pymongo.DESCENDING)])
         cases = []
         for record in records:
@@ -965,34 +1015,37 @@ class DataStore(object):
         caseresult = self._db['testresults']
         caseresult.insert({'gid': gid, 'sid': sid, 'tid': int(tid),
                            'casename': casename, 'log': 'N/A', 'starttime': starttime, 'endtime': 'N/A',
-                           'traceinfo':'N/A', 'result': 'running',  'snapshots': []})
+                           'traceinfo': 'N/A', 'result': 'running',  'snapshots': []})
         session = self._db['testsessions']
-        session.update({'gid': gid, 'sid': sid}, {'$inc': {'summary.total': 1}})
+        session.update({'gid': gid, 'sid': sid}, {
+                       '$inc': {'summary.total': 1}})
 
     def updateTestCaseResult(self, gid, sid, tid, results):
         """
         update a test case resut record in database
         If case get failed, write snapshot png files in GridFS
         """
-        comments={}
+        comments = {}
         caseresult = self._db['testresults']
 
         if 'comments' in results:
-            comments=results['comments']
-            if comments['endsession'] == 1 :
-                tmpt = caseresult.find_one({'gid': gid, 'sid': sid, 'tid': int(tid)})
-                self._db['testsessions'].update({'gid': gid, 'sid': sid},{'$set': {'failtime': tmpt['endtime']}})
-            return caseresult.update({'gid': gid, 'sid': sid, 'tid': int(tid)},  {'$set': {'comments': comments}} )
-            
-        status=results['result']
-        traceinfo=results['traceinfo']
-        endtime=results['time']
+            comments = results['comments']
+            if comments['endsession'] == 1:
+                tmpt = caseresult.find_one({
+                                           'gid': gid, 'sid': sid, 'tid': int(tid)})
+                self._db['testsessions'].update({'gid': gid, 'sid': sid}, {
+                                                '$set': {'failtime': tmpt['endtime']}})
+            return caseresult.update({'gid': gid, 'sid': sid, 'tid': int(tid)},  {'$set': {'comments': comments}})
+
+        status = results['result']
+        traceinfo = results['traceinfo']
+        endtime = results['time']
 
         timestamp = datetime.now().strftime(DATE_FORMAT_STR1)
         self.setCache(str('sid:' + sid + ':uptime'), timestamp)
         snapshots = self.getCache(str('sid:' + sid + ':tid:' + tid + ':snaps'))
         self.clearCache(str('sid:' + sid + ':tid:' + tid + ':snaps'))
-    
+
         session = self._db['testsessions']
         status = status.lower()
         runtime = 0
@@ -1014,18 +1067,21 @@ class DataStore(object):
 
         if status == 'pass':
             if snapshots is not None:
-                for d in snapshots: 
+                for d in snapshots:
                     if 'fid' in d:
                         self.deletefile(d['fid'])
             snapshots = []
-            session.update({'gid': gid, 'sid': sid}, {'$inc': {'summary.pass': 1}, '$set': {'runtime': runtime}})
+            session.update({'gid': gid, 'sid': sid}, {'$inc': {
+                           'summary.pass': 1}, '$set': {'runtime': runtime}})
         elif status == 'fail':
-            session.update({'gid': gid, 'sid': sid}, {'$inc': {'summary.fail': 1}, '$set': {'runtime': runtime}})
+            session.update({'gid': gid, 'sid': sid}, {'$inc': {
+                           'summary.fail': 1}, '$set': {'runtime': runtime}})
         else:
-            session.update({'gid': gid, 'sid': sid}, {'$inc': {'summary.error': 1}, '$set': {'runtime': runtime}})
-    
-        caseresult.update({'gid': gid, 'sid': sid, 'tid': int(tid)},  {'$set': {'result': status, 'traceinfo': traceinfo,'endtime': endtime, 'snapshots': snapshots}} )
+            session.update({'gid': gid, 'sid': sid}, {'$inc': {
+                           'summary.error': 1}, '$set': {'runtime': runtime}})
 
+        caseresult.update({'gid': gid, 'sid': sid, 'tid': int(tid)},  {'$set': {
+                          'result': status, 'traceinfo': traceinfo,'endtime': endtime, 'snapshots': snapshots}} )
 
     def writeTestLog(self, gid, sid, tid, logfile):
         """
@@ -1034,14 +1090,16 @@ class DataStore(object):
         """
         caseresult = self._db['testresults']
         fkey = self.setfile(logfile)
-        caseresult.update({'gid': gid, 'sid': sid, 'tid': int(tid)}, {'$set': {'log': fkey}})
+        caseresult.update({'gid': gid, 'sid': sid, 'tid': int(
+            tid)}, {'$set': {'log': fkey}})
 
     def writeTestSnapshot(self, gid, sid, tid, snapfile, stype):
         """
         add snapshot png in image buffer
         """
         snaps = self.getCache(str('sid:' + sid + ':tid:' + tid + ':snaps'))
-        if snaps is None: snaps = []
+        if snaps is None:
+            snaps = []
         try:
             posi = stype.index(':')
             xtype = stype[0:posi]
@@ -1050,14 +1108,15 @@ class DataStore(object):
             fkey = self.setfile(snapfile)
             snapfile.seek(0)
             if xtype == 'expect':
-                results.update({'gid': gid, 'sid': sid, 'tid': int(tid) },
+                results.update({'gid': gid, 'sid': sid, 'tid': int(tid)},
                                {'$set': {'checksnap': {'title': sfile, 'fid': fkey}}})
             elif xtype == 'current':
                 snaps.append({'title': sfile, 'fid': fkey})
                 timenow = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
                 self.setCache(str('sid:' + sid + ':snap'), snapfile.read())
                 self.setCache(str('sid:' + sid + ':snaptime'), timenow)
-                self.setCache(str('sid:' + sid + ':tid:' + tid + ':snaps'), snaps)
+                self.setCache(str(
+                    'sid:' + sid + ':tid:' + tid + ':snaps'), snaps)
         except:
             pass
 
@@ -1097,11 +1156,11 @@ class DataStore(object):
         if ret is not None:
             snapids = ret['snapshots']
             if not 'checksnap' in ret:
-                checksnap = {'title':'', 'url':''}
+                checksnap = {'title': '', 'url': ''}
             else:
                 stitle = ret['checksnap']['title']
                 checkid = ret['checksnap']['fid']
-                checksnap = {'title':stitle, 'url':checkid}
+                checksnap = {'title': stitle, 'url': checkid}
 
         if not snapids is None:
             for d in snapids:
