@@ -644,7 +644,9 @@ class DataStore(object):
             cid = d.get('cid','None')
             if result.has_key(cid):
                 if cid is 'None':
-                    result['None']['count'] += 1 
+                    result['None']['count'] += 1
+                    result[cid]['product']=d['deviceinfo'].get('product', '--')
+                    result[cid]['revision']=d['deviceinfo'].get('revision', '--')                     
                     result['None']['sessions'].append({'id': d['id'],
                                                        'sid': d['sid'],
                                                        'gid': d['gid'],
