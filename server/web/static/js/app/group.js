@@ -258,9 +258,9 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
     var $th =     '<thead><tr>'+
                       '<th width="1%"></th>'+
                       '<th width="5%">Cycle</th>'+
-                      '<th width="15%">Device</th>'+
+                      '<th width="15%">IMEI</th>'+
                       '<th width="5%">Build</th>'+
-                      '<th width="15%">Start time</th>'+
+                      '<th width="15%">Start Time</th>'+
                       '<th width="15%">Uptime</th>'+
                       '<th width="5%">Product</th>'+
                       '<th width="5%">Tester</th>'+ 
@@ -329,14 +329,14 @@ function renderTestSessionDiv_cyclelist(div_id, test_session){
     var $cycle_panel = $("#"+div_id).html('');
     var $product_table = $('<table>').attr('class','table table-bordered table-striped table-hover');
     var $th =     '<thead><tr>'+
-                      '<th width="5%">Cycle</th>'+
-                      '<th width="5%">Product</th>'+
+                      '<th width="2%">Cycle</th>'+
+                      '<th width="10%">Product</th>'+
                       '<th width="10%">Build</th>'+
-                      '<th width="10%">Start time</th>'+
-                      '<th width="10%">End time</th>'+
-                      '<th width="5%">Count</th>'+
-                      '<th width="7%">Live count</th>'+
-                      '<th width="10%">Report</th>'+ 
+                      //'<th width="10%">Start Time</th>'+
+                      //'<th width="10%">End Time</th>'+
+                      '<th width="5%">Devices</th>'+
+                      '<th width="7%">Live Devices</th>'+
+                      '<th width="2%">Report</th>'+ 
                       '</tr></thead>';
     var $tbody = '<tbody></tbody>';
     $product_table.append($th);
@@ -357,8 +357,8 @@ function renderTestSessionDiv_cyclelist(div_id, test_session){
                 "<td>"+cid+"</td>"+ 
                 "<td>"+product+"</td>"+      
                 "<td>"+revision+"</td>"+
-                "<td>"+starttime+"</td>"+
-                "<td>"+endtime+"</td>"+
+                //"<td>"+starttime+"</td>"+
+                //"<td>"+endtime+"</td>"+
                 "<td>"+count+"</td>"+                   
                 "<td>"+livecount+"</td>"+
                 "<td><a href=\"#/group/"+test_session[k].sessions[0].gid+"/report/"+cid+"\">Report</a></td>"+
