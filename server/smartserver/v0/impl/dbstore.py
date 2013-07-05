@@ -660,11 +660,11 @@ class DataStore(object):
                     result[cid]['revision']=d['deviceinfo'].get('revision', '--')
 
                     if result[cid]['starttime']=='--' or \
-                    datetime.strptime(d['starttime'],DATE_FORMAT_STR)<datetime.strptime(result[cid]['starttime'],DATE_FORMAT_STR):
+                    _compareDateTime(result[cid]['starttime'], d['starttime']):
                         result[cid]['starttime']=d['starttime']
 
                     if result[cid]['endtime'] != 'N/A' and d['endtime'] != '' \
-                    and (result[cid]['endtime'] == '--' or d['endtime']=='N/A' or datetime.strptime(d['endtime'], DATE_FORMAT_STR)>datetime.strptime(result[cid]['endtime'], DATE_FORMAT_STR)):
+                    and (result[cid]['endtime'] == '--' or d['endtime']=='N/A' or _compareDateTime(d['endtime'], result[cid]['endtime'])):
                         result[cid]['endtime']=d['endtime']
                 
                     if d['endtime']=='N/A' :
