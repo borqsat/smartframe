@@ -479,9 +479,9 @@ function createDetailTable(div, ids){
     var $div_detail = $("#"+div);
     var $tb = $('<table>').attr('id', ids).attr('class','table table-striped table-hover').attr('style','table-layout:fixed;word-wrap:break-word;');
     var $th = '<thead><tr>'+
-              '<th align="left" width="6%">tid</th>'+
-              '<th align="left" width="31%">TestCase</th>'+
-              '<th align="left" width="17%">StartTime</th>'+
+              '<th align="left" width="6%">Tid</th>'+
+              '<th align="left" width="31%">Testcase</th>'+
+              '<th align="left" width="17%">Start Time</th>'+
               '<th align="left" width="7%">Result</th>'+
               '<th align="left" width="5%">Log</th>'+
               '<th align="left" width="7%">Image</th>'+
@@ -816,12 +816,12 @@ function createSessionBaseInfo(data, gid, sid) {
     data = data['results'];
     var $dev_table = $('<table>').attr('class','table table-bordered');
     var $th = '<thead><tr>'+
-              '<th>planname</th>'+
-              '<th>tester</th>'+           
-              '<th>device</th>'+
-              '<th>product</th>'+
-              '<th>revision</th>'+              
-              '<th>starttime</th>'+
+              '<th>Planname</th>'+
+              '<th>Tester</th>'+           
+              '<th>Device#</th>'+
+              '<th>Product</th>'+
+              '<th>Build Version</th>'+              
+              '<th>Start Time</th>'+
               '</tr></thead>';   
     var $tbody = '<tbody></tbody>';
     $('#device_div').html('').append($dev_table);
@@ -855,11 +855,11 @@ function createSessionSummary(data, gid, sid) {
     $('#summary_div').html('');
     var $summary_table = $('<table>').attr('class','table table-bordered').attr('id','stable'+key);
     var $th = '<thead><tr>'+
-              '<th>runtime</th>'+
-              '<th>all</th>'+
-              '<th>pass</th>'+
-              '<th>fail</th>'+              
-              '<th>error</th>'+
+              '<th>Uptime</th>'+
+              '<th>All</th>'+
+              '<th>Pass</th>'+
+              '<th>Fail</th>'+              
+              '<th>Error</th>'+
               '</tr></thead>';
     var $tbody = '<tbody></tbody>';
     $('#summary_div').append($summary_table);
@@ -944,27 +944,25 @@ function showReportInfo(gid,cid){
                   showCommentInfo();
                   showCycleBaseInfo(data);
                   showFailureSummaryInfo(data);
-                  showFailureDetailsInfo(data);
-                  showDomainInfo();
+                  showFailureDetailsInfo(data,gid);
+                  showDomainInfo(data);
                 },true);
 }
 
-function showFailureInfo(gid,cid){
-    invokeWebApi('/group/'+gid+'/testsummary',
-                prepareData({'cid':cid}),
-                function(data) {
-                  // showCycleBaseInfo(data);
-                  // showFailureSummaryInfo(data)
-                  showFailureDetailsInfo(data)
-                });
-}
-
-function setTimeToHours(tm){
-    var settime = Math.round(tm*100)/100;
-    return settime
-  }
 
 function showCommentInfo(){
+
+    document.getElementById('show-title').innerHTML = "Touch here to get more infomation==><br />"
+    document.getElementById('article').innerHTML = "<b>Uptime:</b> device runtime, "+ 
+    "the duration from start testing till testing stopped. " + 
+    "Testing stops when all tests are blocked to be continued without system manual reset. <br />"+
+    "<b>MTBF</b> = Total running hours/Total failures  <br />" +
+    "<b>Total failures</b>= (critical issues) + (Non-Critical issues). <br />" +
+    "<b>Critial Issues:</b> Phone reset including power down/cycle, kernel restart, system restart, etc; Phone lockup including UI freeze, black screen and application lockup. <br />"+
+    "<b>Non-Critical Issues:</b> Application/process restart including force close, core dump (native process crash).<br />" +
+    "<b>Notes:</b> <br />" +
+    "1. In AT&T, no distinguish between critical and non-critical issues, MTBF testing stop once device meet failure. <br />" +
+    "2. If strictly follow AT&T MTBF calculation, MTBF fail as no device runtime >50 hrs"
 
     $(document).ready(function(){
         $(".show-content").hide();
@@ -975,7 +973,6 @@ function showCommentInfo(){
 
 }
 
-
 function showCycleBaseInfo(data){
     var data = data.results.cylesummany
     var $dev_table = $('<table>').attr('class','table table-bordered');
@@ -983,10 +980,8 @@ function showCycleBaseInfo(data){
               '<th width="8%">Product</th>'+
               '<th width="18%">Build Version</th>'+           
               '<th width="12%">Devices</th>'+            
-              '<th width="13%">Starttime</th>'+
-              '<th width="13%">Endtime</th>'+
               '<th width="12%">Failures</th>'+
-              '<th width="12%">Total time</th>'+
+              '<th width="12%">Total Uptime</th>'+
               '<th width="12%">MTBF</th>'+
               '</tr></thead>';
     var $tbody = '<tbody></tbody>';
@@ -997,17 +992,15 @@ function showCycleBaseInfo(data){
     if (data.failcnt == 0)
       avgTime = data.totaldur;
     else
-      avgTime = data.totaldur/data.failcnt;
+      avgTime = Math.round((data.totaldur/data.failcnt)*100)/100;
 
     var $tr = "<tr>"+ 
           "<td>"+data.product+"</td>"+
           "<td>"+data.buildid+"</td>"+
           "<td>"+data.count+"</td>"+ 
-          "<td>"+data.starttime+"</td>"+
-          "<td>"+data.endtime+"</td>"+
           "<td>"+data.failcnt+"</td>"+
-          "<td>"+setTimeToHours(data.totaldur)+"</td>"+
-          "<td>"+setTimeToHours(avgTime)+"</td>"+
+          "<td>"+setRunTime(data.totaldur)+"</td>"+
+          "<td>"+setRunTime(avgTime)+"</td>"+
           "</tr>"
 
     $dev_table.append($tr);
@@ -1019,7 +1012,7 @@ function showFailureSummaryInfo(data) {
     var data = data.results.issuesummany;
 
     var $dev_table = $('<table>').attr('class','table table-bordered');
-    var $title = '<thead><tr><th colspan="2" ><p align="center">Details Failure summary</p></th></tr></thead>'
+    var $title = '<thead><tr><th colspan="2" ><p align="center" type="font-size:25px">Details Failure Summary</p></th></tr></thead>'
     var $th = '<thead><tr>'+
               '<th style="text-align:center" width="50%">Issue Type </th>'+
               '<th style="text-align:center" width="50%">Occurs</th>'+
@@ -1047,25 +1040,39 @@ function showFailureSummaryInfo(data) {
     $dev_table.append($tbody);
   }
 
-function showPic(){
-
-    // var img=document.getElementById(id);
-    alert(document.getElementById(id));
+function showPic(picID){
+    var localHost  = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ":" + window.location.port : "")+"/smartserver/";
+    var imgSrc=[localHost+"static/img/spread.png",localHost+"static/img/combine.png"]
+    var img = document.getElementById(picID);
+    document.getElementById(picID).src=document.getElementById(picID).src==imgSrc[0]?imgSrc[1]:imgSrc[0];
 }
 
-function showFailureDetailsInfo(data){
+function showFailuresInfo(gid,sid){
+    viewHistory();
+    invokeWebApi('/group/'+gid+'/test/'+sid+'/history',
+                  prepareData({'type':'fail'}),
+                  function(data){
+                  if(data.results === undefined) return;
+                  var paging = data.results.paging;
+                  var caseslist = data.results.cases;
+                  createDetailTable('cases_div','table_fail_' + sid);
+                  fillDetailTable(gid, sid, caseslist,'table_fail_' + sid,'fail');
+                  if(paging !== undefined) TablePage(gid, sid, paging['totalpage'], paging['pagesize'], fillDetailTable, 'table_fail_' + sid,'fail');
+            });
+}
 
+function showFailureDetailsInfo(data,gid){
     var data = data.results.issuedetail;
 
     var $dev_table = $('<table border="1">').attr('class','table table-bordered');
     var $th = '<thead><tr>'+
-              '<th></th>'+    
-              '<th>IMEI</th>'+
-              '<th>Starttime</th>'+           
-              '<th>Endtime</th>'+            
+              '<td></td>'+
+              '<th>Device#</th>'+
+              '<th>Start Time</th>'+           
+              '<th>End Time</th>'+            
               '<th>Failures</th>'+
-              '<th>First failure occurs</th>'+
-              '<th>Total duration time</th>'+
+              '<th>First Failure Uptime</th>'+
+              '<th>Total Uptime</th>'+
               '</tr></thead>';
     var $tbody = '<tbody></tbody>';
     $('#device-failure-detail-div').html('').append($dev_table);
@@ -1073,18 +1080,19 @@ function showFailureDetailsInfo(data){
     $dev_table.append($tbody);
 
     for (var i = 0; i < data.length; i ++){
-
-        failureCount = data[i].failcount
+        var failureCount = data[i].failcount
+        var sid = data[i].sid
         var $tr = "<tr>"+
-                    (failureCount==0?"<td></td>":"<td id='tr_"+i.toString()+"'><a><img id='pic' onclick=shwoPic() src='static/img/spread.png'></img></a></td>")+        
+                    (failureCount==0?"<td></td>":"<td onclick=showPic('pic_"+i.toString()+"'); id='tr_"+i.toString()+"'><a><img id='pic_"+i.toString()+"' src='static/img/spread.png'></img></a></td>")+        
                     "<td>"+data[i].imei+"</td>"+
                     "<td>"+data[i].starttime+"</td>"+
                     "<td>"+data[i].endtime+"</td>"+ 
-                    "<td style='text-align:center'>"+(failureCount==0?0:"<a>"+failureCount+"</a>")+"</td>"+
-                    "<td>"+setTimeToHours(data[i].faildur)+"</td>"+
-                    "<td>"+setTimeToHours(data[i].totaldur)+"</td>"+
+                    (failureCount==0?"<td style='text-align:center'>"+0+"</td>":"<td style='text-align:center'><a href=\"#/group/"+parseInt(gid)+"/session/"+sid+"/fail\">"+failureCount+"</a></td>")+
+                    // "<td style='text-align:center'>"+(failureCount==0?0:"<a href=\"#/group/"+parseInt(gid)+"/session/"+sid+"\">"+failureCount+"</a>")+"</td>"+
+                    "<td>"+setRunTime(data[i].faildur)+"</td>"+
+                    "<td>"+setRunTime(data[i].totaldur)+"</td>"+
                     "</tr>";
-        var $th_sub = '<tr style="color:red" id=\"subtr_'+i.toString()+'\" class="hidden">'+
+        var $th_sub = '<tr style="color:blue" id="subtr_'+i.toString()+'" class="hidden">'+
               '<td></td>'+
               '<td style="background:#ffff99"></td>'+      
               '<td style="background:#ffff99">Happened Time</td>'+
@@ -1093,10 +1101,12 @@ function showFailureDetailsInfo(data){
               '</tr>';
 
         $dev_table.append($tr);
-        $dev_table.append($th_sub);
-
+        if (data[i].caselist.length != 0){
+            $dev_table.append($th_sub);
+        }
+        
         $('#tr_'+i.toString()).toggle(function(){
-              $('tr#sub'+this.id).removeClass('hidden');
+              $('tr#sub'+this.id).removeClass('hidden');              
             },function(){
               $('tr#sub'+this.id).addClass('hidden');
           });
@@ -1115,38 +1125,84 @@ function showFailureDetailsInfo(data){
      }
 }
 
-function showDomainInfo(){
-    // var data = data.results.cylesummany
+function countRate(num1,num2){
+    if (!isNaN(num1) && !isNaN(num2)){
+        if (num1 > num2){ a=[num1,num2];num1=a[1];num2=a[0]}
+        if (num1 == 0) {return '0%'}
+        rate = Math.round((num1/num2)*10000)/100;
+        return rate.toString()+"%"
+  }else{
+    alert("Parameters Num1 and Num2 must be a number!!!")
+    return;
+  }
+}
+
+function showDomainInfo(data){
+    var data = data.results.domain
     var $dev_table = $('<table>').attr('class','table table-bordered');
     var $th = '<thead><tr>'+
-              '<th width="8%">Domain</th>'+
-              '<th width="18%">Total Loop</th>'+           
-              '<th width="12%">Pass</th>'+            
-              '<th width="13%">Fail</th>'+
-              '<th width="13%">Block</th>'+
-              '<th width="12%">Success Rate</th>'+
-              '<th width="12%">Last Image Success Rate(TBD)</th>'+
-              '<th width="12%">Target(AT&T)</th>'+
+              '<td width="4%"></td>'+
+              '<th width="20%">Domain</th>'+
+              '<th >Total</th>'+           
+              '<th >Pass</th>'+            
+              '<th >Fail</th>'+
+              '<th >Block</th>'+
+              '<th >Success Rate</th>'+
               '</tr></thead>';
     var $tbody = '<tbody></tbody>';
     $('#domain-div').html('').append($dev_table);
     $dev_table.append($th);
     $dev_table.append($tbody);
 
+    for (var i = 0; i < data.length; i++){
+          var passCount = data[i].passcnt;
+          var totalCount = data[i].totalcnt;
+          passRate = countRate(passCount,totalCount)
 
-    var $tr = "<tr>"+ 
-          "<td>"+0+"</td>"+
-          "<td>"+0+"</td>"+
-          "<td>"+0+"</td>"+ 
-          "<td>"+0+"</td>"+
-          "<td>"+0+"</td>"+
-          "<td>"+0+"</td>"+
-          "<td>"+0+"</td>"+
-          "<td>"+0+"</td>"+
-          "</tr>"
+          var $tr = "<tr>"+ 
+                "<td id='tr_1"+i.toString()+"' onclick=showPic('pic1_"+i.toString()+"');><img id='pic1_"+i.toString()+"' src='static/img/spread.png'></img></td>"+
+                "<td>"+data[i].domain+"</td>"+
+                "<td>"+totalCount+"</td>"+
+                "<td>"+passCount+"</td>"+ 
+                "<td>"+data[i].failcnt+"</td>"+
+                "<td>"+data[i].blockcnt+"</td>"+
+                "<td>"+passRate+"</td>"+
+                "</tr>"
+          $dev_table.append($tr);
 
-    $dev_table.append($tr);
+          var $th_sub = '<tr class="hidden" style="color:blue" id="subtr_1'+i.toString()+'">'+
+              '<td></td>'+
+              '<td style="background:#ffff99">Run Case</td>'+      
+              '<td style="background:#ffff99">Total</td>'+
+              '<td style="background:#ffff99">Pass</td>'+
+              '<td style="background:#ffff99;color:red">Fail</td>'+
+              '<td style="background:#ffff99">Block</td>'+
+              '<td style="background:#ffff99">Success Rate</td>'+
+              '</tr>';
+          $dev_table.append($th_sub);
 
+          $('#tr_1'+i.toString()).toggle(function(){
+              $('tr#sub'+this.id).removeClass('hidden');
+            },function(){
+              $('tr#sub'+this.id).addClass('hidden');
+          });
+
+          for (var j = 0; j < data[i].detail.length; j ++){
+              var passCnt = data[i].detail[j].passcnt;
+              var totalCnt = data[i].detail[j].totalcnt;
+              var passRate1 = countRate(passCnt,totalCnt)
+              var $th_sub1 = "<tr class='hidden' id='subtr_1"+i.toString()+"'>"+ 
+                    '<td></td>'+ 
+                    "<td style='background:#ffff99'>"+data[i].detail[j].casename+"</td>"+            
+                    "<td style='background:#ffff99'>"+totalCnt+"</td>"+
+                    "<td style='background:#ffff99'>"+passCnt+"</td>"+
+                    "<td style='background:#ffff99;color:red'>"+data[i].detail[j].failcnt+"</td>"+
+                    "<td style='background:#ffff99'>"+data[i].detail[j].blockcnt+"</td>"+
+                    "<td style='background:#ffff99'>"+passRate1+"</td>"+
+                    "</tr>";
+            $dev_table.append($th_sub1)
+       }
+    }
 }
 
 
@@ -1155,6 +1211,7 @@ var AppRouter = Backbone.Router.extend({
         "group/:gid":"showGroupView",
         "group/:gid/session/:sid" : "showSessionView",
         "group/:gid/report/:cid" : "showReportView",
+        "group/:gid/session/:sid/fail" : "showFailView",
 
     },
     showGroupView: function(gid){
@@ -1181,6 +1238,19 @@ var AppRouter = Backbone.Router.extend({
         if(_appglobal.t2 !== undefined) clearTimeout(_appglobal.t2);
         showGroupInfo(gid);
         showSessionInfo(gid,sid);
+    },
+    showFailView: function(gid,sid){
+        checkLogIn();   
+        $('#group-div').hide();
+        $('#session-div').show();
+        $('#session-name').show();
+        $('#report-div').hide();
+        _appglobal.gid = gid;
+        _appglobal.sid = sid;
+        if(_appglobal.t1 !== undefined) clearInterval(_appglobal.t1);
+        if(_appglobal.t2 !== undefined) clearTimeout(_appglobal.t2);
+        showGroupInfo(gid);
+        showFailuresInfo(gid,sid);
     },
     showReportView: function(gid,cid){
         checkLogIn();   
