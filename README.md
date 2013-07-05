@@ -5,8 +5,8 @@ Smartframe is a light-weight automatic test framework aimed at smart mobile devi
 The testcase is python style. Currently it supports device running an android os.
 
 smartframe includes:	
-* smartrunner_ for client side			
-* smartserver_ for server side
+* smartrunner for client side			
+* smartserver for server side
 
 
 open apis
