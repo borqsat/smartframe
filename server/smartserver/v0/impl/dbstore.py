@@ -609,7 +609,7 @@ class DataStore(object):
                 else:
                     d['endtime'] = ''
 
-            if d['endtime'] == 'N/A':
+            if d['endtime'] is 'N/A':
                 d['status'] = 'running'
             else:
                 d['status'] = 'end'
@@ -620,9 +620,9 @@ class DataStore(object):
 
             if 'cid' in d:
                 result[cidTag[d['cid']]]['count'] += 1
-                result[cidTag[d['cid']]]['product']=d['deviceinfo']['product']
-                result[cidTag[d['cid']]]['revision']=d['deviceinfo']['revision'] 
-                
+                result[cidTag[d['cid']]]['product']=d['deviceinfo'].get('product', '--')
+                result[cidTag[d['cid']]]['revision']=d['deviceinfo'].get('revision', '--')
+
                 if result[cidTag[d['cid']]]['starttime']=='--' or \
                 datetime.strptime(d['starttime'],DATE_FORMAT_STR)<datetime.strptime(result[cidTag[d['cid']]]['starttime'],DATE_FORMAT_STR):
 
