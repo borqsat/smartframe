@@ -1,5 +1,5 @@
 Welcome to the SmartRunner.
-For the latest released version of SmartRunner, see the official website at "http://ats.borqs.com/smartserver"
+For the latest released version of SmartRunner, see the official website at "http://ats.borqs.com/TODO"
 
 ###############################################################
 ###                         SmartRunner          ###          
@@ -10,21 +10,18 @@ For the latest released version of SmartRunner, see the official website at "htt
 
 Introduction
 ~~~~~~~~~~~~
-SmartRunner simplifies the creation and execution of tests for mobile devices. The tool enable you to use the features of    products for developing, debugging, deploying, running, and monitoring tests.
+SmartRunner simplifies the creation and execution of tests for mobile devices. The tool enable you to use the features of products for developing, debugging, deploying, running, and monitoring tests.
 
 Installing
 ~~~~~~~~~~
-    Before using SmartRunner, please make sure you have installed:
+    before using SmartRunner, please make sure you have installed:
 
-       - ubuntu: 10.04 or 11.04, 12.04 (English version 32 bit or 64 bit)
-         If you are using ubuntu 12.04(32bit,64bit). You need to install the libjpeg62 library:
-             sudo apt-get install libjpeg62
-       - python: 2.6.x or 2.7.x
-       - JDK6 or JDK7 (32-bit JDK release for 32-bit operationg system,64-bit JDK release for 64-bit operationg system)
-         Not support OpenJDK.
-       - adb,sdb
-       
-   depend:
+       - ubuntu: 10.04. 11.04. 12.04. English version 32 bit or 64 bit
+       - python: 2.7.x
+       - python library: python-opencv. python-numpy
+       - adb,sdb work on your machine
+
+    depend library installation:
        sudo apt-get install python-opencv
        sudo apt-get install python-numpy
       
