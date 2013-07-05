@@ -258,8 +258,8 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
     var $th =     '<thead><tr>'+
                       '<th width="1%"></th>'+
                       '<th width="5%">Cycle</th>'+
-                      '<th width="15%">IMEI</th>'+
-                      '<th width="5%">Build</th>'+
+                      '<th width="15%">Deviec#</th>'+
+                      '<th width="10%">Build Version</th>'+
                       '<th width="15%">Start Time</th>'+
                       '<th width="15%">Uptime</th>'+
                       '<th width="5%">Product</th>'+
@@ -330,13 +330,13 @@ function renderTestSessionDiv_cyclelist(div_id, test_session){
     var $product_table = $('<table>').attr('class','table table-bordered table-striped table-hover');
     var $th =     '<thead><tr>'+
                       '<th width="2%">Cycle</th>'+
-                      '<th width="10%">Product</th>'+
-                      '<th width="10%">Build</th>'+
+                      '<th width="5%">Product</th>'+
+                      '<th width="20%">Build Version</th>'+
                       //'<th width="10%">Start Time</th>'+
                       //'<th width="10%">End Time</th>'+
-                      '<th width="5%">Devices</th>'+
-                      '<th width="7%">Live Devices</th>'+
-                      '<th width="2%">Report</th>'+ 
+                      '<th width="5%">Total Devices</th>'+
+                      '<th width="7%">Living Devices</th>'+
+                      '<th width="1%">Report</th>'+ 
                       '</tr></thead>';
     var $tbody = '<tbody></tbody>';
     $product_table.append($th);
