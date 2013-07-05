@@ -1072,7 +1072,7 @@ function showFailureDetailsInfo(data,gid){
               '<th>End Time</th>'+            
               '<th>Failures</th>'+
               '<th>First Failure Uptime</th>'+
-              '<th>Total Uptime</th>'+
+              '<th>Uptime</th>'+
               '</tr></thead>';
     var $tbody = '<tbody></tbody>';
     $('#device-failure-detail-div').html('').append($dev_table);
