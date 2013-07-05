@@ -478,9 +478,9 @@ function createDetailTable(div, ids){
     var $div_detail = $("#"+div);
     var $tb = $('<table>').attr('id', ids).attr('class','table table-striped table-hover').attr('style','table-layout:fixed;word-wrap:break-word;');
     var $th = '<thead><tr>'+
-              '<th align="left" width="6%">tid</th>'+
-              '<th align="left" width="31%">TestCase</th>'+
-              '<th align="left" width="17%">StartTime</th>'+
+              '<th align="left" width="6%">Tid</th>'+
+              '<th align="left" width="31%">Testcase</th>'+
+              '<th align="left" width="17%">Start Time</th>'+
               '<th align="left" width="7%">Result</th>'+
               '<th align="left" width="5%">Log</th>'+
               '<th align="left" width="7%">Image</th>'+
@@ -815,12 +815,12 @@ function createSessionBaseInfo(data, gid, sid) {
     data = data['results'];
     var $dev_table = $('<table>').attr('class','table table-bordered');
     var $th = '<thead><tr>'+
-              '<th>planname</th>'+
-              '<th>tester</th>'+           
-              '<th>device</th>'+
-              '<th>product</th>'+
-              '<th>revision</th>'+              
-              '<th>starttime</th>'+
+              '<th>Planname</th>'+
+              '<th>Tester</th>'+           
+              '<th>Device#</th>'+
+              '<th>Product</th>'+
+              '<th>Build Version</th>'+              
+              '<th>Start Time</th>'+
               '</tr></thead>';   
     var $tbody = '<tbody></tbody>';
     $('#device_div').html('').append($dev_table);
@@ -854,11 +854,11 @@ function createSessionSummary(data, gid, sid) {
     $('#summary_div').html('');
     var $summary_table = $('<table>').attr('class','table table-bordered').attr('id','stable'+key);
     var $th = '<thead><tr>'+
-              '<th>runtime</th>'+
-              '<th>all</th>'+
-              '<th>pass</th>'+
-              '<th>fail</th>'+              
-              '<th>error</th>'+
+              '<th>Uptime</th>'+
+              '<th>All</th>'+
+              '<th>Pass</th>'+
+              '<th>Fail</th>'+              
+              '<th>Error</th>'+
               '</tr></thead>';
     var $tbody = '<tbody></tbody>';
     $('#summary_div').append($summary_table);
@@ -978,8 +978,6 @@ function showCycleBaseInfo(data){
               '<th width="8%">Product</th>'+
               '<th width="18%">Build Version</th>'+           
               '<th width="12%">Devices</th>'+            
-              '<th width="13%">Start Time</th>'+
-              '<th width="13%">End Time</th>'+
               '<th width="12%">Failures</th>'+
               '<th width="12%">Total Uptime</th>'+
               '<th width="12%">MTBF</th>'+
@@ -998,8 +996,6 @@ function showCycleBaseInfo(data){
           "<td>"+data.product+"</td>"+
           "<td>"+data.buildid+"</td>"+
           "<td>"+data.count+"</td>"+ 
-          "<td>"+data.starttime+"</td>"+
-          "<td>"+data.endtime+"</td>"+
           "<td>"+data.failcnt+"</td>"+
           "<td>"+setRunTime(data.totaldur)+"</td>"+
           "<td>"+setRunTime(avgTime)+"</td>"+
@@ -1068,12 +1064,12 @@ function showFailureDetailsInfo(data,gid){
     var $dev_table = $('<table border="1">').attr('class','table table-bordered');
     var $th = '<thead><tr>'+
               '<td></td>'+
-              '<th>IMEI</th>'+
+              '<th>Device#</th>'+
               '<th>Start Time</th>'+           
               '<th>End Time</th>'+            
               '<th>Failures</th>'+
-              '<th>First Failure Occurs</th>'+
-              '<th>Total Duration Time</th>'+
+              '<th>First Failure Uptime</th>'+
+              '<th>Total Uptime</th>'+
               '</tr></thead>';
     var $tbody = '<tbody></tbody>';
     $('#device-failure-detail-div').html('').append($dev_table);
