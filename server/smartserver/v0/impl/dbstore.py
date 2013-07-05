@@ -576,7 +576,6 @@ class DataStore(object):
         users = self._db['users']
         user = 'N/A'
         session = self._db['testsessions']
-        #caseresult = self._db['testresults']
         rdata = session.find({'gid': gid})
         result = {'None':{'cid':'','count':0,'livecount':0,'starttime':'--','endtime':'--','product':'--','revision':'--','sessions':[]}}
         dtnow = datetime.now()
