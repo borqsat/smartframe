@@ -258,7 +258,7 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
     var $th =     '<thead><tr>'+
                       '<th width="1%"></th>'+
                       '<th width="5%">Cycle</th>'+
-                      '<th width="15%">Deviec#</th>'+
+                      '<th width="15%">Device#</th>'+
                       '<th width="10%">Build Version</th>'+
                       '<th width="15%">Start Time</th>'+
                       '<th width="15%">Uptime</th>'+
