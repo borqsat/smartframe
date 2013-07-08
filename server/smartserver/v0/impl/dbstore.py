@@ -555,7 +555,7 @@ class DataStore(object):
                          'tester': uid, 'planname': value['planname'],
                          'starttime': value['starttime'], 'endtime': 'N/A', 'runtime': 0,
                          'summary': {'total': 0, 'pass': 0, 'fail': 0, 'error': 0},
-                         'deviceid': deviceid, 'deviceinfo': value['deviceinfo'], 'domain': value['domain']})
+                         'deviceid': deviceid, 'deviceinfo': value['deviceinfo']})
 
     def updateTestSession(self, gid, sid, value):
         """
@@ -564,9 +564,9 @@ class DataStore(object):
         result = {}
         session = self._db['testsessions']
         if 'cid' in value:
-            cid = int(value['cid'])
+            cid = value['cid']
             if cid < 0:
-                cid = ''
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                cid = ''
             elif cid == 0:
                 cid = self.counter('cid')
 
@@ -609,23 +609,13 @@ class DataStore(object):
         users = self._db['users']
         user = 'N/A'
         session = self._db['testsessions']
-        # caseresult = self._db['testresults']
         rdata = session.find({'gid': gid})
-        result = []
-        cidTag = {}
+        result = {'None':{'cid':'','count':0,'livecount':0,'starttime':'--','endtime':'--','product':'--','revision':'--','sessions':[]}}
         dtnow = datetime.now()
 
-        tmpi = 0
-        for tmpCid in session.find({'gid': gid}).distinct('cid'):
-            result.append({'cid': tmpCid,'count':0,'livecount':0,'starttime':'--','endtime':'--','product':'--','revision':'--','sessions':[]})
-            cidTag[tmpCid] = tmpi
-            tmpi += 1
-        result.append({'cid': '','count':0,'livecount':0,'starttime':'--','endtime':'--','product':'--','revision':'--','sessions':[]})
-        cidTag['None'] = tmpi
-
         for d in rdata:
-            if 'failtime' in d:
-                d['endtime'] = d['failtime']
+            if 'failtime' in d :
+                d['endtime']=d['failtime']
 
             if d['endtime'] == 'N/A':
                 dttime = self.getCache(str('sid:' + d['sid'] + ':uptime'))
@@ -642,47 +632,22 @@ class DataStore(object):
                 else:
                     d['endtime'] = ''
 
-            if d['endtime'] == 'N/A':
+            if d['endtime'] is 'N/A':
                 d['status'] = 'running'
             else:
                 d['status'] = 'end'
-
+            
             retuser = users.find_one({'uid': d['tester']})
             if not retuser is None:
                 user = retuser['username']
 
-            if 'cid' in d:
-                result[cidTag[d['cid']]]['count'] += 1
-                result[cidTag[d['cid']]][
-                    'product'] = d['deviceinfo']['product']
-                result[cidTag[d['cid']]][
-                    'revision'] = d['deviceinfo']['revision']
-
-                if result[cidTag[d['cid']]]['starttime'] == '--' or \
-                _compareDateTime(result[cidTag[d['cid']]]['starttime'], d['starttime']):
-
-                    result[cidTag[d['cid']]]['starttime'] = d['starttime']
-
-                if result[cidTag[d['cid']]]['endtime'] != 'N/A' and d['endtime'] != '' \
-                and (result[cidTag[d['cid']]]['endtime'] == '--' or d['endtime'] == 'N/A' or _compareDateTime(d['endtime'], result[cidTag[d['cid']]]['endtime'])):
-
-                    result[cidTag[d['cid']]]['endtime'] = d['endtime']
-
-                if d['endtime'] == 'N/A':
-                    result[cidTag[d['cid']]]['livecount'] += 1
-
-                result[cidTag[d['cid']]]['sessions'].append({'id': d['id'],
-                         'sid': d['sid'],
-                         'gid': d['gid'],
-                         'tester': user,
-                         'starttime': d['starttime'],
-                         'endtime': d['endtime'],
-                         'status': d['status'],
-                         'runtime': d['runtime'],
-                         'deviceid': d['deviceid']})
-            else:
-                result[cidTag['None']]['count'] += 1
-                result[cidTag['None']]['sessions'].append({'id': d['id'],
+            cid = d.get('cid','None')
+            if result.has_key(cid):
+                if cid is 'None':
+                    result['None']['count'] += 1
+                    result[cid]['product']=d['deviceinfo'].get('product', '--')
+                    result[cid]['revision']=d['deviceinfo'].get('revision', '--')                     
+                    result['None']['sessions'].append({'id': d['id'],
                                                        'sid': d['sid'],
                                                        'gid': d['gid'],
                                                        'tester': user,
@@ -691,9 +656,60 @@ class DataStore(object):
                                                        'status': d['status'],
                                                        'runtime': d['runtime'],
                                                        'deviceid': d['deviceid']})
+                else:
+                    result[cid]['count'] += 1
+                    result[cid]['product']=d['deviceinfo'].get('product', '--')
+                    result[cid]['revision']=d['deviceinfo'].get('revision', '--')
 
-        tmpres = {'results': result}
-        return tmpres
+                    if result[cid]['starttime']=='--' or \
+                    _compareDateTime(result[cid]['starttime'], d['starttime']):
+                        result[cid]['starttime']=d['starttime']
+
+                    if result[cid]['endtime'] != 'N/A' and d['endtime'] != '' \
+                    and (result[cid]['endtime'] == '--' or d['endtime']=='N/A' or _compareDateTime(d['endtime'], result[cid]['endtime'])):
+                        result[cid]['endtime']=d['endtime']
+                
+                    if d['endtime']=='N/A' :
+                        result[cid]['livecount'] += 1
+            
+                    result[cid]['sessions'].append({'id': d['id'],
+                        'sid': d['sid'],
+                        'gid': d['gid'],
+                        'tester': user,
+                        'starttime': d['starttime'],
+                        'endtime': d['endtime'],
+                        'status': d['status'],
+                        'runtime': d['runtime'],
+                        'deviceid': d['deviceid']})
+            else:
+                result.update({cid:{'cid':d['cid'],'count':0,'livecount':0,'starttime':'--','endtime':'--','product':'--','revision':'--','sessions':[]}})
+                result[cid]['count'] += 1
+                result[cid]['product']=d['deviceinfo'].get('product', '--')
+                result[cid]['revision']=d['deviceinfo'].get('revision', '--')
+
+                if result[cid]['starttime']=='--' or \
+                datetime.strptime(d['starttime'],DATE_FORMAT_STR)<datetime.strptime(result[cid]['starttime'],DATE_FORMAT_STR):
+                    result[cid]['starttime']=d['starttime']
+
+                if result[cid]['endtime'] != 'N/A' and d['endtime'] != '' \
+                and (result[cid]['endtime'] == '--' or d['endtime']=='N/A' or datetime.strptime(d['endtime'], DATE_FORMAT_STR)>datetime.strptime(result[cid]['endtime'], DATE_FORMAT_STR)):
+                    result[cid]['endtime']=d['endtime']
+            
+                if d['endtime']=='N/A' :
+                    result[cid]['livecount'] += 1
+        
+                result[cid]['sessions'].append({'id': d['id'],
+                    'sid': d['sid'],
+                    'gid': d['gid'],
+                    'tester': user,
+                    'starttime': d['starttime'],
+                    'endtime': d['endtime'],
+                    'status': d['status'],
+                    'runtime': d['runtime'],
+                    'deviceid': d['deviceid']})
+
+        tmpres = {'results' : result.values()}
+        return tmpres 
 
     def readTestReport(self, gid, cid):
         """
@@ -706,7 +722,10 @@ class DataStore(object):
         caseresult = self._db['testresults']
         sidList = []
         res1 = {'product': '--','count':0,'starttime':
-            '--','endtime':'--','failcnt':0,'totaldur':0}
+            '--','endtime':
+                '--','failcnt':
+                    0,'totaldur':
+                        0}
         res2 = []
         res3 = []
         res4 = []
@@ -732,7 +751,7 @@ class DataStore(object):
                     idletime = delta.days * 86400 + delta.seconds
 
                     if idletime >= IDLE_TIME_OUT:
-                        d['endtime'] = dttime
+                        d['endtime'] = datetime.strftime(idle, DATE_FORMAT_STR)
                 else:
                     d['endtime'] = ''
 
@@ -748,14 +767,15 @@ class DataStore(object):
                 tmpEndTime = (d['endtime'] == 'N/A') and caseresult.find({'sid': d['sid']}).sort(
                     'tid', pymongo.DESCENDING).limit(1)[0]['starttime'] or d['endtime']
             except:
-                tmpEndTime = datetime.strftime(datetime.now(), DATE_FORMAT_STR)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                tmpEndTime = datetime.strftime(
+                                    datetime.now(), DATE_FORMAT_STR)
 
             tmpDur = (datetime.strptime(tmpEndTime, DATE_FORMAT_STR) - datetime.strptime(
-                d['starttime'], DATE_FORMAT_STR)).seconds / 3600.0
+                d['starttime'], DATE_FORMAT_STR)).seconds
             res1['totaldur'] += tmpDur
 
             if res1['starttime'] == '--' or datetime.strptime(d['starttime'], DATE_FORMAT_STR) < datetime.strptime(res1['starttime'], DATE_FORMAT_STR1):
-                res1['starttime'] = datetime.strftime(datetime.strptime(
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                res1['starttime'] = datetime.strftime(datetime.strptime(
                     d['starttime'], DATE_FORMAT_STR), DATE_FORMAT_STR1)
             if res1['endtime'] != 'N/A':
                 if res1['endtime'] == '--' or d['endtime'] == 'N/A' or datetime.strptime(d['endtime'], DATE_FORMAT_STR) > datetime.strptime(res1['endtime'], DATE_FORMAT_STR1):
@@ -784,7 +804,7 @@ class DataStore(object):
                 res1['failcnt'] += 1
                 tmpR3['failcount'] += 1
             tmpR3['faildur'] = (tmpFailTime - datetime.strptime(
-                d['starttime'], DATE_FORMAT_STR)).seconds / 3600.0
+                d['starttime'], DATE_FORMAT_STR)).seconds
             res3.append(tmpR3)
 
         rdata2 = caseresult.group({'comments.issuetype': 1}, {'sid': {'$in': sidList},'comments.caseresult':{
@@ -792,7 +812,8 @@ class DataStore(object):
         for d in rdata2:
             res2.append({'issuetype': d['comments.issuetype'],'count':d['cnt']})
 
-        rdata4 = caseresult.group({'casename': 1,'domain':1}, {'sid':{'$in':sidList}}, {'totalcnt':0,'passcnt':0,'failcnt':0}, '''
+
+        rdata4 = caseresult.group({'casename': 1}, {'sid': {'$in': sidList}}, {'totalcnt': 0,'passcnt':0,'failcnt':0}, '''
   function(obj,prev){
     prev.totalcnt+=1;
     if(obj.result=='pass'){
@@ -804,13 +825,20 @@ class DataStore(object):
   ''')
         domainTag = {}
         tmpi = 0
+
         for d in rdata4:
-            if d['domain'] not in domainTag:
-                domainTag[d['domain']] = tmpi
+            try:
+                tmpDomain = d['casename'].split('.')[-2]
+            except:
+                continue
+            if tmpDomain not in domainTag:
+                print 'domain++++++++', tmpi
+                print 'domain--------', tmpDomain
+                domainTag[tmpDomain] = tmpi
                 tmpi += 1
-            res4.append({'domain': d[
-                        'domain'],'totalcnt':0,'passcnt':0,'failcnt':0,'blockcnt':0,'detail':[]})
-            tmpj = domainTag[d['domain']]
+                print 'after++++++', tmpi
+                res4.append({'domain': tmpDomain,'totalcnt':0,'passcnt':0,'failcnt':0,'blockcnt':0,'detail':[]})
+            tmpj = domainTag[tmpDomain]
             res4[tmpj]['totalcnt'] += d['totalcnt']
             res4[tmpj]['passcnt'] += d['passcnt']
             res4[tmpj]['failcnt'] += d['failcnt']
