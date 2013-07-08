@@ -3,7 +3,7 @@
 
 '''
 Module provides the ability to serialize information 
-@version: 1.1
+@version: 1.0
 @author: borqsat
 @see: null
 '''
@@ -21,9 +21,7 @@ class Serializer(object):
         @type file_path: string
         @params file_path: abs path of the serial file path
         @type data: dictionary
-        @params data: a dictionary contains the data content need to be sent
-        @rtype: boolean
-        @return: true if serialize sucess, false if fail
+        @params data: a dictionary contains the data content need to be persisted.
         '''
         with open(file_path, 'wrb') as f:
             pickle.dump(data, f)
@@ -31,12 +29,12 @@ class Serializer(object):
     @staticmethod
     def unserialize(file_path):
         '''
-        function to serialize info
+        function to read the serialize info
         @type file_path: string
         @params file_path: abs path of the serial file path
         @rtype: {}
         @return: the serial data
         '''
-        with open(file_path, 'wrb') as f:
+        with open(file_path, 'rb') as f:
             data = pickle.load(f)
         return data

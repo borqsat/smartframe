@@ -9,9 +9,10 @@ Android device implemention.
 '''
 
 from devicemanager import BaseDevice,DeviceInitException,DeviceRecoverException
-from commands import getoutput as call
+from os import system as call
 from log import logger
 import socket
+
 
 class Device(BaseDevice):
     def __init__(self):
@@ -58,15 +59,30 @@ class Device(BaseDevice):
         #print self._con.recv(1024)
         return self
 
+    def press(self,key):
+        cmd = '%s %s\n'%('press',key)
+        self._con.send(cmd)
+        #print self._con.recv(1024)
+        return self
+
     def takeSnapshot(self,path):
-        call('adb shell screencap /sdcard/sc.png')
-        call('adb pull /sdcard/sc.png %s' % path)
+        if path.find('(') :
+            path = path.replace('(','\\(')
+        if path.find(')') :
+            path = path.replace(')','\\)')
+        call('adb shell screencap /sdcard/sc.png 2>/dev/null')
+        call('adb pull /sdcard/sc.png %s 2>/dev/null' % path)
         return True
 
     def catchLog(self,dest):
-        call('adb pull /data/logs/aplog %s' % dest)
+        #call('adb pull /data/logs/aplog %s' % dest)
+        cmd = '%s %s %s %s %s' % ('adb', 'pull', '/data/logs/aplog', dest, '2>/dev/null')
+        call(cmd)
 
-    def destory(self):
-        print 'destory'
-        if self._con:
-            self._con.close()
+    #def destory(self):
+    #    pass
+        #if self._con:
+        #    self._con.close()
+
+    def getDeviceProperties(self):
+        return {'deviceid':'test123456789','deviceinfo':{'product':'bkbpr3'}} 

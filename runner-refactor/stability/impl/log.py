@@ -4,7 +4,7 @@ EpyDoc
 @author: U{borqsat<www.borqs.com>}
 @see: null
 '''
-
+__all__ = {'logger'}
 import logging,time,os,threading,sys
 import logging.handlers
 

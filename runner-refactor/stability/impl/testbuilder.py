@@ -30,9 +30,7 @@ class TestBuilder(object):
             return self._getTestSuiteByName(self._option['testcase'])
         if self._option['plan']:
             return self._getTestSuiteFromFile(self._option['plan'])
-
-      
-        
+  
     def _getTestSuiteByName(self,name):
         '''
         Return a test object list from the given class. we called it TestSuites. Python unittest 
@@ -60,7 +58,6 @@ class TestBuilder(object):
         parser.optionxform = lambda x: x
         parser.read(plan_file_path)
         tests = parser.items(section_name)
-
         for (k,v) in tests:
             for i in range(int(v)):
                 names.append(k)

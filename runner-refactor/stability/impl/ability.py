@@ -2,7 +2,8 @@
 #coding: utf-8
 
 '''
-Module define the ability need to be inject to test case. 
+Module define the ability need to be inject to test case.
+TODO:change image name
 @version: 1.0
 @author: borqsat
 @see: null
@@ -16,7 +17,7 @@ class Ability(object):
     '''
     Class to provide the assertion.
     '''
-    def expect(self,name=None,interval=3,timeout=9,similarity=0.7,msg=None):
+    def expect(self,name,interval=3,timeout=9,similarity=0.7,msg=None):
         '''
         Allows to search for a expected image in an image file that you provide (e.g. a screenshot taken and saved in a file before)
         Check whether the expected image was found that satisfy the minimum similarity requirement. If found return self,
@@ -27,7 +28,7 @@ class Ability(object):
         @param interval: The interval time after one check. Default value is 3 seconds.
         @type timeout: int
         @param timeout: The duration time of waitting the screen snapshot. Default value is 9 seconds. See "runner/stability/sysconfig"
-        @type similarity:float
+        @type similarity: float
         @param similarity: The minimum similarity a match should have. If omitted, the default is used
         @type msg:string
         @param msg: Output string if the expected image not found in the target image file. 
@@ -37,16 +38,25 @@ class Ability(object):
         result = getattr(self, 'result')
         expect_result = ExpectResult(result.localpath['ws_testcase_right'])
         sub_path = expect_result.getCurrentCheckPointPath(name)
-        src_path = join(result.localpath['ws_testcase'], name)
+        full = expect_result.getFullCurrentCheckPointPath()
+        dirs,filename = os.path.split(full)
+        rect = filename.split('.')[1]
+        names = '%s.%s.png' % (os.path.splitext(name)[0],rect)
+        src_path = join(result.localpath['ws_testcase'], names)
         begin = time.time()
         while (time.time() - begin < timeout):
-            self.takeSnapshot(path=src_path)
-            if recognization.isRegionMatch(src_path,sub_path):
+            success = self.takeSnapshot(path=src_path)
+            if success and recognization.isRegionMatch(src_path,sub_path):
                 return self
             time.sleep(interval)
-        assert False, msg and 'Fail Reason: Image \'%s\' can not be found on screen!' % os.path.basename(sub_path) or msg 
+        setattr(self,'expect_result',expect_result)
+        if not msg:
+            reason = 'Fail Reason: Unable to find the expected image <%s> in current screen!' % os.path.basename(sub_path)
+        else:
+            reason = msg
+        assert False, reason
 
-    def exists(self,name=None,interval=None,timeout=None,similarity=0.7):
+    def exists(self,name,interval=None,timeout=None,similarity=0.7):
         '''
         Check whether the expected image was found that satisfy the minimum similarity requirement. If found return True, 
         If not found return False.
@@ -83,11 +93,15 @@ class Ability(object):
     
     def touch_image(self,name):
         result = getattr(self, 'result')
-        src = join(result.localpath['ws_testcase'], name)
-        self.takeSnapshot(path=src)
         expect_result = ExpectResult(result.localpath['ws_testcase_right'])
-        sub = expect_result.getCurrentCheckPointPath(name)
-        point = recognization.getRegionCenterPoint(src=src,sub=sub)
+        sub_path = expect_result.getCurrentCheckPointPath(name)
+        full = expect_result.getFullCurrentCheckPointPath()
+        dirs,filename = os.path.split(full)
+        rect = filename.split('.')[1]
+        names = '%s.%s.png' % (os.path.splitext(name)[0],rect)
+        src_path = join(result.localpath['ws_testcase'], names)
+        if self.takeSnapshot(path=src_path):
+            point = recognization.getRegionCenterPoint(src=src_path,sub=sub_path)
         print point
         self.touch(x=point[0],y=point[1])
         return self

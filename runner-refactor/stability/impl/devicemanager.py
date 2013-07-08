@@ -6,12 +6,14 @@ Module provides the function to maintain collecion of availiable devices. and th
 @author: borqsat
 @see: null
 '''
+__all__ = ['DeviceManager','DeviceRecoverException','DeviceInitException']
 
 import time,sys,os,threading
 from ability import Ability
-#from android import Device
+import ConfigParser
+import variables
 
-class DeviceManager(object):
+class BACKDeviceManager(object):
     '''DeviceManager maintains collecion of availiable devices'''
     _instance = None
     _mutex = threading.Lock()
@@ -69,20 +71,76 @@ class DeviceManager(object):
         '''
         return self._devices
 
+class DevManager(object):
+    '''DeviceManager maintains collecion of availiable devices'''
+
+    def __init__(self,config=None):
+        '''Init DeviceManager Instance.'''
+        self._devices = list()
+        self._device = None
+        try:
+            cf = ConfigParser.ConfigParser()
+            cf.read(config)
+            self._platform = cf.get('device','platform')
+            #print self._platform
+        except Exception, e:
+            print 'invalid config file %s\n' % config
+
+    def getDevice(self):
+        '''
+        Get instance of target device.
+        rtype : the subclass of BaseDevice
+        rparam : the subclass instance  of BaseDevice
+        Exception: Throw exception when device init failed or recover failed.
+        '''
+        try:
+            module = __import__('stability.impl.%s' % self._platform, fromlist=['Device'])
+        except Exception,e :
+            print e
+            print '__import__ %s%s failed' % ('stability.impl.', self._platform)
+        device = getattr(module, 'Device')
+        try:
+            if not self._device:
+                self._device = device()
+            if not self._device.available():
+                self._device.recover()
+            self._devices.append(self._device)
+            return self._device
+        except DeviceInitException,e1:
+            print e1
+            return None
+        except DeviceRecoverException,e2:
+            print e2
+            return None
+
+    def getDeviceInfo(self):
+        pass
+
+    def getDeviceProperties(self):
+        return self._device.getDeviceProperties()
+
+    def getDeviceRelaTime(self):
+        pass
+
+    def getDevices(self):
+        '''
+        Get the device collection list.
+        '''
+        return self._devices
+
+DeviceManager = DevManager(config=variables.DEVICE_CONFIG_PATH)
+
 class BaseDevice(Ability):
     '''
     Abstract class for respresenting device instance ability.
     The subclass of BaseDevice should extends from this class. and implement available() 
-    recover() method. and provide the ability to interacte with device. E.g: touch , press.
+    recover() destory() method. and provide the ability to interacte with device. E.g: touch , press.
     takeSnapshot()
     '''
-
-    #def __get__(self, obj, type=None):
-    #    print '-----get-----'
-    #    print obi
-    #    print self.__class__()
-    #    print self
-    #    return obj and self.__class__() or self
+    #TODO set the subclass method behavor
+    #def __init__(self):
+    #    print set(dir(self.__class__)) - set(dir(BaseDevice))
+    #    pass
 
     def available(self):
         '''
@@ -101,38 +159,87 @@ class BaseDevice(Ability):
         '''
         pass
 
-    def destory(self, *args, **kwargs):
+    def destory(self):
         '''
-        release resource related to device instance.
-        '''
-        pass
-
-    def launch(self, *args, **kwargs):
-        '''
-        Start an application.
+        Release resource related to device instance.The method will be invoked before try
+        to create a new device instance.
         '''
         pass
 
-    def touch(self, *args, **kwargs):
+    def touch(self,*argv,**kwags):
         '''
-        Perform a touch event on the touch point or on the screen region.
-        The touch point specified by type to the screen location specified by x and y.
-        If the screen region want to be touched not found in the current screen snapshot should throw exception.
-        '''
-        pass
-
-    def takeSnapshot(self, *argv, **kwargs):
-        '''
-        Take device screen shot method. Device should implement this method if want to support screen
-        shot feature.
+        Simulates a touch event to the screen.
+        The subclass MUST provide touch(x,y) operation.E.g touch(x,y)
+        @type x: integer
+        @param x: The horizontal position of the touch in actual device pixels, 
+        starting from the left of the screen in its current orientation.
+        @type y: integer
+        @param y: The vertical position of the touch in actual device pixels, starting from the top of the screen in its current orientation. 
         '''
         pass
 
-    def catchLog(self, *argv, **kwargs):
+    def input(self,text):
         '''
-        Catch device log method. Device should implement this method if want to support log capture
-        shot feature.
+        Sends the characters contained in text to device. Used to input text in the device
+        editable region.
+        @type text: string
+        @param text: A string containing the characters to send.    
+        '''
+        pass
 
+    def swipe(self,start,end):
+        '''
+        Simulates a swipe gesture (touch and move) on device's screen.
+        @type start:  tuple 
+        @param start: The starting point of the swipe gesture, in the form of a tuple (x,y) where x and y are integers.
+        @type end:  tuple
+        @param end: The end point of the swipe gesture, in the form of a tuple (x,y) where x and y are integers.
+        '''
+        pass
+
+    def press(self,key_name):
+        '''
+        Sends the key event specified by type to the key specified by keycode.
+        e.g: press('home')
+        @type key_name: string
+        @param key_name: The name of the key to send. MUST support 'home','back'
+        '''
+        pass
+
+    def getDeviceProperties(self):
+        '''
+        Get device system properties dictionary.
+        rtype {}
+        rparam return the dictionary contains the device properties name and value. 
+               e.g: {'uptime'  : The number of milliseconds since the device rebooted,
+                     'product' : The overall product name,
+                     'revision': build number of device}
+        '''
+        pass
+        
+
+    def getDeviceInfo(self,dest_folder):
+        '''
+        Pull device memory usage file to dest_folder.
+        @type dest_folder: string
+        @param dest_folder: The folder path used to store device log.
+        '''        
+        pass
+
+    def takeSnapshot(self, save_path):
+        '''
+        Captures the entire screen of the current display and Writes the current image 
+        to save_path in the format PNG.
+        @type save_path: string
+        @param save_path: The fully-qualified filename and extension of the output file.
+        '''
+        pass
+
+    def catchLog(self, dest_folder):
+        '''
+        Pull device log file to dest_folder.
+        @type dest_folder: string
+        @param dest_folder: The folder path used to store device log.
         '''
         pass
 

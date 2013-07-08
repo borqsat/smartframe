@@ -16,28 +16,29 @@ from devicemanager import DeviceManager,BaseDevice
 import unittest  
 import functools
 import inspect
-
-def mixIn(base):
+from ps import emit,Topics
+def mix_in(base):
     '''
     Decorator of function. It mixed Ability to BaseDevice
     '''
     def deco(function):
         def wrap(*args, **argkw):        
             setattr(BaseDevice,'result',getattr(args[0],'_result'))
+            device = DeviceManager.getDevice()
             for name,method in inspect.getmembers(base,predicate=inspect.ismethod):
                 if name == 'setUp':
-                    setattr(base,name,_inject_setup(base,method))
+                    setattr(base,name,_inject_setup(base,method,device))
                 if name == 'tearDown':
                     setattr(base,name,_inject_teardown(base,method))                    
             function(*args, **argkw)
         return wrap
     return deco
 
-def _inject_setup(cls,method):
+def _inject_setup(cls,method,device):
     @functools.wraps(method)
     def wrapped(self,*args,**kwargs):
         try:
-            setattr(cls, 'device', DeviceManager.getInstance('android').getDevice())
+            setattr(cls, 'device', device)
             method(self, *args, **kwargs)
         except:
             raise
@@ -69,7 +70,7 @@ class TestRunner(object):
         '''
         self._result = result
 
-    @mixIn(unittest.TestCase)
+    @mix_in(unittest.TestCase)
     def run(self,suites):
         '''
         Wrap the unittest.TestCase class. inject ability to interact with device.

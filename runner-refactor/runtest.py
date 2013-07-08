@@ -1,5 +1,5 @@
 import sys
-from stability import logger,Options,on,TestBuilder,TestRunner,TestResultImpl,Topics,TopicsHandler
+from stability import logger,Options,on,TestBuilder,TestRunner,TestResultImpl,Topics,TopicsHandler,Authentication
 
 def run_cmdline(arguments):
     '''
@@ -10,9 +10,11 @@ def run_cmdline(arguments):
     logger.debug('start...')
     options = Options(arguments)
 
-    if options['upload']: on(Topics.TOPIC_RESULT, TopicsHandler.onTopicResult)
-    if options['screenmonitor']: on(Topics.TOPIC_SNAPSHOT, TopicsHandler.onSnapshot)
-    on(Topics.TOPIC_DEVICE,TopicsHandler.onDeviceError)
+    if options['upload']:
+        on(Topics.AUTH, TopicsHandler.onAuth)
+        on(Topics.UPLOAD, TopicsHandler.onUpload)
+        Authentication.auth()
+    #if options['screenmonitor']: on(Topics.TOPIC_SNAPSHOT, TopicsHandler.onSnapshot)
 
     test_builder = TestBuilder(options)
 
