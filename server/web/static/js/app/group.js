@@ -952,17 +952,14 @@ function showReportInfo(gid,cid){
 
 function showCommentInfo(){
 
-    document.getElementById('show-title').innerHTML = "Touch here to get more infomation==><br />"
-    document.getElementById('article').innerHTML = "<b>Uptime:</b> device runtime, "+ 
-    "the duration from start testing till testing stopped. " + 
-    "Testing stops when all tests are blocked to be continued without system manual reset. <br />"+
-    "<b>MTBF</b> = Total running hours/Total failures  <br />" +
-    "<b>Total failures</b>= (critical issues) + (Non-Critical issues). <br />" +
-    "<b>Critial Issues:</b> Phone reset including power down/cycle, kernel restart, system restart, etc; Phone lockup including UI freeze, black screen and application lockup. <br />"+
-    "<b>Non-Critical Issues:</b> Application/process restart including force close, core dump (native process crash).<br />" +
-    "<b>Notes:</b> <br />" +
-    "1. In AT&T, no distinguish between critical and non-critical issues, MTBF testing stop once device meet failure. <br />" +
-    "2. If strictly follow AT&T MTBF calculation, MTBF fail as no device runtime >50 hrs"
+    document.getElementById('show-title').innerHTML = "Tap here to get more information==><br />"
+    document.getElementById('article').innerHTML = "<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
+    "<b>Uptime:</b> Device running time, from 'Start Time' to 'End Time'. " + 
+    "(Block time will not included.) <br />" + 
+    "<b>Failures</b>= (critical issues) + (Non-Critical issues). <br />"+
+    "<b>Critial Issues:</b> Phone hang, kernel reboot/panic, system crash, etc. <br />"+
+    "<b>Non-Critical Issues:</b> Application/process force close/ANR, core dump (native process crash), etc.<br />"+
+    "<b>First Failure Uptime:</b> From the 'Start Time' to first failure occur. <br />"
 
     $(document).ready(function(){
         $(".show-content").hide();
@@ -980,7 +977,7 @@ function showCycleBaseInfo(data){
               '<th width="8%">Product</th>'+
               '<th width="18%">Build Version</th>'+           
               '<th width="12%">Devices</th>'+            
-              '<th width="12%">Failures</th>'+
+              '<th width="12%">Total Failures</th>'+
               '<th width="12%">Total Uptime</th>'+
               '<th width="12%">MTBF</th>'+
               '</tr></thead>';
@@ -1012,7 +1009,7 @@ function showFailureSummaryInfo(data) {
     var data = data.results.issuesummany;
 
     var $dev_table = $('<table>').attr('class','table table-bordered');
-    var $title = '<thead><tr><th colspan="2" ><p align="center" type="font-size:25px">Details Failure Summary</p></th></tr></thead>'
+    var $title = '<thead type="height:10px"><tr><th colspan="2"><p align="center">Failure Summary</p></th></tr></thead>'
     var $th = '<thead><tr>'+
               '<th style="text-align:center" width="50%">Issue Type </th>'+
               '<th style="text-align:center" width="50%">Occurs</th>'+
