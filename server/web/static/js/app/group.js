@@ -1085,7 +1085,6 @@ function showFailureDetailsInfo(data,gid){
                     "<td>"+data[i].starttime+"</td>"+
                     "<td>"+data[i].endtime+"</td>"+ 
                     (failureCount==0?"<td style='text-align:center'>"+0+"</td>":"<td style='text-align:center'><a href=\"#/group/"+parseInt(gid)+"/session/"+sid+"/fail\">"+failureCount+"</a></td>")+
-                    // "<td style='text-align:center'>"+(failureCount==0?0:"<a href=\"#/group/"+parseInt(gid)+"/session/"+sid+"\">"+failureCount+"</a>")+"</td>"+
                     "<td>"+setRunTime(data[i].faildur)+"</td>"+
                     "<td>"+setRunTime(data[i].totaldur)+"</td>"+
                     "</tr>";
