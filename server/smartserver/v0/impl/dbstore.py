@@ -797,13 +797,15 @@ class DataStore(object):
             res2.append({'issuetype': d['comments.issuetype'],'count':d['cnt']})
 
 
-        rdata4 = caseresult.group({'casename': 1}, {'sid': {'$in': sidList}}, {'totalcnt': 0,'passcnt':0,'failcnt':0}, '''
+        rdata4 = caseresult.group({'casename': 1}, {'sid': {'$in': sidList}}, {'totalcnt': 0,'passcnt':0,'failcnt':0,'blockcnt':0}, '''
   function(obj,prev){
     prev.totalcnt+=1;
     if(obj.result=='pass'){
       prev.passcnt+=1;
     }else if('comments' in obj && obj.comments.caseresult.toLowerCase()=='fail'){
       prev.failcnt+=1;
+    }else if('comments' in obj && obj.comments.caseresult.toLowerCase()=='block'){
+      prev.blockcnt+=1;
     }
   }
   ''')
@@ -816,21 +818,20 @@ class DataStore(object):
             except:
                 continue
             if tmpDomain not in domainTag:
-                print 'domain++++++++', tmpi
-                print 'domain--------', tmpDomain
                 domainTag[tmpDomain] = tmpi
                 tmpi += 1
-                print 'after++++++', tmpi
                 res4.append({'domain': tmpDomain,'totalcnt':0,'passcnt':0,'failcnt':0,'blockcnt':0,'detail':[]})
             tmpj = domainTag[tmpDomain]
-            res4[tmpj]['totalcnt'] += d['totalcnt']
+            # res4[tmpj]['totalcnt'] += d['totalcnt']
             res4[tmpj]['passcnt'] += d['passcnt']
             res4[tmpj]['failcnt'] += d['failcnt']
-            tmpBlock = d['totalcnt'] - d['passcnt'] - d['failcnt']
-            res4[tmpj]['blockcnt'] += tmpBlock
-            res4[tmpj]['detail'].append({'casename': d['casename'],'totalcnt':d[
-                                        'totalcnt'],'passcnt':d['passcnt'],'failcnt':d['failcnt'],'blockcnt':tmpBlock})
-
+            res4[tmpj]['blockcnt']+=d['blockcnt']
+            # tmpBlock = d['totalcnt'] - d['passcnt'] - d['failcnt']
+            # res4[tmpj]['blockcnt'] += tmpBlock
+            tmpTotal=d['passcnt']+d['failcnt']+d['blockcnt']
+            res4[tmpj]['totalcnt']+=tmpTotal
+            res4[tmpj]['detail'].append({'casename':d['casename'],'totalcnt':tmpTotal,'passcnt':d['passcnt'],'failcnt':d['failcnt'],'blockcnt':d['blockcnt']})
+            
         result = {}
         result['cylesummany'] = res1
         result['issuesummany'] = res2
