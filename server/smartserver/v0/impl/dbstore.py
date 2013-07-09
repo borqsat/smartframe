@@ -609,23 +609,13 @@ class DataStore(object):
         users = self._db['users']
         user = 'N/A'
         session = self._db['testsessions']
-        # caseresult = self._db['testresults']
         rdata = session.find({'gid': gid})
-        result = []
-        cidTag = {}
+        result = {'None':{'cid':'','count':0,'livecount':0,'starttime':'--','endtime':'--','product':'--','revision':'--','sessions':[]}}
         dtnow = datetime.now()
 
-        tmpi = 0
-        for tmpCid in session.find({'gid': gid}).distinct('cid'):
-            result.append({'cid': tmpCid,'count':0,'livecount':0,'starttime':'--','endtime':'--','product':'--','revision':'--','sessions':[]})
-            cidTag[tmpCid] = tmpi
-            tmpi += 1
-        result.append({'cid': '','count':0,'livecount':0,'starttime':'--','endtime':'--','product':'--','revision':'--','sessions':[]})
-        cidTag['None'] = tmpi
-
         for d in rdata:
-            if 'failtime' in d:
-                d['endtime'] = d['failtime']
+            if 'failtime' in d :
+                d['endtime']=d['failtime']
 
             if d['endtime'] == 'N/A':
                 dttime = self.getCache(str('sid:' + d['sid'] + ':uptime'))
@@ -642,47 +632,22 @@ class DataStore(object):
                 else:
                     d['endtime'] = ''
 
-            if d['endtime'] == 'N/A':
+            if d['endtime'] is 'N/A':
                 d['status'] = 'running'
             else:
                 d['status'] = 'end'
-
+            
             retuser = users.find_one({'uid': d['tester']})
             if not retuser is None:
                 user = retuser['username']
 
-            if 'cid' in d:
-                result[cidTag[d['cid']]]['count'] += 1
-                result[cidTag[d['cid']]][
-                    'product'] = d['deviceinfo']['product']
-                result[cidTag[d['cid']]][
-                    'revision'] = d['deviceinfo']['revision']
-
-                if result[cidTag[d['cid']]]['starttime'] == '--' or \
-                _compareDateTime(result[cidTag[d['cid']]]['starttime'], d['starttime']):
-
-                    result[cidTag[d['cid']]]['starttime'] = d['starttime']
-
-                if result[cidTag[d['cid']]]['endtime'] != 'N/A' and d['endtime'] != '' \
-                and (result[cidTag[d['cid']]]['endtime'] == '--' or d['endtime'] == 'N/A' or _compareDateTime(d['endtime'], result[cidTag[d['cid']]]['endtime'])):
-
-                    result[cidTag[d['cid']]]['endtime'] = d['endtime']
-
-                if d['endtime'] == 'N/A':
-                    result[cidTag[d['cid']]]['livecount'] += 1
-
-                result[cidTag[d['cid']]]['sessions'].append({'id': d['id'],
-                         'sid': d['sid'],
-                         'gid': d['gid'],
-                         'tester': user,
-                         'starttime': d['starttime'],
-                         'endtime': d['endtime'],
-                         'status': d['status'],
-                         'runtime': d['runtime'],
-                         'deviceid': d['deviceid']})
-            else:
-                result[cidTag['None']]['count'] += 1
-                result[cidTag['None']]['sessions'].append({'id': d['id'],
+            cid = d.get('cid','None')
+            if result.has_key(cid):
+                if cid is 'None':
+                    result['None']['count'] += 1
+                    result[cid]['product']=d['deviceinfo'].get('product', '--')
+                    result[cid]['revision']=d['deviceinfo'].get('revision', '--')                     
+                    result['None']['sessions'].append({'id': d['id'],
                                                        'sid': d['sid'],
                                                        'gid': d['gid'],
                                                        'tester': user,
@@ -691,9 +656,60 @@ class DataStore(object):
                                                        'status': d['status'],
                                                        'runtime': d['runtime'],
                                                        'deviceid': d['deviceid']})
+                else:
+                    result[cid]['count'] += 1
+                    result[cid]['product']=d['deviceinfo'].get('product', '--')
+                    result[cid]['revision']=d['deviceinfo'].get('revision', '--')
 
-        tmpres = {'results': result}
-        return tmpres
+                    if result[cid]['starttime']=='--' or \
+                    _compareDateTime(result[cid]['starttime'], d['starttime']):
+                        result[cid]['starttime']=d['starttime']
+
+                    if result[cid]['endtime'] != 'N/A' and d['endtime'] != '' \
+                    and (result[cid]['endtime'] == '--' or d['endtime']=='N/A' or _compareDateTime(d['endtime'], result[cid]['endtime'])):
+                        result[cid]['endtime']=d['endtime']
+                
+                    if d['endtime']=='N/A' :
+                        result[cid]['livecount'] += 1
+            
+                    result[cid]['sessions'].append({'id': d['id'],
+                        'sid': d['sid'],
+                        'gid': d['gid'],
+                        'tester': user,
+                        'starttime': d['starttime'],
+                        'endtime': d['endtime'],
+                        'status': d['status'],
+                        'runtime': d['runtime'],
+                        'deviceid': d['deviceid']})
+            else:
+                result.update({cid:{'cid':d['cid'],'count':0,'livecount':0,'starttime':'--','endtime':'--','product':'--','revision':'--','sessions':[]}})
+                result[cid]['count'] += 1
+                result[cid]['product']=d['deviceinfo'].get('product', '--')
+                result[cid]['revision']=d['deviceinfo'].get('revision', '--')
+
+                if result[cid]['starttime']=='--' or \
+                datetime.strptime(d['starttime'],DATE_FORMAT_STR)<datetime.strptime(result[cid]['starttime'],DATE_FORMAT_STR):
+                    result[cid]['starttime']=d['starttime']
+
+                if result[cid]['endtime'] != 'N/A' and d['endtime'] != '' \
+                and (result[cid]['endtime'] == '--' or d['endtime']=='N/A' or datetime.strptime(d['endtime'], DATE_FORMAT_STR)>datetime.strptime(result[cid]['endtime'], DATE_FORMAT_STR)):
+                    result[cid]['endtime']=d['endtime']
+            
+                if d['endtime']=='N/A' :
+                    result[cid]['livecount'] += 1
+        
+                result[cid]['sessions'].append({'id': d['id'],
+                    'sid': d['sid'],
+                    'gid': d['gid'],
+                    'tester': user,
+                    'starttime': d['starttime'],
+                    'endtime': d['endtime'],
+                    'status': d['status'],
+                    'runtime': d['runtime'],
+                    'deviceid': d['deviceid']})
+
+        tmpres = {'results' : result.values()}
+        return tmpres 
 
     def readTestReport(self, gid, cid):
         """
