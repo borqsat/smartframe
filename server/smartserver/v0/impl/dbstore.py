@@ -1200,4 +1200,3 @@ def __getStore():
     return DataStore(mongo_client, mem)
 
 store = __getStore()
-tore = __getStore()
