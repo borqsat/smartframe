@@ -611,25 +611,6 @@ class DataStore(object):
         #     if 'checksnap' in record:
         #         log = record['log']
         #         self.deletefile(log)
-    def endtimeHandle(self, session):
-        if 'failtime' in session:
-            session['endtime'] = session['failtime']
-        if session['endtime'] is 'N/A':
-            dttime = self.getCache(str('sid:' + d['sid'] + ':uptime'))
-            if dttime is not None:
-                try:
-                    idle = datetime.strptime(dttime, DATE_FORMAT_STR1)
-                except:
-                    idle = datetime.strptime(dttime, DATE_FORMAT_STR)
-                delta = dtnow - idle
-                idletime = delta.days * 86400 + delta.seconds
-
-                if idletime >= IDLE_TIME_OUT:
-                    session['endtime'] = dttime
-            else:
-                session['endtime'] = ''
-        return session['endtime']
-
 
     def readTestSessionList(self, gid):
         """
@@ -640,14 +621,30 @@ class DataStore(object):
         result = {}
         dtnow = datetime.now()
 
-        for d in rdata:
-            d['endtime'] = self.endtimeHandle(d)
-            d['status'] = 'running' if d['endtime'] is 'N/A' else 'end'
+        @cm.region("local", "user_name")
+        def get_user(uid):
+            user = users.find_one({'uid': uid})
+            return user and user['username'] or 'N/A'
 
-            @cm.region("local", "user_name")
-            def get_user(uid):
-                user = users.find_one({'uid': uid})
-                return user and user['username'] or 'N/A'
+        for d in rdata:
+            if 'failtime' in d:
+                d['endtime'] = d['failtime']
+            if d['endtime'] is 'N/A':
+                dttime = self.getCache(str('sid:' + d['sid'] + ':uptime'))
+                if dttime is not None:
+                    try:
+                        idle = datetime.strptime(dttime, DATE_FORMAT_STR1)
+                    except:
+                        idle = datetime.strptime(dttime, DATE_FORMAT_STR)
+                    delta = dtnow - idle
+                    idletime = delta.days * 86400 + delta.seconds
+
+                    if idletime >= IDLE_TIME_OUT:
+                        d['endtime'] = dttime
+                else:
+                    d['endtime'] = ''
+
+            d['status'] = 'running' if d['endtime'] is 'N/A' else 'end'
 
             user = get_user(d['tester'])
             cid = d.get('cid','')
