@@ -383,8 +383,6 @@ class DataStore(object):
         if group is None:
             return {'errors': {'code': 0, 'msg': 'Invalid group.'}}
 
-        # collections = ['groups', 'group_members', 'testsessions',
-        # 'testresults']
         collections = ['groups', 'group_members']
         for collec in collections:
             self._db[collec].remove({'gid': gid})
@@ -489,6 +487,12 @@ class DataStore(object):
 
     def userUpdateInfo(self, uid, info):
         users = self._db['users']
+        if 'email' in info:
+            ret = users.find_one({'info.email': info['email']})
+            if not ret is None:
+                return {'code': '04', 'msg': 'This email already bound with another account!'}
+            # info['active'] = False
+
         users.update({'uid': uid}, {'$set': {'info': info}})
         return {'uid': uid}
 
@@ -496,7 +500,7 @@ class DataStore(object):
         users = self._db['users']
         if '@' in username:
             rdata = users.find_one({
-                                   'info.email': username, 'password': password})
+                                   'info.email': username, 'password': password, 'active': True})
         else:
             rdata = users.find_one({
                                    'username': username, 'password': password})
@@ -616,7 +620,7 @@ class DataStore(object):
         for d in rdata:
             if 'failtime' in d:
                 d['endtime'] = d['failtime']
-            if d['endtime'] is 'N/A':
+            if d['endtime'] == 'N/A':
                 dttime = self.getCache(str('sid:' + d['sid'] + ':uptime'))
                 if dttime is not None:
                     try:
@@ -629,9 +633,10 @@ class DataStore(object):
                     if idletime >= IDLE_TIME_OUT:
                         d['endtime'] = dttime
                 else:
+                    # TODO: access mongodb to get last_time of the session
                     d['endtime'] = ''
 
-            d['status'] = 'running' if d['endtime'] is 'N/A' else 'end'
+            d['status'] = 'running' if d['endtime'] == 'N/A' else 'end'
             user = get_user(d['tester'])
             cid = d.get('cid', '')
             if cid not in result:
@@ -650,13 +655,11 @@ class DataStore(object):
             current['product'] = d['deviceinfo'].get('product', '--')
             current['revision'] = d['deviceinfo'].get('revision', '--')
 
-            if current['starttime'] == '--' or \
-                    datetime.strptime(d['starttime'], DATE_FORMAT_STR) < datetime.strptime(current['starttime'], DATE_FORMAT_STR):
+            if current['starttime'] == '--' or _compareDateTime(current['starttime'], d['starttime']):
                 current['starttime'] = d['starttime']
 
             if current['endtime'] != 'N/A' and d['endtime'] != '' and \
-                (current['endtime'] == '--' or d['endtime'] == 'N/A' or
-                 datetime.strptime(d['endtime'], DATE_FORMAT_STR) > datetime.strptime(current['endtime'], DATE_FORMAT_STR)):
+                    (current['endtime'] == '--' or d['endtime'] == 'N/A' or _compareDateTime(d['endtime'], current['endtime'])):
                 current['endtime'] = d['endtime']
 
             if d['endtime'] == 'N/A':
@@ -1009,7 +1012,7 @@ class DataStore(object):
         write a test case resut record in database
         """
         self.setCache(str('sid:' + sid + ':tid:' + tid + ':snaps'), [])
-        timestamp = datetime.now().strftime(DATE_FORMAT_STR1)
+        timestamp = datetime.now().strftime(DATE_FORMAT_STR)
         self.setCache(str('sid:' + sid + ':uptime'), timestamp)
         caseresult = self._db['testresults']
         caseresult.insert({'gid': gid, 'sid': sid, 'tid': int(tid),
@@ -1040,7 +1043,7 @@ class DataStore(object):
         traceinfo = results['traceinfo']
         endtime = results['time']
 
-        timestamp = datetime.now().strftime(DATE_FORMAT_STR1)
+        timestamp = datetime.now().strftime(DATE_FORMAT_STR)
         self.setCache(str('sid:' + sid + ':uptime'), timestamp)
         snapshots = self.getCache(str('sid:' + sid + ':tid:' + tid + ':snaps'))
         self.clearCache(str('sid:' + sid + ':tid:' + tid + ':snaps'))

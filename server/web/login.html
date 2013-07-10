@@ -4,9 +4,11 @@
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8"> 
 	<meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,user-scalable=no"> 
 	<title>Login SmartAT</title> 
-	<link rel="stylesheet" href="./static/css/core.css">    
+	<link href="static/css/jquery-ui-1.8.16.custom.css" rel="stylesheet">
+    <link href="static/css/core.css" rel="stylesheet"> 
+    <link href="static/css/bootstrap.css" rel="stylesheet">  
+    <link rel="stylesheet" href="./static/css/core.css"> 
   </head>
-
   <body class="account-page">
 
   <div id="surface">
@@ -60,43 +62,66 @@
           </p>
       </form>
     </div>
-
-    <div id="editaccount-view" class="account-content clearfix" style="display:none">
-      <form novalidate="" class="clearfix">
-          <span id="txtwarning"></span>
-          <h2> Change Password</h2>
-          <span id="regwarning"></span>
-          <label for="oldpassword">Original Password<span style="color:red">*</span></label>
-          <input type="password" tabindex="2" id="orgpassword" name="orgpassword">
-          <label for="newpassword">New Password<span style="color:red">*</span></label>
-          <input type="password" tabindex="2" id="newpassword" name="newpassword">
-          <label for="confpassword">Original Password<span style="color:red">*</span></label>
-          <input type="password" tabindex="2" id="confpassword" name="confpassword">
-          <input type="button" tabindex="6" value="Submit" class="primary" id="btnchnpass">
-          <hr>
-          <h2> Change Information</h2>
-          <label for="upemail">Email</label>
-          <input type="email" autofocus="" autocapitalize="off" spellcheck="true" autocorrect="off" autocomplete="off" tabindex="3" value="" id="upemail" name="upemail">
-          <label for="upcompany">Company</label>
-          <input type="text" autofocus="" autocapitalize="off" spellcheck="true" autocorrect="off" autocomplete="off" tabindex="4" value="" id="upcompany" name="upcompany">
-          <label for="upphone">Telephone Number</label>
-          <input type="text" autofocus="" autocapitalize="off" spellcheck="true" autocorrect="off" autocomplete="off" tabindex="4" value="" id="upphone" name="upphone">
-          <input type="button" tabindex="6" value="Update" class="primary" id="btnupdate">
+    
+    <div id="editaccount-view" class="account-page" style="display:none" >
+      <form novalidate=""  class="account-page">  
+           <ul class="nav nav-tabs tabTitle" >
+               <li id="tab1" class="active"><a href="javascript:viewTab1();">Change Password</a></li>
+               <li id="tab2"><a href="javascript:viewTab2();">Change UserInfo</a></li>
+               <li id="tab3"><a href="javascript:viewTab3();">Email Verify</a></li>
+            </ul>
+            <div  class="account-content">
+            <div  id="change_pass_panel">
+                <span id="txtwarning"></span>
+                  <span id="regwarning"></span>
+                  <label for="oldpassword" >Original Password<span style="color:red">*</span></label>
+                  <input  type="password" tabindex="1" id="orgpassword" name="orgpassword">
+                  <label for="newpassword">New Password<span style="color:red">*</span></label>
+                  <input type="password" tabindex="2" id="newpassword" name="newpassword">
+                  <label for="confpassword">Original Password<span style="color:red">*</span></label>
+                  <input type="password" tabindex="3" id="confpassword" name="confpassword">
+                  <h1><input type="button" tabindex="4" value="Submit" class="primary" id="btnchnpass"></h1>
+            </div>
+            <div id="change_userinfo_panel" style="display:none">
+                  <label for="upcompany">Company</label>
+                  <input type="text" autofocus="" autocapitalize="off" spellcheck="true" autocorrect="off" autocomplete="off" tabindex="4" value="" id="upcompany" name="upcompany">
+                  <label for="upphone">Telephone Number</label>
+                  <input type="text" autofocus="" autocapitalize="off" spellcheck="true" autocorrect="off" autocomplete="off" tabindex="4" value="" id="upphone" name="upphone">
+                  <h1><input type="button" tabindex="5" value="Update" class="primary" id="btnupdate"></h1>
+            </div>
+            <div id="email_verify_panel" style="display:none" >
+                  <label>Current verified email：</label>
+                  <p class="clearfix">
+                      <h2><span id="oldemail"></span></h2>
+                      <input id="upemail" name="upemail" onBlur="checkemail()" type="text" style="display:none"/>
+                      <p><span id="mail"></span></p>
+                  </p>
+                  <h1>
+                    <input type="button" tabindex="6" value="Edit" class="primary" id="btneditemail">
+                    <input type="button" tabindex="7" value="Confirm" class="primary" id="btnconfirmemail"  style="display:none">
+                    <input type="button" tabindex="8" value="Cancel" class="primary" id="btnCancelUpdateEmail"  style="display:none">
+                  </h1>
+                  <label id="emailExists" style="color:red;display:none">Email same as before</label>
+            </div>  
+          </div>
       </form>
     </div>
-
-
+  </div>
+  <div id="emailVerify-view" class="account-page" style="display:none" >
+      <label id="emailVerify_link" >
+        <h2>Please login your email to verify email  <a tabindex="4" style="height:100;align:bottom;border:1;color:red" class="center" href="">login in</a>
+      </h2></label>
   </div>
 
   <script type="text/javascript" src="./static/js/lib/jquery-1.7.2.min.js"></script>
-  <script type="text/javascript" src="./static/js/lib/jquery.cookie.js"></script>  
+  <script type="text/javascript" src="./static/js/lib/jquery.cookie.js"></script>
   <script type="text/javascript" src="./static/js/lib/jquery-ui.js"></script> 
   <script type="text/javascript" src="./static/js/lib/json2.js"></script>
-  <script type="text/javascript" src="./static/js/lib/underscore-min.js"></script>     
+  <script type="text/javascript" src="./static/js/lib/underscore-min.js"></script>
   <script type="text/javascript" src="./static/js/lib/backbone.js"></script>
-  <script type="text/javascript" src="./static/js/lib/md5.js"></script>   
-  <script type="text/javascript" src="./static/js/app/util.js"></script> 
-  <script type="text/javascript" src="./static/js/app/login.js"></script>   
+  <script type="text/javascript" src="./static/js/lib/md5.js"></script>
+  <script type="text/javascript" src="./static/js/app/util.js"></script>
+  <script type="text/javascript" src="./static/js/app/login.js"></script>
 </body>
 
 </html>
