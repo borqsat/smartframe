@@ -960,15 +960,14 @@ function toggle(){
 
 function showCommentInfo(){
 
-    document.getElementById('show-title').html = "Tap here to get more information==> <br />"
-    document.getElementById('article').html = "<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
-    "<b>Uptime:</b> Device running time, from 'Start Time' to 'End Time'. " + 
-    "(Block time will not included.) <br />" + 
-    "<b>Failures</b>= (critical issues) + (Non-Critical issues). <br />"+
-    "<b>Critial Issues:</b> Phone hang, kernel reboot/panic, system crash, etc. <br />"+
-    "<b>Non-Critical Issues:</b> Application/process force close/ANR, core dump (native process crash), etc.<br />"+
-    "<b>First Failure Uptime:</b> From the 'Start Time' to first failure occur. <br />"
-
+    $('#show-title').html('Tap here to get more information==> <br />');
+    $('#article').html("<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
+                       "<b>Uptime:</b> Device running time, from 'Start Time' to 'End Time'. " + 
+                       "(Block time will not included.) <br />" + 
+                       "<b>Failures</b>= (critical issues) + (Non-Critical issues). <br />"+
+                       "<b>Critial Issues:</b> Phone hang, kernel reboot/panic, system crash, etc. <br />"+
+                       "<b>Non-Critical Issues:</b> Application/process force close/ANR, core dump (native process crash), etc.<br />"+
+                       "<b>First Failure Uptime:</b> From the 'Start Time' to first failure occur. <br />");
 
 }
 
