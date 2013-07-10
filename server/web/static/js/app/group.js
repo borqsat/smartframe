@@ -817,12 +817,12 @@ function createSessionBaseInfo(data, gid, sid) {
     var $dev_table = $('<table>').attr('class','table table-bordered');
     var $th = '<thead><tr>'+
               '<th>Planname</th>'+
-              '<th>Tester</th>'+           
+              '<th>Tester</th>'+
               '<th>Device#</th>'+
               '<th>Product</th>'+
-              '<th>Build Version</th>'+              
+              '<th>Build Version</th>'+
               '<th>Start Time</th>'+
-              '</tr></thead>';   
+              '</tr></thead>';
     var $tbody = '<tbody></tbody>';
     $('#device_div').html('').append($dev_table);
     $dev_table.append($th);
@@ -960,8 +960,8 @@ function toggle(){
 
 function showCommentInfo(){
 
-    document.getElementById('show-title').innerHTML = "Tap here to get more information==> <br />"
-    document.getElementById('article').innerHTML = "<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
+    document.getElementById('show-title').html = "Tap here to get more information==> <br />"
+    document.getElementById('article').html = "<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
     "<b>Uptime:</b> Device running time, from 'Start Time' to 'End Time'. " + 
     "(Block time will not included.) <br />" + 
     "<b>Failures</b>= (critical issues) + (Non-Critical issues). <br />"+
@@ -1048,16 +1048,21 @@ function showPic(picID){
 
 function showFailuresInfo(gid,sid){
     viewHistory();
-    invokeWebApi('/group/'+gid+'/test/'+sid+'/history',
+      invokeWebApi('/group/'+gid+'/test/'+sid+'/summary',
+                   prepareData({}),
+                   function(data){
+                        initScreenInfo(data);
+                  });
+	invokeWebApi('/group/'+gid+'/test/'+sid+'/history',
                   prepareData({'type':'fail'}),
                   function(data){
-                  if(data.results === undefined) return;
-                  var paging = data.results.paging;
-                  var caseslist = data.results.cases;
-                  createDetailTable('cases_div','table_fail_' + sid);
-                  fillDetailTable(gid, sid, caseslist,'table_fail_' + sid,'fail');
-                  if(paging !== undefined) TablePage(gid, sid, paging['totalpage'], paging['pagesize'], fillDetailTable, 'table_fail_' + sid,'fail');
-            });
+                  		if(data.results === undefined) return;
+                  		var paging = data.results.paging;
+                  		var caseslist = data.results.cases;
+                  		createDetailTable('cases_div','table_fail_' + sid);
+                  		fillDetailTable(gid, sid, caseslist,'table_fail_' + sid,'fail');
+                  		if(paging !== undefined) TablePage(gid, sid, paging['totalpage'], paging['pagesize'], fillDetailTable, 'table_fail_' + sid,'fail');
+            		});
 }
 
 function showFailureDetailsInfo(data,gid){
@@ -1206,11 +1211,10 @@ function showDomainInfo(data){
 
 var AppRouter = Backbone.Router.extend({
     routes: {
-        "group/:gid":"showGroupView",
+        "group/:gid" : "showGroupView",
         "group/:gid/session/:sid" : "showSessionView",
         "group/:gid/report/:cid" : "showReportView",
-        "group/:gid/session/:sid/fail" : "showFailView",
-
+        "group/:gid/session/:sid/fail" : "showFailView"
     },
     showGroupView: function(gid){
         checkLogIn();
@@ -1262,7 +1266,7 @@ var AppRouter = Backbone.Router.extend({
         if(_appglobal.t2 !== undefined) clearTimeout(_appglobal.t2);
         showGroupInfo(gid);
         showReportInfo(gid,cid);
-    },
+    }
 });
 var index_router = new AppRouter;
 Backbone.history.start();
