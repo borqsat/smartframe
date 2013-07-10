@@ -44,22 +44,29 @@ var prepareData = function(data) {
  */
 var invokeWebApi = function(apiUrl,dataj,render,bprg) {
     var options = {}; 
-    var funok=function(data) {
+    var funok = function(data) {
         if(data['results'] === undefined) {
            if(data['errors'] !== undefined) {
               alert(data['errors']['msg']);
               if(data['errors']['code'] === '01') window.location = "./login.html";
-           } else alert("Web server occurr unexpected error!");
+           } else alert("ERROR:Request failed, please retry!");
            _ajaxend();
         } else {
            render(data);
            _ajaxend();          
         }
-    };
-    var funerror=function() {
-        alert("Network connection timeout!");
-        _ajaxend();
-    };
+    }
+    var funerror = function(jqXHR, textStatus, errorThrown) {
+        var err;
+        if (textStatus !== "abort" && errorThrown === "Internal Server Error") {
+            try {
+                err = JSON.parse(jqXHR.responseText);
+                alert(err.Message);
+            } catch(e) {
+                alert("ERROR: Request failed, please retry!");
+            }
+        }
+    }
     if(bprg !== undefined) options['beforeSend'] = _ajaxstart;
     options['url'] = apiBaseURL + apiUrl;
     options['async'] = true;
@@ -81,18 +88,22 @@ var invokeWebApiEx = function(apiUrl,datap,render) {
         if(data['results'] === undefined) {
             if(data['errors'] !== undefined){
                 alert(data['errors']['msg']);
-                //if(data['errors']['code'] === '01') window.location = "login.html";
-            } else alert("Web server occurr unexpected error!");
-           //_ajaxend();
+            } else alert("ERROR:Request failed, please retry!");
         } else {
            render(data);
-           //_ajaxend();
         }
-    };
-    var funerror=function() {
-        alert("Network connection timeout!");
-        //_ajaxend();
-    };
+    }
+    var funerror = function(jqXHR, textStatus, errorThrown) {
+        var err;
+        if (textStatus !== "abort" && errorThrown === "Internal Server Error") {
+            try {
+                err = JSON.parse(jqXHR.responseText);
+                alert(err.Message);
+            } catch(e) {
+                alert("ERROR:Request failed, please retry!");
+            }
+        }
+    }
     var options = {};
     //options['beforeSend'] = _ajaxstart;
     options['url'] = apiBaseURL + apiUrl;
