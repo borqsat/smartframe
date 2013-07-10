@@ -74,10 +74,13 @@ function deleteGroup(gid){
                     });
     }
 }
+
+
 var AppRouter = Backbone.Router.extend({
     routes: {
         "":"showDefault",
         "showTests":"showTests"
+
     },
     showDefault: function(){
         checkLogIn();
