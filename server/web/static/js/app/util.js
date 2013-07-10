@@ -5,27 +5,27 @@ var socketURL = apiBaseURL.replace(window.location.protocol, "ws:") + "/ws";
 var _appglobal = function () {};
 
 var _ajaxstart=function() {
-     var winWidth=0;
-     var winHeight=0;
+    var winWidth=0;
+    var winHeight=0;
 
-     if(window.innerWidth) winWidth = window.innerWidth;	
-     else if((document.body) && (document.body.clientWidth))  winWidth = document.body.clientWidth;
+    if(window.innerWidth) winWidth = window.innerWidth;	
+    else if((document.body) && (document.body.clientWidth))  winWidth = document.body.clientWidth;
 
-     if(window.innerHeight) winHeight = window.innerHeight;	
-     else if((document.body) && (document.body.clientHeight)) winHeight = document.body.clientHeight;
+    if(window.innerHeight) winHeight = window.innerHeight;	
+    else if((document.body) && (document.body.clientHeight)) winHeight = document.body.clientHeight;
 
-     if(document.documentElement && document.documentElement.clientHeight && document.documentElement.clientWidth) {
-         winHeight = document.documentElement.clientHeight;
-         winWidth = document.documentElement.clientWidth;
-     }
+    if(document.documentElement && document.documentElement.clientHeight && document.documentElement.clientWidth) {
+        winHeight = document.documentElement.clientHeight;
+        winWidth = document.documentElement.clientWidth;
+    }
 
-     if(document.getElementById('progress-img') !== undefined 
+    if(document.getElementById('progress-img') !== undefined 
         && document.getElementById('progress-img') !== null ) {
-	    document.getElementById('progress-img').style.left=""+(winWidth/2-70)+"px";
-	    document.getElementById('progress-img').style.top=""+(winHeight/2)+"px";
-	    document.getElementById('progress-img').innerHTML = "<a><img style='BORDER:none' src='static/img/loading.gif'></a>";   	
-     }	    		    
-}; 
+	      document.getElementById('progress-img').style.left=""+(winWidth/2-70)+"px";
+	      document.getElementById('progress-img').style.top=""+(winHeight/2)+"px";
+	      document.getElementById('progress-img').innerHTML = "<a><img style='BORDER:none' src='static/img/loading.gif'></a>";   	
+    }	    		    
+};
 
 var _ajaxend = function(){
     if(document.getElementById('progress-img') !== undefined && document.getElementById('progress-img') !== null )
