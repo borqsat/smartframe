@@ -487,12 +487,6 @@ class DataStore(object):
 
     def userUpdateInfo(self, uid, info):
         users = self._db['users']
-        if 'email' in info:
-            ret = users.find_one({'info.email': info['email']})
-            if not ret is None:
-                return {'code': '04', 'msg': 'This email already bound with another account!'}
-            # info['active'] = False
-
         users.update({'uid': uid}, {'$set': {'info': info}})
         return {'uid': uid}
 
