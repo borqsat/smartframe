@@ -949,10 +949,18 @@ function showReportInfo(gid,cid){
                 },true);
 }
 
+function toggle(){
+        var articleID=document.getElementById("article");
+            if (articleID.style.display=="none"){
+                articleID.style.display="block";
+            } else {
+                articleID.style.display="none";
+            }
+    }
 
 function showCommentInfo(){
 
-    document.getElementById('show-title').innerHTML = "Tap here to get more information==><br />"
+    document.getElementById('show-title').innerHTML = "Tap here to get more information==> <br />"
     document.getElementById('article').innerHTML = "<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
     "<b>Uptime:</b> Device running time, from 'Start Time' to 'End Time'. " + 
     "(Block time will not included.) <br />" + 
@@ -961,12 +969,6 @@ function showCommentInfo(){
     "<b>Non-Critical Issues:</b> Application/process force close/ANR, core dump (native process crash), etc.<br />"+
     "<b>First Failure Uptime:</b> From the 'Start Time' to first failure occur. <br />"
 
-    $(document).ready(function(){
-        $(".show-content").hide();
-        $("#show-title").click(function(){
-            $(this).next(".show-content").slideToggle("slow");
-        })
-    });
 
 }
 
@@ -1084,7 +1086,7 @@ function showFailureDetailsInfo(data,gid){
                     "<td>"+data[i].imei+"</td>"+
                     "<td>"+data[i].starttime+"</td>"+
                     "<td>"+data[i].endtime+"</td>"+ 
-                    (failureCount==0?"<td style='text-align:center'>"+0+"</td>":"<td style='text-align:center'><a href=\"#/group/"+parseInt(gid)+"/session/"+sid+"/fail\">"+failureCount+"</a></td>")+
+                    (failureCount==0?"<td style='text-align:center'>"+0+"</td>":"<td style='text-align:center'><a href=\"#/group/"+gid+"/session/"+sid+"/fail\">"+failureCount+"</a></td>")+
                     "<td>"+setRunTime(data[i].faildur)+"</td>"+
                     "<td>"+setRunTime(data[i].totaldur)+"</td>"+
                     "</tr>";
