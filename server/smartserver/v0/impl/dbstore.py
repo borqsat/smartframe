@@ -616,7 +616,7 @@ class DataStore(object):
         for d in rdata:
             if 'failtime' in d:
                 d['endtime'] = d['failtime']
-            if d['endtime'] is 'N/A':
+            if d['endtime'] == 'N/A':
                 dttime = self.getCache(str('sid:' + d['sid'] + ':uptime'))
                 if dttime is not None:
                     try:
@@ -631,7 +631,7 @@ class DataStore(object):
                 else:
                     d['endtime'] = ''
 
-            d['status'] = 'running' if d['endtime'] is 'N/A' else 'end'
+            d['status'] = 'running' if d['endtime'] == 'N/A' else 'end'
             user = get_user(d['tester'])
             cid = d.get('cid', '')
             if cid not in result:
