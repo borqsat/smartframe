@@ -1,59 +1,3 @@
-function showTab(tabHeadId,tabContentId)
-        {
-
-            //tab层
-
-            var tabDiv = document.getElementById("tabDiv");
-
-            //将tab层中所有的内容层设为不可见
-
-            //遍历tab层下的所有子节点
-
-            var taContents = tabDiv.childNodes;
-
-            for(i=0; i<taContents.length; i++)
-
-            {
-
-                //将所有内容层都设为不可见
-
-                if(taContents[i].id!=null && taContents[i].id != 'tabsHead')
-
-                {
-
-                    taContents[i].style.display = 'none';
-
-                }
-
-            }
-
-            //将要显示的层设为可见
-
-            document.getElementById(tabContentId).style.display = 'block';
-
-           
-
-            //遍历tab头中所有的超链接
-
-            var tabHeads = document.getElementById('tabsHead').getElementsByTagName('a');
-
-            for(i=0; i<tabHeads.length; i++)
-
-            {
-
-                //将超链接的样式设为未选的tab头样式
-
-                tabHeads[i].className='tabs';
-
-            }
-
-            //Set current Hyperlink style as the selected tab header style
-
-            document.getElementById(tabHeadId).className='curtab';
-
-            document.getElementById(tabHeadId).blur();
-
-        }
 function afterlogin(data) {
     ret = data['results'];
     if (ret !== undefined && ret['token'] !== undefined) {
@@ -81,7 +25,6 @@ function afterUpdate(data) {
         alert(ret["msg"]);
     } else {
         alert("Update account successfully!");
-        //window.location = "group.html";
     }
 }
 
@@ -90,7 +33,6 @@ function afterUpdateEmail(data) {
     if(ret !== undefined ) {
         alert(ret["msg"]);
     } else {
-        //alert("Update account successfully!");
         window.location = "login.html#emailVerify";
     }
 }
@@ -133,45 +75,37 @@ function viewTab3(){
 }
 
 function checkemail(){
-var temp = document.getElementById("upemail");
-var myreg = /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z0-9]+$/;
-
-//  /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9_-])+/;
-
-//  /^w+((-w+)|(.w+))*@[A-Za-z0-9]+((.|-)[A-Za-z0-9]+)*.[A-Za-z0-9]+$/;
-if(temp.value!=""){
-if(!myreg.test(temp.value)){
-document.getElementById("mail").innerHTML="请输入有效的email!";
-document.getElementById("mail").style.color="red";
-temp.value="";
-temp.focus();
-return false;
-}else{
-document.getElementById("mail").innerHTML="email可以使用";
-document.getElementById("mail").style.color="green";
-}
-}
+    var temp = document.getElementById("upemail");
+    var myreg = /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z0-9]+$/;
+    if(temp.value!=""){
+        if(!myreg.test(temp.value)){
+            document.getElementById("mail").innerHTML="请输入有效的email!";
+            document.getElementById("mail").style.color="red";
+            temp.value="";
+            temp.focus();
+            return false;
+        } else {
+            document.getElementById("mail").innerHTML="email可以使用";
+            document.getElementById("mail").style.color="green";
+        }
+    }
 }
 
 //show user info
- 
 function showEditAccountInfo(){
-      invokeWebApi('/account/info',
-                   prepareData({}),
-                   function(data){
+    invokeWebApi('/account/info',
+                prepareData({}),
+                function(data){
                         data = data.results;
                         email = data.info['email'];
                         phone = data.info['phone'];
                         company = data.info['company'];
-                        //upemail.value=email
-                        //upcompany.value=company
-                        //upphone.value=phone
                         $('#oldemail').html('<label style="color:#991515" />'+ email+'</label>')                       
                         $('#upemail').val(email);
                         $('#upcompany').val(company);
                         $('#upphone').val(phone);
-                   })
-        }     
+                })
+}     
                         
 var AppRouter = Backbone.Router.extend({
     routes: {

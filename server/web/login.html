@@ -64,55 +64,46 @@
     </div>
     
     <div id="editaccount-view" class="account-page" style="display:none" >
-      <form novalidate=""  class="account-page">
-        <div id="tabDiv"> 
-        <!--background-color:#e6e6e6"-->
-                <div id="" class="account-page">    
-                <div id="group-div1">
-                   <ul class="nav nav-tabs tabTitle" >
-                       <li id="tab1" class="active"><a href="javascript:viewTab1();">Change Password</a></li>
-                       <li id="tab2"><a href="javascript:viewTab2();">Change UserInfo</a></li>
-                       <li id="tab3"><a href="javascript:viewTab3();">Email Verify</a></li>
-                    </ul>
-                    <div  class="contentFrame">
-                    <div  id="change_pass_panel">
-                        <span id="txtwarning"></span>
-                          <span id="regwarning"></span>
-                          <label for="oldpassword" ><h2>Original Password<span style="color:red">*</span></h2></label>
-                          <input  type="password" tabindex="1" id="orgpassword" name="orgpassword">
-                          <label for="newpassword"><h2>New Password<span style="color:red">*</span></h2></label>
-                          <input type="password" tabindex="2" id="newpassword" name="newpassword">
-                          <label for="confpassword"><h2>Original Password<span style="color:red">*</span></h2></label>
-                          <input type="password" tabindex="3" id="confpassword" name="confpassword">
-                          <h1><input type="button" tabindex="4" value="Submit" class="primary" id="btnchnpass"></h1>
-                    </div>
-                    <div id="change_userinfo_panel" style="display:none">
-                          <label for="upcompany"><h2>Company</h2></label>
-                          <input type="text" autofocus="" autocapitalize="off" spellcheck="true" autocorrect="off" autocomplete="off" tabindex="4" value="" id="upcompany" name="upcompany">
-                          <label for="upphone"><h2>Telephone Number</h2></label>
-                          <input type="text" autofocus="" autocapitalize="off" spellcheck="true" autocorrect="off" autocomplete="off" tabindex="4" value="" id="upphone" name="upphone">
-                          <h1><input type="button" tabindex="5" value="Update" class="primary" id="btnupdate"></h1>
-                    </div>
-                    <div id="email_verify_panel" style="display:none" >
-                          <h2>Needed verify email：</h2>
-                          <p class="clearfix">
-                              <h1><span id="oldemail" ></span></h1>
-                              <input id="upemail" name="upemail" onBlur="checkemail()" type="text" style="display:none"/>
-                              <p><span id="mail"></span></p>
-                          </p>
-                          <h1>
-                            <input type="button" tabindex="6" value="Edit" class="primary" id="btneditemail">
-                            <input type="button" tabindex="7" value="Confirm" class="primary" id="btnconfirmemail"  style="display:none">
-                            <input type="button" tabindex="8" value="Cancel" class="primary" id="btnCancelUpdateEmail"  style="display:none">
-                          </h1>
-                          <label id="emailExists" style="color:red;display:none">Email same as before</label>
-                    </div>
-                    
-                    </div>
-                    
-                    </div>
-                </div>
-        </div>
+      <form novalidate=""  class="account-page">  
+           <ul class="nav nav-tabs tabTitle" >
+               <li id="tab1" class="active"><a href="javascript:viewTab1();">Change Password</a></li>
+               <li id="tab2"><a href="javascript:viewTab2();">Change UserInfo</a></li>
+               <li id="tab3"><a href="javascript:viewTab3();">Email Verify</a></li>
+            </ul>
+            <div  class="account-content">
+            <div  id="change_pass_panel">
+                <span id="txtwarning"></span>
+                  <span id="regwarning"></span>
+                  <label for="oldpassword" >Original Password<span style="color:red">*</span></label>
+                  <input  type="password" tabindex="1" id="orgpassword" name="orgpassword">
+                  <label for="newpassword">New Password<span style="color:red">*</span></label>
+                  <input type="password" tabindex="2" id="newpassword" name="newpassword">
+                  <label for="confpassword">Original Password<span style="color:red">*</span></label>
+                  <input type="password" tabindex="3" id="confpassword" name="confpassword">
+                  <h1><input type="button" tabindex="4" value="Submit" class="primary" id="btnchnpass"></h1>
+            </div>
+            <div id="change_userinfo_panel" style="display:none">
+                  <label for="upcompany">Company</label>
+                  <input type="text" autofocus="" autocapitalize="off" spellcheck="true" autocorrect="off" autocomplete="off" tabindex="4" value="" id="upcompany" name="upcompany">
+                  <label for="upphone">Telephone Number</label>
+                  <input type="text" autofocus="" autocapitalize="off" spellcheck="true" autocorrect="off" autocomplete="off" tabindex="4" value="" id="upphone" name="upphone">
+                  <h1><input type="button" tabindex="5" value="Update" class="primary" id="btnupdate"></h1>
+            </div>
+            <div id="email_verify_panel" style="display:none" >
+                  <label>Current verified email：</label>
+                  <p class="clearfix">
+                      <h2><span id="oldemail"></span></h2>
+                      <input id="upemail" name="upemail" onBlur="checkemail()" type="text" style="display:none"/>
+                      <p><span id="mail"></span></p>
+                  </p>
+                  <h1>
+                    <input type="button" tabindex="6" value="Edit" class="primary" id="btneditemail">
+                    <input type="button" tabindex="7" value="Confirm" class="primary" id="btnconfirmemail"  style="display:none">
+                    <input type="button" tabindex="8" value="Cancel" class="primary" id="btnCancelUpdateEmail"  style="display:none">
+                  </h1>
+                  <label id="emailExists" style="color:red;display:none">Email same as before</label>
+            </div>  
+          </div>
       </form>
     </div>
   </div>

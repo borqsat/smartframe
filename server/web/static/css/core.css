@@ -1,9 +1,6 @@
 @charset "utf-8";
 /* added by xujuan */
-.tabTitle{font-size:18px;font-weight:bold;}
-.contentFrame{height:300px;padding-left:13px;padding-top:8px;border-style: solid double;border-color:#B8E0F2;background:#EAF7FC; border-width: 1px;overflow-y:auto;
-}
-
+.tabTitle{  font-size:16px; font-weight:bold;}
 
 html,body,input,select,textarea{font:14px/18px "Helvetica Neue",Arial,Helvetica,sans-serif;color:#393939;}
 html{font-size:100%;-webkit-text-size-adjust:100%;}
