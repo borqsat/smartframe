@@ -58,7 +58,7 @@ var invokeWebApi = function(apiUrl,dataj,render,bprg) {
     }
     var funerror = function(jqXHR, textStatus, errorThrown) {
         var err;
-        if (textStatus !== "abort" && errorThrown !== "abort") {
+        if (textStatus !== "abort" && errorThrown === "Internal Server Error") {
             try {
                 err = JSON.parse(jqXHR.responseText);
                 alert(err.Message);
@@ -95,7 +95,7 @@ var invokeWebApiEx = function(apiUrl,datap,render) {
     }
     var funerror = function(jqXHR, textStatus, errorThrown) {
         var err;
-        if (textStatus !== "abort" && errorThrown !== "abort") {
+        if (textStatus !== "abort" && errorThrown === "Internal Server Error") {
             try {
                 err = JSON.parse(jqXHR.responseText);
                 alert(err.Message);
