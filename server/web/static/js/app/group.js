@@ -334,7 +334,7 @@ function renderTestSessionDiv_cyclelist(div_id, test_session){
                       '<th width="20%">Build Version</th>'+
                       //'<th width="10%">Start Time</th>'+
                       //'<th width="10%">End Time</th>'+
-                      '<th width="5%">Total Devices</th>'+
+                      '<th width="5%">Devices</th>'+
                       '<th width="7%">Living Devices</th>'+
                       '<th width="1%">Report</th>'+ 
                       '</tr></thead>';
