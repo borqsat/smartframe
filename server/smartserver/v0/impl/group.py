@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from dbstore import store
 
 ##########################Group Roles########################
@@ -38,9 +41,9 @@ def getGroupInfo(uid, gid):
         return {'errors':{'code':'00','msg':'Member permission required!'}}
 
     rdata = store.getGroupInfo(gid)
-    if rdata.has_key('gid'):
+    if 'gid' in rdata:
         for d in rdata['members']:
-            d['role'] = ROLES[d['role']]
+            d['rolename'] = ROLES[d['role']]
         return {'results':rdata}
     else:
         return {'errors':rdata}

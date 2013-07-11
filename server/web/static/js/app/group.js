@@ -12,16 +12,16 @@ function showGroupInfo(id) {
                          var userid = $.cookie('userid');
                          $.each(members, function(i, o) {
                               if(o['uid'] === userid)
-                                  bAdmin = (o['role'] === 'owner') || (o['role'] === 'admin');                          
+                                  bAdmin = (o['rolename'] === 'owner') || (o['rolename'] === 'admin');                          
                          });
                          _appglobal.members = [];
                          $.each(members, function(i, o) {
                             _appglobal.members.push(o['username']);
                             var uid = o['uid'];
-                            var role = o['role'];
-                            $groupprf.append('<li>' + o['username'] + '('+ o['role'] + ')'
+                            var role = o['rolename'];
+                            $groupprf.append('<li>' + o['username'] + '('+ o['rolename'] + ')'
                                              + '<a href="javascript:deletemembersById(\''+id+'\',\''+uid+'\',\' '+role+'\')">' 
-                                             + (bAdmin && o['role'] !== 'owner'? '[X]':'')+'</a></li>')
+                                             + (bAdmin && o['rolename'] !== 'owner'? '[X]':'')+'</a></li>')
                          })
                    })
       $('#dialog-user')
