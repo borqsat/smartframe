@@ -15,6 +15,9 @@ import os
 from log import logger
 
 def isRegionMatch(src, sub, threshold=0.1):
+    '''
+    Return true if find the sub image in src image. else return false
+    '''
     for img in [src,sub]: assert os.path.exists(img) , "No such image:  %s" % (img)
     method = cv2.cv.CV_TM_SQDIFF_NORMED
     #Load the image
@@ -42,6 +45,9 @@ def isRegionMatch(src, sub, threshold=0.1):
         return False
     
 def getRegionCenterPoint(src,sub,threshold=0.1):
+    '''
+    Return (x,y) if find the sub image in src image. else return None
+    '''
     for img in [src,sub]: assert os.path.exists(img) , "No such image:  %s" % (img)
     method = cv2.cv.CV_TM_SQDIFF_NORMED
     #Load the image

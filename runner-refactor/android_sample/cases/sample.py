@@ -7,6 +7,7 @@ class SampleTest(unittest.TestCase):
         super(SampleTest,self).setUp()
 
     def testSMSSend(self):
+        #self.device.touch_image(name='app_gmail1.png')
         self.device.expect(name='app_message.png')\
                    .touch_image(name='app_message.png')\
                    .expect(name='msg_launch.png')     

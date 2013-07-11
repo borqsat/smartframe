@@ -139,7 +139,7 @@ class TopicsHandler(object):
         @type data: {}
         @param data: a dictionary contains the result path
         '''
-        ResultUploader.getInstance().start(data['directory'])
+        ResultUploader.getInstance().upload(data['directory'])
 
     @staticmethod
     def onSnapshot(data):

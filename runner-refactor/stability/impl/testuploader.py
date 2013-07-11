@@ -103,7 +103,7 @@ class ResultUploader(object):
         # Critical section end
         return cls.__instance
 
-    def start(self,path):
+    def upload(self,path):
         #self.createSession(os.path.join(path,'.session'))
         if not self._sender:
             print '>>>>>>send_therad: _sender is None. first sender create'
@@ -205,11 +205,14 @@ class Sender(threading.Thread):
         for d in os.listdir(ws):
             bd = os.path.join(ws,d)
             if os.path.isdir(bd): result.append(bd)
-        path = min(result, key=os.path.getmtime)
+        def callback(fs):
+            p,f = os.path.split(fs)
+            return int(time.mktime(time.strptime(f.split('@')[-1], variables.TIME_STAMP_FORMAT)))
+        path = min(result, key=callback)
         target = os.path.basename(path)
         print 'target--------------------------------------------------------------------\n'
         print target
-        case_name, case_start_time = 'testAlarm',_time()#target.split(variables.FOLDER_NAME_SYMBOL)
+        case_name, case_start_time = target.split(variables.FILE_NAME_SEPARATOR)
         result_file_path = os.path.join(path,variables.RESULT_FILE_NAME)
         if os.path.exists(result_file_path):
             print '>>>>>>send_thread: find result file begin to update test result'
@@ -279,7 +282,7 @@ class Sender(threading.Thread):
             tid = tid + 1
             import shutil
             print '>>>>>>send_thread: upload success delete the orgin folder DELETING-------'
-            print path
+            #print path
             a = shutil.rmtree(path)
             return True
             #self.stop()

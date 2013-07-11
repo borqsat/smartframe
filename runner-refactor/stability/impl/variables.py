@@ -24,3 +24,4 @@ IMAGE_SUFFIX = '.png'
 
 #TIME_STAMP_FORMAT = '%Y.%m.%d-%H.%M.%S'
 TIME_STAMP_FORMAT = '%Y-%m-%d_%H:%M:%S'
+FILE_NAME_SEPARATOR = '@'

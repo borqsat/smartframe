@@ -13,64 +13,6 @@ from ability import Ability
 import ConfigParser
 import variables
 
-class BACKDeviceManager(object):
-    '''DeviceManager maintains collecion of availiable devices'''
-    _instance = None
-    _mutex = threading.Lock()
-
-    def __init__(self):
-        '''Init DeviceManager Instance.'''
-        self._devices = list()
-
-    @staticmethod
-    def getInstance(context=None):
-        '''Get single instance of DeviceManager'''
-        if(DeviceManager._instance == None):
-            DeviceManager._mutex.acquire()
-            if(DeviceManager._instance == None):
-                DeviceManager._instance = DeviceManager()
-            else:
-                pass
-            DeviceManager._mutex.release()
-        else:
-            pass
-        if not context is None:
-            DeviceManager._instance.setContext(context)
-        return DeviceManager._instance
-
-    def setContext(self, context=None):
-        '''set application context if exists'''
-        self.platform = context
-        
-    def getDevice(self):
-        '''
-        Get instance of target device.
-        rtype :the subclass of BaseDevice
-        rparam :the subclass instance  of BaseDevice
-        Exception: Throw exception when device init failed or recover failed.
-        '''
-        moudle = __import__('stability.impl.%s' % self.platform, fromlist=['Device'])
-        device = getattr(moudle, 'Device')
-        try:
-
-            self._device = device()
-            if not self._device.available():
-                self._device.recover()
-            self._devices.append(self._device)
-            return self._device
-        except DeviceInitException,e1:
-            print e1
-            return None
-        except DeviceRecoverException,e2:
-            print e2
-            return None
-
-    def getDevices(self):
-        '''
-        Get the device collection list.
-        '''
-        return self._devices
-
 class DevManager(object):
     '''DeviceManager maintains collecion of availiable devices'''
 
@@ -118,8 +60,6 @@ class DevManager(object):
         Get the device collection list.
         '''
         return self._devices
-
-DeviceManager = DevManager(config=variables.DEVICE_CONFIG_PATH)
 
 class BaseDevice(Ability):
     '''
@@ -233,6 +173,8 @@ class BaseDevice(Ability):
         @param dest_folder: The folder path used to store device log.
         '''
         pass
+
+DeviceManager = DevManager(config=variables.DEVICE_CONFIG_PATH)
 
 class DeviceRecoverException(Exception):
     '''
