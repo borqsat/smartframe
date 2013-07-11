@@ -199,15 +199,12 @@ var AppRouter = Backbone.Router.extend({
                                  var company = $('#upcompany').val();
                                  var info = {};
                                  if (email !== '') info["email"] = email;
-                                 if (password !== '') info["phone"] = phone;
+                                 if (phone !== '') info["phone"] = phone;
                                  if (company !== '') info["company"] = company;
 
                                  $('#txtwarning').html('');
                                  invokeWebApiEx("/account/update",
-                                                prepareData({
-                                                "password":password,
-                                                "info":info
-                                                }),
+                                                prepareData({"info":info}),
                                                 afterUpdate
                                   );
                })
@@ -240,19 +237,15 @@ var AppRouter = Backbone.Router.extend({
                                  var company = $('#upcompany').val();
                                  var info = {};
                                  if (email !== '') info["email"] = email;
-                                 if (password !== '') info["phone"] = phone;
+                                 if (phone !== '') info["phone"] = phone;
                                  if (company !== '') info["company"] = company;
                                  if (oldemail === email) {
-                                     document.getElementById("emailExists").style.display="block";
+                                        document.getElementById("emailExists").style.display="block";
                                  }
                                  else {
                                      invokeWebApiEx("/account/update",
-                                                prepareData({
-                                                "password":password,
-                                                "info":info
-                                                }),
-                                                afterUpdateEmail
-                                  );
+                                                    prepareData({"info":info}),
+                                                    afterUpdateEmail);
                                  }
                                  
                                   
