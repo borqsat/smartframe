@@ -25,7 +25,15 @@ function afterUpdate(data) {
         alert(ret["msg"]);
     } else {
         alert("Update account successfully!");
-        window.location = "index.html";
+    }
+}
+
+function afterUpdateEmail(data) {
+    var ret = data["errors"];
+    if(ret !== undefined ) {
+        alert(ret["msg"]);
+    } else {
+        window.location = "login.html#emailVerify";
     }
 }
 
@@ -39,16 +47,78 @@ function afterChnpass(data) {
     }
 }
 
+function viewTab1(){
+    $('#tab1').addClass('active');
+    $('#tab2').removeClass('active');
+    $('#tab3').removeClass('active');
+    $('#change_pass_panel').show();
+    $('#change_userinfo_panel').hide();  
+    $('#email_verify_panel').hide();    
+}
+
+function viewTab2(){
+    $('#tab1').removeClass('active');
+    $('#tab2').addClass('active');
+    $('#tab3').removeClass('active');
+    $('#change_pass_panel').hide();
+    $('#change_userinfo_panel').show();  
+    $('#email_verify_panel').hide();   
+}
+
+function viewTab3(){
+    $('#tab1').removeClass('active');
+    $('#tab2').removeClass('active');
+    $('#tab3').addClass('active');
+    $('#change_pass_panel').hide();
+    $('#change_userinfo_panel').hide();  
+    $('#email_verify_panel').show();   
+}
+
+function checkemail(){
+    var temp = document.getElementById("upemail");
+    var myreg = /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z0-9]+$/;
+    if(temp.value!=""){
+        if(!myreg.test(temp.value)){
+            document.getElementById("mail").innerHTML="请输入有效的email!";
+            document.getElementById("mail").style.color="red";
+            temp.value="";
+            temp.focus();
+            return false;
+        } else {
+            document.getElementById("mail").innerHTML="email可以使用";
+            document.getElementById("mail").style.color="green";
+        }
+    }
+}
+
+//show user info
+function showEditAccountInfo(){
+    invokeWebApi('/account/info',
+                prepareData({}),
+                function(data){
+                        data = data.results;
+                        email = data.info['email'];
+                        phone = data.info['phone'];
+                        company = data.info['company'];
+                        $('#oldemail').html('<label style="color:#991515" />'+ email+'</label>')                       
+                        $('#upemail').val(email);
+                        $('#upcompany').val(company);
+                        $('#upphone').val(phone);
+                })
+}     
+                        
 var AppRouter = Backbone.Router.extend({
     routes: {
          "":"showLogin",
          "signup":"showSignup",
-         "editaccount":"showeditaccount"
+         "editaccount":"showeditaccount",
+         "emailVerify":"showemailverify"
     },
     showLogin: function(){
          $('#login-view').show();
          $('#signup-view').hide();
          $('#editaccount-view').hide();  
+         $('#emailVerify-view').hide();
          $('#btnlogin').bind('click',
                              function(){
                                   var username = $('#username').val();
@@ -68,6 +138,7 @@ var AppRouter = Backbone.Router.extend({
          $('#login-view').hide();
          $('#signup-view').show();
          $('#editaccount-view').hide();
+         $('#emailVerify-view').hide();
          $('#btnsignup').bind('click',
                              function(){
                                  var email = $('#regemail').val();                              
@@ -96,6 +167,9 @@ var AppRouter = Backbone.Router.extend({
          $('#login-view').hide();
          $('#signup-view').hide();
          $('#editaccount-view').show();
+         $('#emailVerify-view').hide();
+         
+         showEditAccountInfo();
          $('#btnchnpass').bind('click',
                              function(){                       
                                  var oldpassword = $('#orgpassword').val();
@@ -118,8 +192,6 @@ var AppRouter = Backbone.Router.extend({
                                                 afterChnpass
                                   );
                });
-
-
          $('#btnupdate').bind('click',
                              function(){
                                  var email = $('#upemail').val();                         
@@ -139,8 +211,69 @@ var AppRouter = Backbone.Router.extend({
                                                 afterUpdate
                                   );
                })
-   }
-
+               
+          $('#btneditemail').bind('click',
+                             function(){
+                                 document.getElementById("upemail").style="";
+                                 $('#upemail').show();
+                                 $('#oldemail').hide();
+                                 $('#btneditemail').hide();
+                                 $('#btnconfirmemail').show();
+                                 $('#btnCancelUpdateEmail').show();
+                                 
+                                 })
+          
+          $('#oldEmail').html('')       
+          $('#oldEmail').html('<label style="color:#FFEFD5" />'+ $('#upemail').val()+'</label>')
+          
+          invokeWebApi('/account/info',
+                                   prepareData({}),
+                                   function(data){
+                                        data = data.results;
+                                        oldemail = data.info['email'];
+                                   })
+          
+          $('#btnconfirmemail').bind('click',
+                             function(){
+                                 var email = $('#upemail').val();  
+                                 var phone = $('#upphone').val();
+                                 var company = $('#upcompany').val();
+                                 var info = {};
+                                 if (email !== '') info["email"] = email;
+                                 if (password !== '') info["phone"] = phone;
+                                 if (company !== '') info["company"] = company;
+                                 if (oldemail === email) {
+                                     document.getElementById("emailExists").style.display="block";
+                                 }
+                                 else {
+                                     invokeWebApiEx("/account/update",
+                                                prepareData({
+                                                "password":password,
+                                                "info":info
+                                                }),
+                                                afterUpdateEmail
+                                  );
+                                 }
+                                 
+                                  
+               })
+          $('#btnCancelUpdateEmail').bind('click',
+                             function(){
+                                 //document.getElementById("upemail").style="display:none";
+                                 $('#upemail').hide();
+                                 $('#oldemail').show();
+                                 $('#btneditemail').show();
+                                 $('#btnconfirmemail').hide();
+                                 $('#btnCancelUpdateEmail').hide();
+               })
+               
+     },
+     showemailverify: function(){
+         $('#login-view').hide();
+         $('#signup-view').hide();
+         $('#editaccount-view').hide();
+         $('#emailVerify-view').show();
+     }
 });
 var loginRouter = new AppRouter;
 Backbone.history.start();

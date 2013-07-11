@@ -29,13 +29,15 @@ def crossDomianHook():
 
 
 @appweb.error(405)
-def method_not_allowed(res): # workaround to support cross-domain request
+def method_not_allowed(res):  # workaround to support cross-domain request
     if request.method == 'OPTIONS':
         new_res = HTTPResponse()
         new_res.set_header('Access-Control-Allow-Origin', '*')
-        new_res.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE"
+        new_res.headers[
+            "Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE"
         if request.headers.get("Access-Control-Request-Headers"):
-            new_res.headers["Access-Control-Allow-Headers"] = request.headers["Access-Control-Request-Headers"]
+            new_res.headers["Access-Control-Allow-Headers"] = request.headers[
+                "Access-Control-Request-Headers"]
         return new_res
     res.headers['Allow'] += ', OPTIONS'
     return request.app.default_error_handler(res)
@@ -98,7 +100,8 @@ def doUpdateUserInfo(uid):
     @return: ok-{'results':1}
              error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
-    return userUpdateInfo(uid, request.json['info'])
+    info = request.json['info']
+    return userUpdateInfo(uid, info)
 
 
 @appweb.route('/account/invite', method='POST', content_type='application/json')
@@ -124,6 +127,7 @@ def doInviteUser(uid):
     if 'results' in rdata:
         sendInviteMail(email, username, groupname, rdata['results']['token'])
     return rdata
+
 
 @appweb.route('/account/active', method='POST', content_type='application/json')
 def doActiveUser(uid, token):
@@ -398,7 +402,7 @@ def doUpdateCaseResult(gid, sid, tid):
     return updateCaseResult(gid, sid, tid, request.json)
 
 
-@appweb.route('/group/<gid>/test/<sid>/case/<tid>/fileupload', method='PUT', content_type=['application/zip','image/png'], login=False)
+@appweb.route('/group/<gid>/test/<sid>/case/<tid>/fileupload', method='PUT', content_type=['application/zip', 'image/png'], login=False)
 def doUploadCaseFile(gid, sid, tid):
     """
     URL:/group/<gid>/test/<sid>/case/<tid>/fileupload
@@ -448,7 +452,7 @@ def doUpdateGroupTestSession(gid, sid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    return updateTestSession(gid, sid,request.json)
+    return updateTestSession(gid, sid, request.json)
 
 
 @appweb.route('/group/<gid>/test/<sid>/delete', method='GET')
@@ -469,7 +473,8 @@ def doDeleteGroupTestSession(uid, gid, sid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    # TODO we should check if the uid has the permission to perform the operation
+    # TODO we should check if the uid has the permission to perform the
+    # operation
     res = deleteTestSession(uid, gid, sid)
     if 'errors' not in res:
         tasks.ws_del_session.delay(sid)
@@ -496,13 +501,15 @@ def doGetSessionInfo(gid, sid):
     """
     return getTestSessionInfo(gid, sid)
 
-@appweb.route('/group/<gid>/test/<sid>/poll',method='GET')
+
+@appweb.route('/group/<gid>/test/<sid>/poll', method='GET')
 def checkSessionUpdated(gid, sid):
-    tid=request.params.get('tid')
+    tid = request.params.get('tid')
     if tid is None:
-        return {'error':{'code':0,'msg':'Without tid'}}
+        return {'error': {'code': 0, 'msg': 'Without tid'}}
     else:
-        return isSessionUpdated(gid,sid,tid)
+        return isSessionUpdated(gid, sid, tid)
+
 
 @appweb.route('/group/<gid>/test/<sid>/live', method='GET')
 def getSessionLiveData(gid, sid):
@@ -528,28 +535,31 @@ def getSessionLiveData(gid, sid):
     'cases':[{'tid':(int)tid,'casename':(string)casename,'starttime':(string)starttime,'endtime':(string)endtime,'result':(string)result,'traceinfo':(string)traceinfo},...]
     }
     }
-    
+
     error-{'errors':{'code':value,'msg':(string)info}}
     """
-    maxCount=request.params.get('limit')
+    maxCount = request.params.get('limit')
     if maxCount is None:
-        return getSessionLive(gid,sid,100)
+        return getSessionLive(gid, sid, 100)
     else:
-        return getSessionLive(gid,sid,maxCount)
+        return getSessionLive(gid, sid, maxCount)
+
 
 @appweb.route('/group/<gid>/test/<sid>/history', method='GET')
 def getSessionHistoryData(gid, sid):
-    type = request.params.get('type',default='total')
-    page = request.params.get('page',default='1')
+    type = request.params.get('type', default='total')
+    page = request.params.get('page', default='1')
     pagesize = request.params.get('pagesize', default='100')
     return getSessionHistory(gid, sid, type, int(page), int(pagesize))
+
 
 @appweb.route('/group/<gid>/test/<sid>/summary', method='GET')
 def doGetSessionSummary(gid, sid):
     '''
     Get Session Summary.
     '''
-    return getSessionSummary(gid,sid)
+    return getSessionSummary(gid, sid)
+
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/snaps', method='GET')
 def doGetCaseResultSnapshots(gid, sid, tid):
@@ -590,11 +600,11 @@ def doGetGroupTestSessions(gid):
     @return:ok-{'results':{'count':(int)count, 'sessions':[ {planname':(string)value,'starttime':(string)value, 'result':{'total':(int)value, 'pass':(int)value, 'fail':(int)value, 'error':(int)value}, 'runtime':(string)value},... ] }}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    cid=request.params.get('cid')
+    cid = request.params.get('cid')
     if cid is None:
         return getTestSessionList(gid)
-    else: 
-        return getTestCycleReport(gid,cid)
+    else:
+        return getTestCycleReport(gid, cid)
 
 
 if __name__ == '__main__':
