@@ -113,15 +113,6 @@ class DevManager(object):
             print e2
             return None
 
-    def getDeviceInfo(self):
-        pass
-
-    def getDeviceProperties(self):
-        return self._device.getDeviceProperties()
-
-    def getDeviceRelaTime(self):
-        pass
-
     def getDevices(self):
         '''
         Get the device collection list.

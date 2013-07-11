@@ -24,21 +24,21 @@ def mix_in(base):
     def deco(function):
         def wrap(*args, **argkw):        
             setattr(BaseDevice,'result',getattr(args[0],'_result'))
-            device = DeviceManager.getDevice()
+            #device = DeviceManager.getDevice()
             for name,method in inspect.getmembers(base,predicate=inspect.ismethod):
                 if name == 'setUp':
-                    setattr(base,name,_inject_setup(base,method,device))
+                    setattr(base,name,_inject_setup(base,method))
                 if name == 'tearDown':
                     setattr(base,name,_inject_teardown(base,method))                    
             function(*args, **argkw)
         return wrap
     return deco
 
-def _inject_setup(cls,method,device):
+def _inject_setup(cls,method):
     @functools.wraps(method)
     def wrapped(self,*args,**kwargs):
         try:
-            setattr(cls, 'device', device)
+            setattr(cls, 'device', DeviceManager.getDevice())
             method(self, *args, **kwargs)
         except:
             raise

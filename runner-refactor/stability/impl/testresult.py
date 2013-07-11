@@ -80,7 +80,7 @@ def collect_result(func):
         elif func.__name__ == 'addSuccess':
             fpath = join(args[0].localpath['ws_testcase'],variables.RESULT_FILE_NAME)
             Serializer.serialize(file_path=fpath, data={'result':'pass','time':_time(),'traceinfo':'N/A'})
-            _copy(args[0].localpath['ws_testcase'],join(args[0].localpath['ws_result_pass'],'%s-%s' % (args[0]._case_name,args[0]._case_start_time)))
+            _copy(args[0].localpath['ws_testcase'],join(args[0].localpath['ws_result_pass'],'%s_%s' % (args[0]._case_name,args[0]._case_start_time)))
             #Serializer.serialize(file_path=fpath, data={'result':'pass','time':_time(),'traceinfo':'N/A'})
 
         elif func.__name__ == 'addFailure':
@@ -98,7 +98,7 @@ def collect_result(func):
             fpath = join(args[0].localpath['ws_testcase'],variables.RESULT_FILE_NAME)
             traceinfo = _trace_to_string((args[2],args[1]))
             Serializer.serialize(file_path=fpath, data={'result':'fail','time':_time(),'trace':traceinfo})
-            _copy(args[0].localpath['ws_testcase'],join(args[0].localpath['ws_result_fail'],'%s-%s' % (args[0]._case_name,args[0]._case_start_time)))
+            _copy(args[0].localpath['ws_testcase'],join(args[0].localpath['ws_result_fail'],'%s_%s' % (args[0]._case_name,args[0]._case_start_time)))
             #Serializer.serialize(file_path=fpath, data={'result':'fail','time':_time(),'trace':traceinfo})
 
         elif func.__name__ == 'addError':
@@ -109,7 +109,7 @@ def collect_result(func):
             fpath = join(args[0].localpath['ws_testcase'],variables.RESULT_FILE_NAME)
             traceinfo = _trace_to_string((args[2],args[1]))
             Serializer.serialize(file_path=fpath, data={'result':'error','time':_time(),'trace':traceinfo})
-            _copy(args[0].localpath['ws_testcase'],join(args[0].localpath['ws_result_error'],'%s-%s' % (args[0]._case_name,args[0]._case_start_time)))
+            _copy(args[0].localpath['ws_testcase'],join(args[0].localpath['ws_result_error'],'%s_%s' % (args[0]._case_name,args[0]._case_start_time)))
             #Serializer.serialize(file_path=fpath, data={'result':'error','time':_time(),'trace':traceinfo})
         elif func.__name__ == 'stopTest':
             emit(Topics.UPLOAD, data={'directory':args[0].localpath['ws_result']})
@@ -142,7 +142,7 @@ class TestResultImpl(TestResult):
         session_start_time = _time()
         ws = variables.WORK_SPACE
         ws_report = join(ws,variables.REPORT_DIR_NAME)
-        ws_result = join(ws_report,'%s-%s' % (self._options['product'], session_start_time))
+        ws_result = join(ws_report,'%s_%s' % (self._options['product'], session_start_time))
         self._local_storage['ws'] = ws
         #self._local_storage['session_start_time'] = ws
         self._local_storage['ws_report'] = _mkdir(ws_report)
@@ -159,7 +159,7 @@ class TestResultImpl(TestResult):
         self._case_name = _casename(test)
         self._case_start_time = _time()
         self._local_storage['testcase_starttime'] = self._case_start_time
-        self._local_storage['ws_testcase'] = _mkdir(join(self._local_storage['ws_result_all'], '%s-%s' % (self._case_name,self._case_start_time)))
+        self._local_storage['ws_testcase'] = _mkdir(join(self._local_storage['ws_result_all'], '%s_%s' % (self._case_name,self._case_start_time)))
         self._local_storage['ws_testcase_right'] = _mkdir(join(self._local_storage['ws'],self._options['product'],'cases','%s.%s'%(test.__module__.split('.')[2],self._case_name)))
         sys.stderr.write('%s %s'%(self._case_start_time,str(test)))
 

@@ -156,7 +156,7 @@ class Sender(threading.Thread):
                     #init session id on local
                     self.session_id = str(uuid.uuid1())
                     datas = {'token':self._token,'planname':'plan','starttime':time.strftime('%Y.%m.%d-%H.%M.%S', time.localtime(time.time()))}
-                    datas.update(DeviceManager.getDeviceProperties())
+                    datas.update(DeviceManager.getDevice().getDeviceProperties())
                     request = {'method':'POST',
                            'url':self._urls['session_create_url'] % self.session_id,
                            'Content-Type':'application/json',

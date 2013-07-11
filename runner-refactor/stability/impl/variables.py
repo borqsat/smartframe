@@ -22,4 +22,5 @@ FAILE_DIR_NAME = 'fail'
 ERROR_DIR_NAME = 'error'
 IMAGE_SUFFIX = '.png'
 
-TIME_STAMP_FORMAT = '%Y.%m.%d-%H.%M.%S'
+#TIME_STAMP_FORMAT = '%Y.%m.%d-%H.%M.%S'
+TIME_STAMP_FORMAT = '%Y-%m-%d_%H:%M:%S'
