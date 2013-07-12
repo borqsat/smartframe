@@ -34,4 +34,8 @@ def ws_check_fs(fid):
 
 @w.task
 def ws_validate_session_endtime():
-    store.validate_session_endtime()    
+    store.validate_session_endtime()
+
+@w.task
+def ws_update_session_endtime(sid):
+    store.update_session_endtime(sid)    

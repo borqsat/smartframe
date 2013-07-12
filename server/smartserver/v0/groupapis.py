@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from gevent import monkey
 monkey.patch_all()
 
@@ -376,6 +379,7 @@ def doCreateCaseResult(gid, sid, tid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
+    tasks.ws_update_session_endtime(sid)
     return createCaseResult(gid, sid, tid, request.json['casename'], request.json['starttime'])
 
 

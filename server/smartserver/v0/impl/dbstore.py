@@ -5,7 +5,6 @@ import gridfs
 import memcache
 import hashlib
 import uuid
-import base64
 from bson.objectid import ObjectId
 from datetime import datetime
 from datetime import timedelta
@@ -88,6 +87,42 @@ class DataStore(object):
         ret = self._db.counter.find_and_modify(query={
                                                "_id": keyname}, update={"$inc": {"next": 1}}, new=True, upsert=True)
         return int(ret["next"])
+
+    def convert_to_datetime(self, time_str):
+        '''convert a string to datetime or None in case of invalid string'''
+        dt = None
+        try:
+            dt = datetime.strptime(time_str, DATE_FORMAT_STR)
+        except:
+            pass
+        if dt is None:
+            try:
+                dt = datetime.strptime(time_str, DATE_FORMAT_STR1)
+            except:
+                pass
+        return dt
+    
+    def convert_to_str(self, date):
+        '''convert a datetime to formatted string.'''
+        # TODO Why to use the format...
+        return date.strftime(DATE_FORMAT_STR)
+
+    @duration
+    def validate_session_endtime(self):
+        for session in self._db['testsessions'].find({'endtime':'N/A'}):
+            cases_collection = self._db['testresults'].find({'sid':session['sid']}, {'starttime': 1, 'endtime': 1}).sort('starttime', pymongo.DESCENDING)
+            if cases_collection.count() == 0:
+                continue
+
+            case = cases_collection[0]
+            endtime = self.convert_to_datetime(case['starttime'] if case['endtime'] is 'N/A' else case['endtime'])
+            if endtime is not None and (datetime.now() - endtime).total_seconds() >= 3600:
+                #TODO: Should use time of database server as "now" time
+                print {'sid': session['sid']}, {'$set': {'endtime': self.convert_to_str(endtime)}}
+                self._db['testsessions'].update({'sid': session['sid']}, {'$set': {'endtime': self.convert_to_str(endtime)}})
+
+    def update_session_endtime(self,sid):
+        self._db['testsessions'].update({'sid': sid}, {'$set': {'endtime': 'N/A'}})
 
     def del_session(self, sid):
         '''
