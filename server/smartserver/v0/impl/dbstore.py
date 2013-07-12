@@ -101,7 +101,7 @@ class DataStore(object):
             except:
                 pass
         return dt
-    
+
     def convert_to_str(self, date):
         '''convert a datetime to formatted string.'''
         # TODO Why to use the format...
@@ -109,20 +109,41 @@ class DataStore(object):
 
     @duration
     def validate_session_endtime(self):
-        for session in self._db['testsessions'].find({'endtime':'N/A'}):
-            cases_collection = self._db['testresults'].find({'sid':session['sid']}, {'starttime': 1, 'endtime': 1}).sort('starttime', pymongo.DESCENDING)
+        for session in self._db['testsessions'].find({'endtime': 'N/A'}):
+            cases_collection = self._db['testresults'].find({'sid': session['sid']}, {
+                                                            'starttime': 1, 'endtime': 1}).sort('starttime', pymongo.DESCENDING)
             if cases_collection.count() == 0:
                 continue
 
             case = cases_collection[0]
-            endtime = self.convert_to_datetime(case['starttime'] if case['endtime'] is 'N/A' else case['endtime'])
+            endtime = self.convert_to_datetime(
+                case['starttime'] if case['endtime'] is 'N/A' else case['endtime'])
             if endtime is not None and (datetime.now() - endtime).total_seconds() >= 3600:
-                #TODO: Should use time of database server as "now" time
-                print {'sid': session['sid']}, {'$set': {'endtime': self.convert_to_str(endtime)}}
-                self._db['testsessions'].update({'sid': session['sid']}, {'$set': {'endtime': self.convert_to_str(endtime)}})
+                # TODO: Should use time of database server as "now" time
+                self._db['testsessions'].update(
+                    {'sid': session['sid']}, {'$set': {'endtime': self.convert_to_str(endtime)}})
 
-    def update_session_endtime(self,sid):
-        self._db['testsessions'].update({'sid': sid}, {'$set': {'endtime': 'N/A'}})
+    @duration
+    def active_testsession(self, sid):
+        # 'N/A' to indicate the session is running..!? TODO
+        self._db['testsessions'].update(
+            {'sid': sid}, {'$set': {'endtime': 'N/A'}})
+
+    @duration
+    def validate_testcase_endtime(self):
+        for case in self._db['testresults'].find({'endtime': 'N/A', 'result': 'running'}, {'starttime': 1}):
+            starttime = self.convert_to_datetime(case['starttime'])
+            if starttime is None:
+                self._db['testresults'].remove({'_id': case['_id']})  # remove invalid testresult
+            elif (datetime.now() - starttime).total_seconds() >= 3600:
+                # TODO: Should use time of database server as "now" time
+                self._db['testresults'].update({'_id': case['_id']},
+                                               {'$set': {'endtime': self.convert_to_str(starttime),
+                                                         'result': 'error',
+                                                         'traceinfo': 'No results uploaded in 60mins, set it ERROR'}})
+
+    def del_testcase(self, tid):
+        self._db['testresults'].remove({'_id': tid})
 
     def del_session(self, sid):
         '''
