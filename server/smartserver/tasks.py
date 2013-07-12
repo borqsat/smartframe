@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
 
 from .worker import worker as w
@@ -28,3 +31,7 @@ def ws_del_dirty():
 @w.task
 def ws_check_fs(fid):
     store.check_fs(fid)
+
+@w.task
+def ws_validate_session_endtime():
+    store.validate_session_endtime()    
