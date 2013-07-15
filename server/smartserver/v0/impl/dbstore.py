@@ -28,10 +28,13 @@ cache_opts = {
     'cache.type': 'ext:memcached',
     'cache.url': mc_url,
     'cache.expire': 600,
-    'cache.regions': 'local',
+    'cache.regions': 'local, local_short',
+    'cache.local_short.lock_dir': '/tmp/cache/lock_local_short',
+    'cache.local_short.type': 'memory',
+    'cache.local_short.expire': '10',
     'cache.local.lock_dir': '/tmp/cache/lock_local',
     'cache.local.type': 'memory',
-    'cache.local.expire': '60'
+    'cache.local.expire': '300'
 }
 cm = beaker.cache.CacheManager(**parse_cache_config_options(cache_opts))
 
@@ -419,58 +422,52 @@ class DataStore(object):
             result = {'uid': d['uid'], 'role': d['role']}
         return result
 
-    def getGroupInfo(self, gid):
-        result = {}
-        lstmember = []
-        groups = self._db['groups']
-        members = self._db['group_members']
-        users = self._db['users']
-        retdata = groups.find({'gid': gid})
-        for t in retdata:
-            retmember = members.find({'gid': gid})
-            for d in retmember:
-                retuser = users.find({'uid': d['uid']})
-                username = ''
-                for k in retuser:
-                    username = k['username']
-                lstmember.append({'uid': d[
-                                 'uid'], 'username': username, 'role': d['role']})
-            result = {'gid': t['gid'], 'groupname': t[
-                'groupname'], 'info': t['info'], 'members': lstmember}
+    def getGroupInfo(self, gid, with_members=True):
+        group = self._db['groups'].find_one({'gid': gid})
+        if with_members:
+            group_members = self._db['group_members'].find({'gid': gid})
+            group["members"] = [{'uid': m['uid'],
+                                 'username': self.userInfo(m['uid'], False, False)['username'],
+                                 'role': m['role']}
+                                for m in group_members]
+        del group["_id"]
+        return group
+
+    @cm.region("local_short", "group_info")
+    def groupInfo(self, gid, with_members):
+        ''' Cache the result of getGroupInfo method'''
+        return self.getGroupInfo(gid, with_members)
+
+    def getUserInfo(self, uid, with_group=True, with_test=True):
+        user = self._db['users'].find_one({'uid': uid})
+        if user is not None:
+            uid = user['uid']
+            result = {'uid': uid, 'username': user[
+                'username'], 'info': user['info']}
+
+            if with_group:
+                members = self._db['group_members'].find({'uid': uid})
+                result['inGroups'] = [{'gid': m['gid'],
+                                       'role': m['role'],
+                                       'groupname': self.groupInfo(m['gid'], False)["groupname"]}
+                                      for m in members]
+
+            if with_test:
+                sessions = self._db['testsessions'].find({'tester': uid})
+                result['inTests'] = [{'sessionid': s['id'],
+                                      'sid': s['sid'],
+                                      'groupname': self.groupInfo(s['gid'], with_members=False),
+                                      'gid': s['gid']}
+                                     for s in sessions]
+        else:
+            result = {'code': 0, 'msg': 'Invalid user id.'}
         return result
 
     # TODO cache policy...
-    #@cm.cache("user_info", expire=60)
-    def userInfo(self, uid):
-        ingroups = []
-        intests = []
-        groupname = 'N/A'
-        users = self._db['users']
-        groups = self._db['groups']
-        retuser = users.find_one({'uid': uid})
-        if not retuser is None:
-            uid = retuser['uid']
-            members = self._db['group_members']
-            retgroup = members.find({'uid': uid})
-            for d in retgroup:
-                retname = groups.find_one({'gid': d['gid']})
-                if not retname is None:
-                    groupname = retname['groupname']
-                ingroups.append({'gid': d[
-                                'gid'], 'groupname': groupname, 'role': d['role']})
-
-            sessions = self._db['testsessions']
-            rettests = sessions.find({'tester': uid})
-            for d in rettests:
-                retname = groups.find_one({'gid': d['gid']})
-                if not retname is None:
-                    groupname = retname['groupname']
-                intests.append({'sessionid': d['id'], 'sid': d[
-                               'sid'], 'groupname': groupname, 'gid': d['gid']})
-            result = {
-                'uid': retuser['uid'], 'username': retuser['username'], 'info': retuser['info'],
-                'inGroups': ingroups, 'inTests': intests}
-        return result
+    @cm.region("local_short", "user_info")
+    def userInfo(self, uid, with_group, with_test):
+        ''''Cached the result of getUserInfo method'''
+        return self.getUserInfo(uid, with_group, with_test)
 
     def userChangePassword(self, uid, oldpassword, newpassword):
         m = hashlib.md5()
@@ -606,11 +603,6 @@ class DataStore(object):
         result = {}
         dtnow = datetime.now()
 
-        @cm.region("local", "user_name")
-        def get_user(uid):
-            user = users.find_one({'uid': uid})
-            return user and user['username'] or 'N/A'
-
         for d in rdata:
             if 'failtime' in d:
                 d['endtime'] = d['failtime']
@@ -631,7 +623,7 @@ class DataStore(object):
                     d['endtime'] = ''
 
             d['status'] = 'running' if d['endtime'] == 'N/A' else 'end'
-            user = get_user(d['tester'])
+            user = self.userInfo(d['tester'], False, False)["username"]
             cid = d.get('cid', '')
             if cid not in result:
                 result.setdefault(cid, {'cid': cid,

@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from dbstore import store
 
 TOKEN_EXPIRES = {'01': 999999, '02': 999999, '03': 999, '04': 999}
@@ -65,7 +68,7 @@ def userUpdateInfo(uid, info):
 
 
 def getUserInfo(uid):
-    rdata = store.userInfo(uid)
+    rdata = store.getUserInfo(uid)
     if 'uid' in rdata:
         return {'results': rdata}
     else:
