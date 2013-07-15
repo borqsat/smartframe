@@ -418,14 +418,22 @@ class DataStore(object):
         return result
 
     def getGroupInfo(self, gid, with_members=True):
+        '''
+        Get the group info with its members info.
+        Return None in case of the gid does not exist.
+        '''
         group = self._db['groups'].find_one({'gid': gid})
+        if group is None:  # return None in case of not exist
+            return None
+
         if with_members:
-            group_members = self._db['group_members'].find({'gid': gid})
+            group_members = self._db['group_members']
             group["members"] = [{'uid': m['uid'],
                                  'username': self.userInfo(m['uid'], False, False)['username'],
                                  'role': m['role']}
-                                for m in group_members]
-        if group: del group["_id"]
+                                for m in group_members.find({'gid': gid})
+                                if self.userInfo(m['uid'], False, False) is not None]  # workaround. Why there are some data with invalid uid?
+        del group["_id"]
         return group
 
     @cm.region("local_short", "group_info")
@@ -434,31 +442,35 @@ class DataStore(object):
         return self.getGroupInfo(gid, with_members)
 
     def getUserInfo(self, uid, with_group=True, with_test=True):
+        '''
+        Get the user ino with its groups info and test sessions info.
+        Return None in case of the uid does not exist.
+        '''
         user = self._db['users'].find_one({'uid': uid})
-        if user is not None:
-            uid = user['uid']
-            result = {'uid': uid, 'username': user[
-                'username'], 'info': user['info']}
+        if user is None:  # return None in case of not exist
+            return None
 
-            if with_group:
-                members = self._db['group_members'].find({'uid': uid})
-                result['inGroups'] = [{'gid': m['gid'],
-                                       'role': m['role'],
-                                       'groupname': self.groupInfo(m['gid'], False)['groupname']}
-                                      for m in members]
+        result = {'uid': uid, 'username': user['username'], 'info': user['info']}
 
-            if with_test:
-                sessions = self._db['testsessions'].find({'tester': uid})
-                result['inTests'] = [{'sessionid': s['id'],
-                                      'sid': s['sid'],
-                                      'groupname': self.groupInfo(s['gid'], False)['groupname'],
-                                      'gid': s['gid']}
-                                     for s in sessions]
-        else:
-            result = {'code': 0, 'msg': 'Invalid user id.'}
+        if with_group:
+            members = self._db['group_members']
+            result['inGroups'] = [{'gid': m['gid'],
+                                   'role': m['role'],
+                                   'groupname': self.groupInfo(m['gid'], False)['groupname']}
+                                  for m in members.find({'uid': uid})
+                                  if self.groupInfo(m['gid'], False) is not None]  # workaround. Why there are some data with invalid gid?
+
+        if with_test:
+            sessions = self._db['testsessions']
+            result['inTests'] = [{'sessionid': s['id'],
+                                  'sid': s['sid'],
+                                  'groupname': self.groupInfo(s['gid'], False)['groupname'],
+                                  'gid': s['gid']}
+                                 for s in sessions.find({'tester': uid})
+                                 if self.groupInfo(s['gid'], False) is not None]  # workaround. Why there are some data with invalid gid?
+
         return result
 
-    # TODO cache policy...
     @cm.region("local_short", "user_info")
     def userInfo(self, uid, with_group, with_test):
         ''''Cached the result of getUserInfo method'''

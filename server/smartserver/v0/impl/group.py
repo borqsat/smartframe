@@ -40,13 +40,13 @@ def getGroupInfo(uid, gid):
     if not isGroupMember(uid, gid):
         return {'errors':{'code':'00','msg':'Member permission required!'}}
 
-    rdata = store.getGroupInfo(gid)
-    if 'gid' in rdata:
-        for d in rdata['members']:
-            d['rolename'] = ROLES[d['role']]
-        return {'results':rdata}
+    group = store.getGroupInfo(gid)
+    if group is None:
+        return {'errors': {'code':'04', 'msg':'Invalid Group ID!'}}
     else:
-        return {'errors':rdata}
+        for member in group['members']:
+            member['rolename'] = ROLES[member['role']]
+        return {'results': group}
 
 def addGroupMembers(uid, gid, members):
     if not isGroupAdmin(uid, gid):
