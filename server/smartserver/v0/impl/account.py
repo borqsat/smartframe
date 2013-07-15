@@ -78,11 +78,12 @@ def userUpdateInfo(appid, uid, info):
 
 
 def getUserInfo(uid):
-    rdata = store.getUserInfo(uid)
-    if 'uid' in rdata:
-        return {'results': rdata}
+    user = store.getUserInfo(uid)
+
+    if user is None:
+        return {'errors': {'code': '04', 'msg': 'Invalid User ID!'}}
     else:
-        return {'errors': rdata}
+        return {'results': user}
 
 
 def userLogout(token):
