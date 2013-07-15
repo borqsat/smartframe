@@ -380,7 +380,7 @@ def doCreateCaseResult(gid, sid, tid):
             error-{'errors':{'code':value,'msg':(string)info}}
     """
     """For now, when create testcase result, set the end time of corresponding testsession to N/A"""
-    tasks.ws_active_testsession(sid)
+    tasks.ws_active_testsession.delay(sid)
     return createCaseResult(gid, sid, tid, request.json['casename'], request.json['starttime'])
 
 
