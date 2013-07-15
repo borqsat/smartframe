@@ -11,18 +11,19 @@ __all__ = ['sendVerifyMail', 'sendInviteMail']
 
 def __sendVerifyMail(receiver, user, token):
     sender = 'borqsat@borqs.com'
-    subject = 'Please active your account from SmartAT'
+    subject = 'Please active your email on SmartAT'
     mailuser = 'borqsat@borqs.com'
     mailpass = '!QAZ2wsx3edc'
 
     msg = ("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n" % (sender, receiver, subject))
-    msg = msg + 'Hi:\r\n'
-    msg = msg + '\r\nThis mail send from smartServer automatically, do not reply this mail directly.\r\n'
-    msg = msg + '\r\nYour account \"%s\" has been initialized.\r\n' % (user)
-    msg = msg + '\r\nPlease verify your current email via the url as below.\r\n'
-    msg = msg + '\r\nsmart Server: http://ats.borqs.com/smartserver/verify.html?token=%s\r\n' % (token)
-    msg = msg + '\r\nBest Regards!\r\n'
-    msg = msg + 'smartServer Admin\r\n'
+    msg = msg + 'Hi,%s,\r\n\r\n' % (user)
+    msg = msg + 'This mail sent out by smartAT, do not reply to it directly.\r\n'
+    msg = msg + 'Your account \"%s\" has been created alreday.\r\n' % (user)
+    msg = msg + 'Please verify your email via the url as below.\r\n'
+    msg = msg + 'http://ats.borqs.com/smartserver/verify.html?token=%s\r\n' % (token)
+    msg = msg + '\r\n\r\n'
+    msg = msg + 'Best Regards\r\n'
+    msg = msg + 'SmartAT Team\r\n'
 
     smtp = None
     try:
@@ -37,18 +38,19 @@ def __sendVerifyMail(receiver, user, token):
 
 def __sendInviteMail(receiver, user, group, token):
     sender = 'borqsat@borqs.com'
-    subject = 'Please active your account from SmartAT'
+    subject = 'Welcome to signup on SmartAT'
     mailuser = 'borqsat@borqs.com'
     mailpass = '!QAZ2wsx3edc'
 
     msg = ("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n" % (sender, receiver, subject))
-    msg = msg + 'Hi:\r\n'
-    msg = msg + '\r\nThis mail send from smartServer automatically, do not reply this mail directly.\r\n'
-    msg = msg + '\r\nYour friend \"%s\" invite you to join group [%s].\r\n' % (user, group)
-    msg = msg + '\r\nYou are welcome to signup your own account via the url below.\r\n'
-    msg = msg + '\r\nsmart Server: http://ats.borqs.com/smartserver/login.html?token=%s\r\n' % (token)
-    msg = msg + '\r\nBest Regards!\r\n'
-    msg = msg + 'smartServer Admin\r\n'
+    msg = msg + 'Hi,%s,\r\n\r\n' % (user)
+    msg = msg + 'This mail sent out by smartAT, do not reply to it directly.\r\n'
+    msg = msg + 'Your friend \"%s\" invite you to join group [%s].\r\n' % (user, group)
+    msg = msg + 'You are welcome to signup your own account via the url below.\r\n'
+    msg = msg + 'http://ats.borqs.com/smartserver/login.html?token=%s\r\n' % (token)
+    msg = msg + '\r\n\r\n'
+    msg = msg + 'Best Regards\r\n'
+    msg = msg + 'SmartAT Team\r\n'
 
     smtp = None
     try:

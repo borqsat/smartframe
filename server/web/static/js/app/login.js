@@ -193,15 +193,12 @@ var AppRouter = Backbone.Router.extend({
                                   );
                });
          $('#btnupdate').bind('click',
-                             function(){
-                                 var email = $('#upemail').val();                         
+                             function(){                       
                                  var phone = $('#upphone').val();
                                  var company = $('#upcompany').val();
                                  var info = {};
-                                 if (email !== '') info["email"] = email;
                                  if (phone !== '') info["phone"] = phone;
                                  if (company !== '') info["company"] = company;
-
                                  $('#txtwarning').html('');
                                  invokeWebApiEx("/account/update",
                                                 prepareData({"info":info}),
@@ -233,12 +230,8 @@ var AppRouter = Backbone.Router.extend({
           $('#btnconfirmemail').bind('click',
                              function(){
                                  var email = $('#upemail').val();  
-                                 var phone = $('#upphone').val();
-                                 var company = $('#upcompany').val();
                                  var info = {};
                                  if (email !== '') info["email"] = email;
-                                 if (phone !== '') info["phone"] = phone;
-                                 if (company !== '') info["company"] = company;
                                  if (oldemail === email) {
                                         document.getElementById("emailExists").style.display="block";
                                  }

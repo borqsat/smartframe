@@ -3,12 +3,18 @@
 
 from dbstore import store
 
-TOKEN_EXPIRES = {'01': 999999, '02': 999999, '03': 999, '04': 999}
+TOKEN_EXPIRES = {'01': 30*24*3600,
+                 '02': 7*24*3600,
+                 '03': 24*3600,
+                 '04': 24*3600
+                 }
 
 
 def userRegister(appid, user, pswd, info):
     rdata = store.createUser(appid, user, pswd, info)
     if 'uid' in rdata:
+        ret = store.createToken(appid, rdata['uid'], {}, TOKEN_EXPIRES[appid])
+        rdata['token'] = ret['token']
         return {'results': rdata}
     else:
         return {'errors': rdata}
@@ -23,7 +29,8 @@ def userLogin(appid, user, pswd):
         else:
             return {'errors': rdata}
     else:
-        return {'errors': {'code': '02', 'msg': 'Incorrect UserName/Password or unverified email!'}}
+        return {'errors': {'code': '02',
+                'msg': 'Incorrect UserName/Password or unverified email!'}}
 
 
 def getUserId(token):
@@ -59,9 +66,12 @@ def userChangePassword(uid, oldpswd, newpswd):
         return {'errors': rdata}
 
 
-def userUpdateInfo(uid, info):
+def userUpdateInfo(appid, uid, info):
     rdata = store.userUpdateInfo(uid, info)
     if 'uid' in rdata:
+        if 'email' in rdata:
+            ret = store.createToken(appid, uid, {}, TOKEN_EXPIRES[appid])
+            rdata['token'] = ret['token']
         return {'results': rdata}
     else:
         return {'errors': rdata}
