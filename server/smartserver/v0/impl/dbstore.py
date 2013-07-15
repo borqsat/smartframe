@@ -348,12 +348,7 @@ class DataStore(object):
         uid = m.hexdigest()
         users.insert({'uid': uid, 'appid': appid, 'username':
                      user, 'password': pswd, 'active': False, 'info': info})
-        m = hashlib.md5()
-        m.update(str(uuid.uuid1()))
-        token = m.hexdigest()
-        tokens.insert({'uid': uid, 'appid': '02',
-                      'token': token, 'expires': '300000'})
-        return {'uid': uid, 'token': token}
+        return {'uid': uid}
 
     def createGroup(self, groupname, info):
         """
@@ -487,8 +482,22 @@ class DataStore(object):
 
     def userUpdateInfo(self, uid, info):
         users = self._db['users']
-        users.update({'uid': uid}, {'$set': {'info': info}})
-        return {'uid': uid}
+        data = {}
+        results = {}
+        results['uid'] = uid
+        if 'email' in info:
+            rdata = users.find_one({'info.email': info['email']})
+            if rdata is not None:
+                return {'code': '05', 'msg': 'Email already bound with an existed account!'} 
+            rdata = users.find_one({'uid': uid})
+            results['email'] = info['email']
+            results['username'] = rdata['username']
+            data['active'] = False
+
+        for key in info:
+            data['info.%s' % key] = info[key]
+        users.update({'uid': uid}, {'$set': data})
+        return results
 
     def userExists(self, username, password):
         users = self._db['users']
