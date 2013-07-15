@@ -425,7 +425,7 @@ class DataStore(object):
                                  'username': self.userInfo(m['uid'], False, False)['username'],
                                  'role': m['role']}
                                 for m in group_members]
-        del group["_id"]
+        if group: del group["_id"]
         return group
 
     @cm.region("local_short", "group_info")
@@ -444,14 +444,14 @@ class DataStore(object):
                 members = self._db['group_members'].find({'uid': uid})
                 result['inGroups'] = [{'gid': m['gid'],
                                        'role': m['role'],
-                                       'groupname': self.groupInfo(m['gid'], False)["groupname"]}
+                                       'groupname': self.groupInfo(m['gid'], False)['groupname']}
                                       for m in members]
 
             if with_test:
                 sessions = self._db['testsessions'].find({'tester': uid})
                 result['inTests'] = [{'sessionid': s['id'],
                                       'sid': s['sid'],
-                                      'groupname': self.groupInfo(s['gid'], with_members=False),
+                                      'groupname': self.groupInfo(s['gid'], False)['groupname'],
                                       'gid': s['gid']}
                                      for s in sessions]
         else:
