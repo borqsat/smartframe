@@ -57,8 +57,6 @@ def duration(fn):
 
 
 def _compareDateTime(dt1, dt2):
-    date1 = None
-    date2 = None
     date1 = datetime.strptime(dt1, DATE_FORMAT_STR)
     date2 = datetime.strptime(dt2, DATE_FORMAT_STR)
     return date1 > date2
@@ -627,10 +625,10 @@ class DataStore(object):
         get last update of a test session
         """
         idletime = 0
-        dtnow = datetime.now()
+        dtnow = datetime.now().strftime(DATE_FORMAT_STR)
         dttime = self.getCache(str('sid:' + sid + ':uptime'))
         if dttime is not None:
-            idletime = _deltaDataTime(dtnow, dtlast)
+            idletime = _deltaDataTime(dtnow, dttime)
         else:
             idletime = IDLE_TIME_OUT
 
