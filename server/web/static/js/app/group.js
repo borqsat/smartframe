@@ -229,8 +229,9 @@ function editCIdFunction(gid, sid, cid_sel){
 }
 
 
-function getCycleList(gid, sid, cid){
+function getCycleList(key, gid, sid, cid){
      var cyclelist_options = "";
+     var cycles = _appglobal.cyclelist[key];
      if ( cid !== "" ){
         cyclelist_options = "<li><a>"+cid+"</a><b></b>";
      }else {
@@ -238,9 +239,9 @@ function getCycleList(gid, sid, cid){
      }
      
      cyclelist_options = cyclelist_options + "<div class=\"panel dropanel1\">" ;
-     for (var i = 0; i<_appglobal.cyclelist.length; i++) {
-         if (_appglobal.cyclelist[i] !== cid){
-             cyclelist_options = cyclelist_options + "<a href=\"javascript:editCIdFunction('"+gid+"','"+sid+"','"+_appglobal.cyclelist[i]+"')\">"+_appglobal.cyclelist[i] +"</a><br>";
+     for (var i = 0; i < cycles.length; i++) {
+         if (cycles[i] !== cid){
+             cyclelist_options = cyclelist_options + "<a href=\"javascript:editCIdFunction('"+gid+"','"+sid+"','"+cycles[i]+"')\">"+cycles[i] +"</a><br>";
          }
      };
      cyclelist_options = cyclelist_options + "<a href=\"javascript:editCIdFunction('"+gid+"','"+sid+"','newCycleId')\">New</a><br>" ;
@@ -272,13 +273,29 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
     $product_table.append($tbody);
     $cycle_panel.append($product_table);
     
-    _appglobal.cyclelist = [];//new Array();
+    // _appglobal.cyclelist = [];//new Array();
+    // for(var s = 0; s < test_session.length;s++){
+    //     var cid = test_session[s].cid;
+    //     if (cid !== "" && cid !== "N/A"){
+    //         _appglobal.cyclelist.push(cid);
+    //     }
+    // }
+    
+    _appglobal.cyclelist = {};//new Array();
+
     for(var s = 0; s < test_session.length;s++){
         var cid = test_session[s].cid;
         if (cid !== "" && cid !== "N/A"){
-            _appglobal.cyclelist.push(cid);
+            //_appglobal.cyclelist.push(cid);
+            var product = test_session[s].product ;
+            var revision = test_session[s].revision ;
+            var key = product + ":" + revision;
+            if (_appglobal.cyclelist[key] === undefined) {
+                _appglobal.cyclelist[key] = [];
+            }
+            _appglobal.cyclelist[key].push(cid);
         }
-    }
+    }  
 
     var sessions = [];
     for(var k = 0; k < test_session.length;k++){
@@ -303,10 +320,11 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
             var key = value.id ;
             var sid = value.sid;
             var endtime = value.endtime;
+            var key = value.product + ":" + value.revision;
             var css = value.status == 'running' ? "style='background-color:#4682B4'":"style='background-color:#8C8C8C'";
             $tr = "<tr class='info'>"+
                       "<td "+css+"></td>"+
-                      "<td><div id ='showCidSelect'"+value.sid+" class=\"sitenav\"><ul class='cycleposition'>"+getCycleList(value.gid,value.sid,value.cid)+
+                      "<td><div id ='showCidSelect'"+value.sid+" class=\"sitenav\"><ul class='cycleposition'>"+getCycleList(key,value.gid,value.sid,value.cid)+
                       "</ul></div></td>"+
                       "<td>"+value.deviceid+"</td>"+     
                       "<td>"+value.revision+"</td>"+              
