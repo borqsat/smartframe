@@ -650,7 +650,6 @@ class DataStore(object):
                                         'sessions': []})
 
             current = result.get(cid)
-
             current['count'] += 1
             current['product'] = d['deviceinfo'].get('product', '--')
             current['revision'] = d['deviceinfo'].get('revision', '--')
@@ -990,11 +989,7 @@ class DataStore(object):
         runtime = 0
         ret = session.find_one({'sid': sid})
         if not ret is None:
-            starttime = ret['starttime']
-            d1 = datetime.strptime(starttime, DATE_FORMAT_STR)
-            d2 = datetime.strptime(endtime, DATE_FORMAT_STR)
-            delta = d2 - d1
-            runtime = delta.days * 86400 + delta.seconds
+            runtime = _deltaDataTime(endtime, ret['starttime'])
 
         if status == 'pass':
             if snapshots is not None:
@@ -1032,9 +1027,8 @@ class DataStore(object):
         if snaps is None:
             snaps = []
         try:
-            posi = stype.index(':')
-            xtype = stype[0:posi]
-            sfile = stype[posi + 1:]
+            values = stype.split(':')
+            xtype, sfile = values[0], values[1]
             results = self._db['testresults']
             fkey = self.setfile(snapfile)
             snapfile.seek(0)
@@ -1046,8 +1040,7 @@ class DataStore(object):
                 timenow = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
                 self.setCache(str('sid:' + sid + ':snap'), snapfile.read())
                 self.setCache(str('sid:' + sid + ':snaptime'), timenow)
-                self.setCache(str(
-                    'sid:' + sid + ':tid:' + tid + ':snaps'), snaps)
+                self.setCache(str('sid:' + sid + ':tid:' + tid + ':snaps'), snaps)
         except:
             pass
 
