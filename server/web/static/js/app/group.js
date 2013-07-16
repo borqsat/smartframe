@@ -978,7 +978,7 @@ function toggle(){
 
 function showCommentInfo(){
 
-    $('#show-title').html('Tap here to get more information==> <br />');
+    $('#show-title').html('<a href=\"javascript:void(0)\">Tap here to get more information==> </a><br />');
     $('#article').html("<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
                        "<b>Uptime:</b> Device running time, from 'Start Time' to 'End Time'. " + 
                        "(Block time will not included.) <br />" + 
@@ -1106,7 +1106,7 @@ function showFailureDetailsInfo(data,gid){
         var deviceSerial = data[i].imei;
         if (deviceSerial ==="") deviceSerial = "Undefined";
         var $tr = "<tr>"+
-                    (failureCount==0?"<td></td>":"<td onclick=showPic('pic_"+i.toString()+"'); id='tr_fail_"+i.toString()+"'><img id='pic_"+i.toString()+"' src='static/img/spread.png'></img></td>")+        
+                    (failureCount==0?"<td></td>":"<td onclick=showPic('pic_"+i.toString()+"'); id='tr_"+i.toString()+"'><img id='pic_"+i.toString()+"' src='static/img/spread.png'></img></td>")+        
                     "<td><a href=\"#/group/"+gid+"/session/"+sid+"\">"+deviceSerial+"</a></td>"+
                     "<td>"+data[i].starttime+"</td>"+
                     "<td>"+data[i].endtime+"</td>"+ 
