@@ -48,3 +48,8 @@ def ws_active_testsession(sid):
 @w.task
 def ws_validate_testcase_endtime():
     store.validate_testcase_endtime()
+
+
+# @w.task
+# def ws_update_testsession_summary(sid):
+#     store.updateTestsessionSummary(sid)

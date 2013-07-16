@@ -404,7 +404,9 @@ def doUpdateCaseResult(gid, sid, tid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    return updateCaseResult(gid, sid, tid, request.json)
+    result = updateCaseResult(gid, sid, tid, request.json)
+    # tasks.ws_update_testsession_summary.delay(sid)
+    return result
 
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/fileupload', method='PUT', content_type=['application/zip', 'image/png'], login=False)

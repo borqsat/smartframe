@@ -8,6 +8,7 @@ import uuid
 from bson.objectid import ObjectId
 from datetime import datetime
 from datetime import timedelta
+from collections import defaultdict
 
 import pymongo
 from pymongo import MongoClient, MongoReplicaSetClient
@@ -107,7 +108,6 @@ class DataStore(object):
         # TODO Why to use the format...
         return date.strftime(DATE_FORMAT_STR)
 
-    @duration
     def validate_session_endtime(self):
         for session in self._db['testsessions'].find({'endtime': 'N/A'}):
             cases_collection = self._db['testresults'].find({'sid': session['sid']}, {
@@ -123,24 +123,24 @@ class DataStore(object):
                 self._db['testsessions'].update(
                     {'sid': session['sid']}, {'$set': {'endtime': self.convert_to_str(endtime)}})
 
-    @duration
     def active_testsession(self, sid):
         # 'N/A' to indicate the session is running..!? TODO
         self._db['testsessions'].update(
             {'sid': sid}, {'$set': {'endtime': 'N/A'}})
 
-    @duration
     def validate_testcase_endtime(self):
-        for case in self._db['testresults'].find({'endtime': 'N/A', 'result': 'running'}, {'starttime': 1}):
+        for case in self._db['testresults'].find({'endtime': 'N/A', 'result': 'running'}, {'starttime': 1, 'sid': 1}):
             starttime = self.convert_to_datetime(case['starttime'])
             if starttime is None:
-                self._db['testresults'].remove({'_id': case['_id']})  # remove invalid testresult
+                self._db['testresults'].remove(
+                    {'_id': case['_id']})  # remove invalid testresult
             elif (datetime.now() - starttime).total_seconds() >= 3600:
                 # TODO: Should use time of database server as "now" time
                 self._db['testresults'].update({'_id': case['_id']},
                                                {'$set': {'endtime': self.convert_to_str(starttime),
                                                          'result': 'error',
                                                          'traceinfo': 'No results uploaded in 60mins, set it ERROR'}})
+            self.updateTestsessionSummary(case['sid'])
 
     def del_testcase(self, tid):
         self._db['testresults'].remove({'_id': tid})
@@ -1069,71 +1069,78 @@ class DataStore(object):
                            'casename': casename, 'log': 'N/A', 'starttime': starttime, 'endtime': 'N/A',
                            'traceinfo': 'N/A', 'result': 'running',  'snapshots': []})
         session = self._db['testsessions']
-        session.update({'gid': gid, 'sid': sid}, {
-                       '$inc': {'summary.total': 1}})
+        session.update({'gid': gid, 'sid': sid}, {'$inc': {'summary.total': 1}})
+
+    def updateTestcaseComments(self, gid, sid, tid, results):
+        if results['comments']['endsession'] == 1:
+            self._db['testsessions'].update({'gid': gid, 'sid': sid},
+                                            {'$set': {'failtime': self._db['testresult'].find_one({'gid': gid, 'sid': sid, 'tid': int(tid)})['endtime']}})
+        return self._db['testresults'].update({'gid': gid, 'sid': sid, 'tid': int(tid)},
+                                              {'$set': {'comments': results['comments']}})
+
+    def updateTestsessionSummary(self, sid):
+
+        counts, total = defaultdict(int), 0
+        minStartTime = maxEndTime = None
+
+        for case in self._db['testresults'].find({'sid': sid}, {'_id': False, 'result': 1, 'starttime': 1, 'endtime': 1}):
+            total += 1
+            counts[case['result']] += 1
+
+            starttime = self.convert_to_datetime(case['starttime'])
+            endtime = self.convert_to_datetime(case['endtime'])
+
+            if minStartTime is None:
+                minStartTime = starttime
+            elif starttime is not None and minStartTime > starttime:
+                minStartTime = starttime
+
+            if maxEndTime is None:
+                if endtime is not None:
+                    maxEndTime = endtime
+                elif starttime is not None:
+                    maxEndTime = starttime
+            elif endtime is not None and endtime > maxEndTime:
+                maxEndTime = endtime
+            elif starttime is not None and starttime > maxEndTime:
+                maxEndTime = starttime
+
+        if maxEndTime and minStartTime:
+            runtime = (maxEndTime - minStartTime).total_seconds()
+        else:
+            runtime = 0
+
+        self._db['testsessions'].update({'sid': sid},
+                                        {'$set': {'summary.pass': counts['pass'],
+                                                  'summary.fail': counts['fail'],
+                                                  'summary.error': counts['error'],
+                                                  'runtime': runtime,
+                                                  'summary.total': total}})
 
     def updateTestCaseResult(self, gid, sid, tid, results):
-        """
-        update a test case resut record in database
-        If case get failed, write snapshot png files in GridFS
-        """
-        comments = {}
-        caseresult = self._db['testresults']
 
         if 'comments' in results:
-            comments = results['comments']
-            if comments['endsession'] == 1:
-                tmpt = caseresult.find_one({
-                                           'gid': gid, 'sid': sid, 'tid': int(tid)})
-                self._db['testsessions'].update({'gid': gid, 'sid': sid}, {
-                                                '$set': {'failtime': tmpt['endtime']}})
-            return caseresult.update({'gid': gid, 'sid': sid, 'tid': int(tid)},  {'$set': {'comments': comments}})
+            return self.updateTestcaseComments(gid, sid, tid, results)
 
-        status = results['result']
-        traceinfo = results['traceinfo']
-        endtime = results['time']
-
-        timestamp = datetime.now().strftime(DATE_FORMAT_STR)
-        self.setCache(str('sid:' + sid + ':uptime'), timestamp)
+        self.setCache(str('sid:' + sid + ':uptime'),
+                      datetime.now().strftime(DATE_FORMAT_STR))
         snapshots = self.getCache(str('sid:' + sid + ':tid:' + tid + ':snaps'))
         self.clearCache(str('sid:' + sid + ':tid:' + tid + ':snaps'))
 
-        session = self._db['testsessions']
-        status = status.lower()
-        runtime = 0
-        ret = session.find_one({'sid': sid})
-        if not ret is None:
-            starttime = ret['starttime']
-            try:
-                d1 = datetime.strptime(starttime, DATE_FORMAT_STR)
-            except:
-                d1 = datetime.strptime(starttime, DATE_FORMAT_STR1)
-
-            try:
-                d2 = datetime.strptime(endtime, DATE_FORMAT_STR)
-            except:
-                d2 = datetime.strptime(endtime, DATE_FORMAT_STR1)
-
-            delta = d2 - d1
-            runtime = delta.days * 86400 + delta.seconds
-
-        if status == 'pass':
+        if results['result'].lower() == 'pass':
             if snapshots is not None:
                 for d in snapshots:
                     if 'fid' in d:
                         self.deletefile(d['fid'])
             snapshots = []
-            session.update({'gid': gid, 'sid': sid}, {'$inc': {
-                           'summary.pass': 1}, '$set': {'runtime': runtime}})
-        elif status == 'fail':
-            session.update({'gid': gid, 'sid': sid}, {'$inc': {
-                           'summary.fail': 1}, '$set': {'runtime': runtime}})
-        else:
-            session.update({'gid': gid, 'sid': sid}, {'$inc': {
-                           'summary.error': 1}, '$set': {'runtime': runtime}})
 
-        caseresult.update({'gid': gid, 'sid': sid, 'tid': int(tid)},  {'$set': {
-                          'result': status, 'traceinfo': traceinfo, 'endtime': endtime, 'snapshots': snapshots}})
+        self._db['testresults'].update({'gid': gid, 'sid': sid, 'tid': int(tid)},
+                                       {'$set': {'result': results['result'].lower(),
+                                                 'traceinfo': results['traceinfo'],
+                                                 'endtime': results['time'],
+                                                 'snapshots': snapshots}})
+
+        self.updateTestsessionSummary(sid)
 
     def writeTestLog(self, gid, sid, tid, logfile):
         """

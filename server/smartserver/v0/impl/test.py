@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from dbstore import store
 
 def createTestSession(gid, uid, sid, value):

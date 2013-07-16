@@ -30,7 +30,6 @@ CELERYBEAT_SCHEDULE = {
     'validate-testcase-endtime-every-30-minutes': {
         'task': 'smartserver.tasks.ws_validate_testcase_endtime',
         'schedule': crontab(minute='*/30')
-
     },
 }
 
