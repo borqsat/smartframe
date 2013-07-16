@@ -1041,8 +1041,8 @@ function showFailureSummaryInfo(data) {
 function showPic(picID){
     var localHost  = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ":" + window.location.port : "")+"/smartserver/";
     var imgSrc=[localHost+"static/img/spread.png",localHost+"static/img/combine.png"]
-    var img = document.getElementById(picID);
-    document.getElementById(picID).src=document.getElementById(picID).src==imgSrc[0]?imgSrc[1]:imgSrc[0];
+    var img = document.getElementById(picID)
+    img.src = img.src==imgSrc[0]?imgSrc[1]:imgSrc[0];
 }
 
 function showFailuresInfo(gid,sid){
@@ -1083,11 +1083,13 @@ function showFailureDetailsInfo(data,gid){
     $dev_table.append($tbody);
 
     for (var i = 0; i < data.length; i ++){
-        var failureCount = data[i].failcount
-        var sid = data[i].sid
+        var failureCount = data[i].failcount;
+        var sid = data[i].sid;
+        var deviceSerial = data[i].imei;
+        if (deviceSerial ==="") deviceSerial = "Undefined";
         var $tr = "<tr>"+
-                    (failureCount==0?"<td></td>":"<td onclick=showPic('pic_"+i.toString()+"'); id='tr_"+i.toString()+"'><a><img id='pic_"+i.toString()+"' src='static/img/spread.png'></img></a></td>")+        
-                    "<td>"+data[i].imei+"</td>"+
+                    (failureCount==0?"<td></td>":"<td onclick=showPic('pic_"+i.toString()+"'); id='tr_fail_"+i.toString()+"'><img id='pic_"+i.toString()+"' src='static/img/spread.png'></img></td>")+        
+                    "<td><a href=\"#/group/"+gid+"/session/"+sid+"\">"+deviceSerial+"</a></td>"+
                     "<td>"+data[i].starttime+"</td>"+
                     "<td>"+data[i].endtime+"</td>"+ 
                     (failureCount==0?"<td style='text-align:center'>"+0+"</td>":"<td style='text-align:center'><a href=\"#/group/"+gid+"/session/"+sid+"/fail\">"+failureCount+"</a></td>")+
