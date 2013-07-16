@@ -12,16 +12,16 @@ function showGroupInfo(id) {
                          var userid = $.cookie('userid');
                          $.each(members, function(i, o) {
                               if(o['uid'] === userid)
-                                  bAdmin = (o['role'] === 'owner') || (o['role'] === 'admin');                          
+                                  bAdmin = (o['rolename'] === 'owner') || (o['rolename'] === 'admin');                          
                          });
                          _appglobal.members = [];
                          $.each(members, function(i, o) {
                             _appglobal.members.push(o['username']);
                             var uid = o['uid'];
-                            var role = o['role'];
-                            $groupprf.append('<li>' + o['username'] + '('+ o['role'] + ')'
+                            var role = o['rolename'];
+                            $groupprf.append('<li>' + o['username'] + '('+ o['rolename'] + ')'
                                              + '<a href="javascript:deletemembersById(\''+id+'\',\''+uid+'\',\' '+role+'\')">' 
-                                             + (bAdmin && o['role'] !== 'owner'? '[X]':'')+'</a></li>')
+                                             + (bAdmin && o['rolename'] !== 'owner'? '[X]':'')+'</a></li>')
                          })
                    })
       $('#dialog-user')
@@ -817,12 +817,12 @@ function createSessionBaseInfo(data, gid, sid) {
     var $dev_table = $('<table>').attr('class','table table-bordered');
     var $th = '<thead><tr>'+
               '<th>Planname</th>'+
-              '<th>Tester</th>'+           
+              '<th>Tester</th>'+
               '<th>Device#</th>'+
               '<th>Product</th>'+
-              '<th>Build Version</th>'+              
+              '<th>Build Version</th>'+
               '<th>Start Time</th>'+
-              '</tr></thead>';   
+              '</tr></thead>';
     var $tbody = '<tbody></tbody>';
     $('#device_div').html('').append($dev_table);
     $dev_table.append($th);
@@ -949,27 +949,25 @@ function showReportInfo(gid,cid){
                 },true);
 }
 
+function toggle(){
+        var articleID=document.getElementById("article");
+            if (articleID.style.display=="none"){
+                articleID.style.display="block";
+            } else {
+                articleID.style.display="none";
+            }
+    }
 
 function showCommentInfo(){
 
-    document.getElementById('show-title').innerHTML = "Touch here to get more infomation==><br />"
-    document.getElementById('article').innerHTML = "<b>Uptime:</b> device runtime, "+ 
-    "the duration from start testing till testing stopped. " + 
-    "Testing stops when all tests are blocked to be continued without system manual reset. <br />"+
-    "<b>MTBF</b> = Total running hours/Total failures  <br />" +
-    "<b>Total failures</b>= (critical issues) + (Non-Critical issues). <br />" +
-    "<b>Critial Issues:</b> Phone reset including power down/cycle, kernel restart, system restart, etc; Phone lockup including UI freeze, black screen and application lockup. <br />"+
-    "<b>Non-Critical Issues:</b> Application/process restart including force close, core dump (native process crash).<br />" +
-    "<b>Notes:</b> <br />" +
-    "1. In AT&T, no distinguish between critical and non-critical issues, MTBF testing stop once device meet failure. <br />" +
-    "2. If strictly follow AT&T MTBF calculation, MTBF fail as no device runtime >50 hrs"
-
-    $(document).ready(function(){
-        $(".show-content").hide();
-        $("#show-title").click(function(){
-            $(this).next(".show-content").slideToggle("slow");
-        })
-    });
+    $('#show-title').html('Tap here to get more information==> <br />');
+    $('#article').html("<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
+                       "<b>Uptime:</b> Device running time, from 'Start Time' to 'End Time'. " + 
+                       "(Block time will not included.) <br />" + 
+                       "<b>Failures</b>= (critical issues) + (Non-Critical issues). <br />"+
+                       "<b>Critial Issues:</b> Phone hang, kernel reboot/panic, system crash, etc. <br />"+
+                       "<b>Non-Critical Issues:</b> Application/process force close/ANR, core dump (native process crash), etc.<br />"+
+                       "<b>First Failure Uptime:</b> From the 'Start Time' to first failure occur. <br />");
 
 }
 
@@ -980,7 +978,7 @@ function showCycleBaseInfo(data){
               '<th width="8%">Product</th>'+
               '<th width="18%">Build Version</th>'+           
               '<th width="12%">Devices</th>'+            
-              '<th width="12%">Failures</th>'+
+              '<th width="12%">Total Failures</th>'+
               '<th width="12%">Total Uptime</th>'+
               '<th width="12%">MTBF</th>'+
               '</tr></thead>';
@@ -1012,7 +1010,7 @@ function showFailureSummaryInfo(data) {
     var data = data.results.issuesummany;
 
     var $dev_table = $('<table>').attr('class','table table-bordered');
-    var $title = '<thead><tr><th colspan="2" ><p align="center" type="font-size:25px">Details Failure Summary</p></th></tr></thead>'
+    var $title = '<thead type="height:10px"><tr><th colspan="2"><p align="center">Failure Summary</p></th></tr></thead>'
     var $th = '<thead><tr>'+
               '<th style="text-align:center" width="50%">Issue Type </th>'+
               '<th style="text-align:center" width="50%">Occurs</th>'+
@@ -1043,22 +1041,27 @@ function showFailureSummaryInfo(data) {
 function showPic(picID){
     var localHost  = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ":" + window.location.port : "")+"/smartserver/";
     var imgSrc=[localHost+"static/img/spread.png",localHost+"static/img/combine.png"]
-    var img = document.getElementById(picID);
-    document.getElementById(picID).src=document.getElementById(picID).src==imgSrc[0]?imgSrc[1]:imgSrc[0];
+    var img = document.getElementById(picID)
+    img.src = img.src==imgSrc[0]?imgSrc[1]:imgSrc[0];
 }
 
 function showFailuresInfo(gid,sid){
     viewHistory();
-    invokeWebApi('/group/'+gid+'/test/'+sid+'/history',
+      invokeWebApi('/group/'+gid+'/test/'+sid+'/summary',
+                   prepareData({}),
+                   function(data){
+                        initScreenInfo(data);
+                  });
+	invokeWebApi('/group/'+gid+'/test/'+sid+'/history',
                   prepareData({'type':'fail'}),
                   function(data){
-                  if(data.results === undefined) return;
-                  var paging = data.results.paging;
-                  var caseslist = data.results.cases;
-                  createDetailTable('cases_div','table_fail_' + sid);
-                  fillDetailTable(gid, sid, caseslist,'table_fail_' + sid,'fail');
-                  if(paging !== undefined) TablePage(gid, sid, paging['totalpage'], paging['pagesize'], fillDetailTable, 'table_fail_' + sid,'fail');
-            });
+                  		if(data.results === undefined) return;
+                  		var paging = data.results.paging;
+                  		var caseslist = data.results.cases;
+                  		createDetailTable('cases_div','table_fail_' + sid);
+                  		fillDetailTable(gid, sid, caseslist,'table_fail_' + sid,'fail');
+                  		if(paging !== undefined) TablePage(gid, sid, paging['totalpage'], paging['pagesize'], fillDetailTable, 'table_fail_' + sid,'fail');
+            		});
 }
 
 function showFailureDetailsInfo(data,gid){
@@ -1072,7 +1075,7 @@ function showFailureDetailsInfo(data,gid){
               '<th>End Time</th>'+            
               '<th>Failures</th>'+
               '<th>First Failure Uptime</th>'+
-              '<th>Total Uptime</th>'+
+              '<th>Uptime</th>'+
               '</tr></thead>';
     var $tbody = '<tbody></tbody>';
     $('#device-failure-detail-div').html('').append($dev_table);
@@ -1080,15 +1083,16 @@ function showFailureDetailsInfo(data,gid){
     $dev_table.append($tbody);
 
     for (var i = 0; i < data.length; i ++){
-        var failureCount = data[i].failcount
-        var sid = data[i].sid
+        var failureCount = data[i].failcount;
+        var sid = data[i].sid;
+        var deviceSerial = data[i].imei;
+        if (deviceSerial ==="") deviceSerial = "Undefined";
         var $tr = "<tr>"+
-                    (failureCount==0?"<td></td>":"<td onclick=showPic('pic_"+i.toString()+"'); id='tr_"+i.toString()+"'><a><img id='pic_"+i.toString()+"' src='static/img/spread.png'></img></a></td>")+        
-                    "<td>"+data[i].imei+"</td>"+
+                    (failureCount==0?"<td></td>":"<td onclick=showPic('pic_"+i.toString()+"'); id='tr_fail_"+i.toString()+"'><img id='pic_"+i.toString()+"' src='static/img/spread.png'></img></td>")+        
+                    "<td><a href=\"#/group/"+gid+"/session/"+sid+"\">"+deviceSerial+"</a></td>"+
                     "<td>"+data[i].starttime+"</td>"+
                     "<td>"+data[i].endtime+"</td>"+ 
-                    (failureCount==0?"<td style='text-align:center'>"+0+"</td>":"<td style='text-align:center'><a href=\"#/group/"+parseInt(gid)+"/session/"+sid+"/fail\">"+failureCount+"</a></td>")+
-                    // "<td style='text-align:center'>"+(failureCount==0?0:"<a href=\"#/group/"+parseInt(gid)+"/session/"+sid+"\">"+failureCount+"</a>")+"</td>"+
+                    (failureCount==0?"<td style='text-align:center'>"+0+"</td>":"<td style='text-align:center'><a href=\"#/group/"+gid+"/session/"+sid+"/fail\">"+failureCount+"</a></td>")+
                     "<td>"+setRunTime(data[i].faildur)+"</td>"+
                     "<td>"+setRunTime(data[i].totaldur)+"</td>"+
                     "</tr>";
@@ -1208,11 +1212,10 @@ function showDomainInfo(data){
 
 var AppRouter = Backbone.Router.extend({
     routes: {
-        "group/:gid":"showGroupView",
+        "group/:gid" : "showGroupView",
         "group/:gid/session/:sid" : "showSessionView",
         "group/:gid/report/:cid" : "showReportView",
-        "group/:gid/session/:sid/fail" : "showFailView",
-
+        "group/:gid/session/:sid/fail" : "showFailView"
     },
     showGroupView: function(gid){
         checkLogIn();
@@ -1264,7 +1267,7 @@ var AppRouter = Backbone.Router.extend({
         if(_appglobal.t2 !== undefined) clearTimeout(_appglobal.t2);
         showGroupInfo(gid);
         showReportInfo(gid,cid);
-    },
+    }
 });
 var index_router = new AppRouter;
 Backbone.history.start();
