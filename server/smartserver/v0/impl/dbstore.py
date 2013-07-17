@@ -40,18 +40,6 @@ DATE_FORMAT_STR = "%Y.%m.%d-%H.%M.%S"
 IDLE_TIME_OUT = 1800
 
 
-def duration(fn):
-    def wrapper(*args, **kwargs):
-        start = datetime.now()
-        result = fn(*args, **kwargs)
-        duration = datetime.now() - start
-        print "Duration to invoke %s is %.3f" % (fn.__name__, duration.total_seconds())
-        return result
-
-    wrapper.__name__ = fn.__name__
-    return wrapper
-
-
 def _compareDateTime(dt1, dt2):
     date1 = None
     date2 = None
