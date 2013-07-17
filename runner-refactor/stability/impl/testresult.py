@@ -81,7 +81,7 @@ def collect_result(func):
 
         elif func.__name__ == 'addSuccess':
             fpath = join(args[0].localpath['ws_testcase'],variables.RESULT_FILE_NAME)
-            Serializer.serialize(file_path=fpath, data={'result':'pass','endtime':_time(),'traceinfo':'N/A'})
+            Serializer.serialize(file_path=fpath, data={'tid':str(args[0].localpath['tid']),'result':'pass','endtime':_time()})
             _copy(args[0].localpath['ws_testcase'],join(args[0].localpath['ws_result_pass'],'%s%s%s' % (args[0]._case_name,variables.FOLDER_NAME_SEPARATOR,args[0]._case_start_time)))
             #Serializer.serialize(file_path=fpath, data={'result':'pass','time':_time(),'traceinfo':'N/A'})
 
