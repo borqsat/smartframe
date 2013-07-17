@@ -101,6 +101,7 @@ class DataStore(object):
         If a "N/A" session has not been updated for 60mins, set a reasonable endtime to it,
         if this is a dirty session, which has session info but no related cases, ignore it here.
         '''
+        print "Start to validate session endtime"
         for session in self._db['testsessions'].find({'endtime': 'N/A'}):
             cases_collection = self._db['testresults'].find({'sid': session['sid']}, {
                                                             'starttime': 1, 'endtime': 1}).sort('starttime', pymongo.DESCENDING)
@@ -118,6 +119,7 @@ class DataStore(object):
 
     def active_testsession(self, sid):
         '''Set session endtime to "N/A", back to life'''
+        print "Start to active testsession"
         self._db['testsessions'].update(
             {'sid': sid}, {'$set': {'endtime': 'N/A'}})
 
@@ -127,6 +129,7 @@ class DataStore(object):
         If a testcase has not been updated for 60 mins, set its starttime as its endtime,
         if this is a dirty case, which does not even has reasonable starttime, remove it 
         '''
+        print "Start to validate testcase endtime"
         for case in self._db['testresults'].find({'endtime': 'N/A', 'result': 'running'}, {'starttime': 1, 'sid': 1}):
             starttime = self.convert_to_datetime(case['starttime'])
             if starttime is None:
