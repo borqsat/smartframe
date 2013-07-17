@@ -1182,7 +1182,7 @@ function showDomainInfo(data){
           passRate = countRate(passCount,totalCount)
 
           var $tr = "<tr>"+ 
-                "<td id='tr_1"+i.toString()+"' onclick=showPic('pic1_"+i.toString()+"');><img id='pic1_"+i.toString()+"' src='static/img/spread.png'></img></td>"+
+                "<td onclick=showPic('pic1_"+i.toString()+"') id='tr_domain_"+i.toString()+"';><img id='pic1_"+i.toString()+"' src='static/img/spread.png'></img></td>"+
                 "<td>"+data[i].domain+"</td>"+
                 "<td>"+totalCount+"</td>"+
                 "<td>"+passCount+"</td>"+ 
@@ -1202,8 +1202,8 @@ function showDomainInfo(data){
               '<td style="background:#ffff99">Success Rate</td>'+
               '</tr>';
           $dev_table.append($th_sub);
-
-          $('#tr_1'+i.toString()).toggle(function(){
+          
+          $('#tr_domain_'+i.toString()).toggle(function(){
               $('tr#sub'+this.id).removeClass('hidden');
             },function(){
               $('tr#sub'+this.id).addClass('hidden');
@@ -1213,7 +1213,7 @@ function showDomainInfo(data){
               var passCnt = data[i].detail[j].passcnt;
               var totalCnt = data[i].detail[j].totalcnt;
               var passRate1 = countRate(passCnt,totalCnt)
-              var $th_sub1 = "<tr class='hidden' id='subtr_1"+i.toString()+"'>"+ 
+              var $th_sub1 = "<tr class='hidden' id='subtr_domain_"+i.toString()+"'>"+ 
                     '<td></td>'+ 
                     "<td style='background:#ffff99'>"+data[i].detail[j].casename+"</td>"+            
                     "<td style='background:#ffff99'>"+totalCnt+"</td>"+
