@@ -12,16 +12,16 @@ function showGroupInfo(id) {
                          var userid = $.cookie('userid');
                          $.each(members, function(i, o) {
                               if(o['uid'] === userid)
-                                  bAdmin = (o['role'] === 'owner') || (o['role'] === 'admin');                          
+                                  bAdmin = (o['rolename'] === 'owner') || (o['rolename'] === 'admin');                          
                          });
                          _appglobal.members = [];
                          $.each(members, function(i, o) {
                             _appglobal.members.push(o['username']);
                             var uid = o['uid'];
-                            var role = o['role'];
-                            $groupprf.append('<li>' + o['username'] + '('+ o['role'] + ')'
+                            var role = o['rolename'];
+                            $groupprf.append('<li>' + o['username'] + '('+ o['rolename'] + ')'
                                              + '<a href="javascript:deletemembersById(\''+id+'\',\''+uid+'\',\' '+role+'\')">' 
-                                             + (bAdmin && o['role'] !== 'owner'? '[X]':'')+'</a></li>')
+                                             + (bAdmin && o['rolename'] !== 'owner'? '[X]':'')+'</a></li>')
                          })
                    })
       $('#dialog-user')
@@ -229,8 +229,10 @@ function editCIdFunction(gid, sid, cid_sel){
 }
 
 
-function getCycleList(gid, sid, cid){
+function getCycleList(key, gid, sid, cid){
      var cyclelist_options = "";
+     var cycles = _appglobal.cyclelist[key]||[];
+     
      if ( cid !== "" ){
         cyclelist_options = "<li><a>"+cid+"</a><b></b>";
      }else {
@@ -238,9 +240,9 @@ function getCycleList(gid, sid, cid){
      }
      
      cyclelist_options = cyclelist_options + "<div class=\"panel dropanel1\">" ;
-     for (var i = 0; i<_appglobal.cyclelist.length; i++) {
-         if (_appglobal.cyclelist[i] !== cid){
-             cyclelist_options = cyclelist_options + "<a href=\"javascript:editCIdFunction('"+gid+"','"+sid+"','"+_appglobal.cyclelist[i]+"')\">"+_appglobal.cyclelist[i] +"</a><br>";
+     for (var i = 0; i < cycles.length; i++) {
+         if (cycles[i] !== cid){
+             cyclelist_options = cyclelist_options + "<a href=\"javascript:editCIdFunction('"+gid+"','"+sid+"','"+cycles[i]+"')\">"+cycles[i] +"</a><br>";
          }
      };
      cyclelist_options = cyclelist_options + "<a href=\"javascript:editCIdFunction('"+gid+"','"+sid+"','newCycleId')\">New</a><br>" ;
@@ -272,13 +274,29 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
     $product_table.append($tbody);
     $cycle_panel.append($product_table);
     
-    _appglobal.cyclelist = [];//new Array();
+    // _appglobal.cyclelist = [];//new Array();
+    // for(var s = 0; s < test_session.length;s++){
+    //     var cid = test_session[s].cid;
+    //     if (cid !== "" && cid !== "N/A"){
+    //         _appglobal.cyclelist.push(cid);
+    //     }
+    // }
+    
+    _appglobal.cyclelist = {};//new Array();
+
     for(var s = 0; s < test_session.length;s++){
         var cid = test_session[s].cid;
         if (cid !== "" && cid !== "N/A"){
-            _appglobal.cyclelist.push(cid);
+            //_appglobal.cyclelist.push(cid);
+            var product = test_session[s].product ;
+            var revision = test_session[s].revision ;
+            var key = product + ":" + revision;
+            if (_appglobal.cyclelist[key] === undefined) {
+                _appglobal.cyclelist[key] = [];
+            }
+            _appglobal.cyclelist[key].push(cid);
         }
-    }
+    }  
 
     var sessions = [];
     for(var k = 0; k < test_session.length;k++){
@@ -303,10 +321,11 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
             var key = value.id ;
             var sid = value.sid;
             var endtime = value.endtime;
+            var key = value.product + ":" + value.revision;
             var css = value.status == 'running' ? "style='background-color:#4682B4'":"style='background-color:#8C8C8C'";
             $tr = "<tr class='info'>"+
                       "<td "+css+"></td>"+
-                      "<td><div id ='showCidSelect'"+value.sid+" class=\"sitenav\"><ul class='cycleposition'>"+getCycleList(value.gid,value.sid,value.cid)+
+                      "<td><div id ='showCidSelect'"+value.sid+" class=\"sitenav\"><ul class='cycleposition'>"+getCycleList(key,value.gid,value.sid,value.cid)+
                       "</ul></div></td>"+
                       "<td>"+value.deviceid+"</td>"+     
                       "<td>"+value.revision+"</td>"+              
@@ -334,7 +353,7 @@ function renderTestSessionDiv_cyclelist(div_id, test_session){
                       '<th width="20%">Build Version</th>'+
                       //'<th width="10%">Start Time</th>'+
                       //'<th width="10%">End Time</th>'+
-                      '<th width="5%">Total Devices</th>'+
+                      '<th width="5%">Devices</th>'+
                       '<th width="7%">Living Devices</th>'+
                       '<th width="1%">Report</th>'+ 
                       '</tr></thead>';
@@ -960,7 +979,7 @@ function toggle(){
 
 function showCommentInfo(){
 
-    $('#show-title').html('Tap here to get more information==> <br />');
+    $('#show-title').html('<a href=\"javascript:void(0)\">Tap here to get more information==> </a><br />');
     $('#article').html("<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
                        "<b>Uptime:</b> Device running time, from 'Start Time' to 'End Time'. " + 
                        "(Block time will not included.) <br />" + 
@@ -1041,8 +1060,8 @@ function showFailureSummaryInfo(data) {
 function showPic(picID){
     var localHost  = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ":" + window.location.port : "")+"/smartserver/";
     var imgSrc=[localHost+"static/img/spread.png",localHost+"static/img/combine.png"]
-    var img = document.getElementById(picID);
-    document.getElementById(picID).src=document.getElementById(picID).src==imgSrc[0]?imgSrc[1]:imgSrc[0];
+    var img = document.getElementById(picID)
+    img.src = img.src==imgSrc[0]?imgSrc[1]:imgSrc[0];
 }
 
 function showFailuresInfo(gid,sid){
@@ -1083,11 +1102,13 @@ function showFailureDetailsInfo(data,gid){
     $dev_table.append($tbody);
 
     for (var i = 0; i < data.length; i ++){
-        var failureCount = data[i].failcount
-        var sid = data[i].sid
+        var failureCount = data[i].failcount;
+        var sid = data[i].sid;
+        var deviceSerial = data[i].imei;
+        if (deviceSerial ==="") deviceSerial = "Undefined";
         var $tr = "<tr>"+
-                    (failureCount==0?"<td></td>":"<td onclick=showPic('pic_"+i.toString()+"'); id='tr_"+i.toString()+"'><a><img id='pic_"+i.toString()+"' src='static/img/spread.png'></img></a></td>")+        
-                    "<td>"+data[i].imei+"</td>"+
+                    (failureCount==0?"<td></td>":"<td onclick=showPic('pic_"+i.toString()+"'); id='tr_"+i.toString()+"'><img id='pic_"+i.toString()+"' src='static/img/spread.png'></img></td>")+        
+                    "<td><a href=\"#/group/"+gid+"/session/"+sid+"\">"+deviceSerial+"</a></td>"+
                     "<td>"+data[i].starttime+"</td>"+
                     "<td>"+data[i].endtime+"</td>"+ 
                     (failureCount==0?"<td style='text-align:center'>"+0+"</td>":"<td style='text-align:center'><a href=\"#/group/"+gid+"/session/"+sid+"/fail\">"+failureCount+"</a></td>")+
@@ -1162,7 +1183,7 @@ function showDomainInfo(data){
           passRate = countRate(passCount,totalCount)
 
           var $tr = "<tr>"+ 
-                "<td id='tr_1"+i.toString()+"' onclick=showPic('pic1_"+i.toString()+"');><img id='pic1_"+i.toString()+"' src='static/img/spread.png'></img></td>"+
+                "<td onclick=showPic('pic1_"+i.toString()+"') id='tr_domain_"+i.toString()+"';><img id='pic1_"+i.toString()+"' src='static/img/spread.png'></img></td>"+
                 "<td>"+data[i].domain+"</td>"+
                 "<td>"+totalCount+"</td>"+
                 "<td>"+passCount+"</td>"+ 
@@ -1172,7 +1193,7 @@ function showDomainInfo(data){
                 "</tr>"
           $dev_table.append($tr);
 
-          var $th_sub = '<tr class="hidden" style="color:blue" id="subtr_1'+i.toString()+'">'+
+          var $th_sub = '<tr class="hidden" style="color:blue" id="subtr_domain_'+i.toString()+'">'+
               '<td></td>'+
               '<td style="background:#ffff99">Run Case</td>'+      
               '<td style="background:#ffff99">Total</td>'+
@@ -1182,8 +1203,8 @@ function showDomainInfo(data){
               '<td style="background:#ffff99">Success Rate</td>'+
               '</tr>';
           $dev_table.append($th_sub);
-
-          $('#tr_1'+i.toString()).toggle(function(){
+          
+          $('#tr_domain_'+i.toString()).toggle(function(){
               $('tr#sub'+this.id).removeClass('hidden');
             },function(){
               $('tr#sub'+this.id).addClass('hidden');
@@ -1193,7 +1214,7 @@ function showDomainInfo(data){
               var passCnt = data[i].detail[j].passcnt;
               var totalCnt = data[i].detail[j].totalcnt;
               var passRate1 = countRate(passCnt,totalCnt)
-              var $th_sub1 = "<tr class='hidden' id='subtr_1"+i.toString()+"'>"+ 
+              var $th_sub1 = "<tr class='hidden' id='subtr_domain_"+i.toString()+"'>"+ 
                     '<td></td>'+ 
                     "<td style='background:#ffff99'>"+data[i].detail[j].casename+"</td>"+            
                     "<td style='background:#ffff99'>"+totalCnt+"</td>"+

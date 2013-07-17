@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from dbstore import store
 
 ##########################Group Roles########################
@@ -37,13 +40,13 @@ def getGroupInfo(uid, gid):
     if not isGroupMember(uid, gid):
         return {'errors':{'code':'00','msg':'Member permission required!'}}
 
-    rdata = store.getGroupInfo(gid)
-    if rdata.has_key('gid'):
-        for d in rdata['members']:
-            d['role'] = ROLES[d['role']]
-        return {'results':rdata}
+    group = store.getGroupInfo(gid)
+    if group is None:
+        return {'errors': {'code':'04', 'msg':'Invalid Group ID!'}}
     else:
-        return {'errors':rdata}
+        for member in group['members']:
+            member['rolename'] = ROLES[member['role']]
+        return {'results': group}
 
 def addGroupMembers(uid, gid, members):
     if not isGroupAdmin(uid, gid):

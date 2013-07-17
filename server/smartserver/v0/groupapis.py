@@ -103,8 +103,12 @@ def doUpdateUserInfo(uid):
     @return: ok-{'results':1}
              error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
+    appid = request.json['appid']
     info = request.json['info']
-    return userUpdateInfo(uid, info)
+    ret = userUpdateInfo(appid, uid, info)
+    if 'results' in ret and 'email' in ret['results']:
+        sendVerifyMail(ret['results']['email'], ret['results']['username'], ret['results']['token'])
+    return ret
 
 
 @appweb.route('/account/invite', method='POST', content_type='application/json')
