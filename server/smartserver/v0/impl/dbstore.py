@@ -108,6 +108,7 @@ class DataStore(object):
         # TODO Why to use the format...
         return date.strftime(DATE_FORMAT_STR)
 
+    @duration
     def validate_session_endtime(self):
         for session in self._db['testsessions'].find({'endtime': 'N/A'}):
             cases_collection = self._db['testresults'].find({'sid': session['sid']}, {
@@ -123,24 +124,26 @@ class DataStore(object):
                 self._db['testsessions'].update(
                     {'sid': session['sid']}, {'$set': {'endtime': self.convert_to_str(endtime)}})
 
+    @duration
     def active_testsession(self, sid):
         # 'N/A' to indicate the session is running..!? TODO
         self._db['testsessions'].update(
             {'sid': sid}, {'$set': {'endtime': 'N/A'}})
 
+    @duration
     def validate_testcase_endtime(self):
         for case in self._db['testresults'].find({'endtime': 'N/A', 'result': 'running'}, {'starttime': 1, 'sid': 1}):
             starttime = self.convert_to_datetime(case['starttime'])
             if starttime is None:
-                self._db['testresults'].remove(
-                    {'_id': case['_id']})  # remove invalid testresult
+                self._db['testresults'].remove({'_id': case['_id']})  # remove invalid testresult
+                self.updateTestsessionSummary(case['sid'])
             elif (datetime.now() - starttime).total_seconds() >= 3600:
                 # TODO: Should use time of database server as "now" time
                 self._db['testresults'].update({'_id': case['_id']},
                                                {'$set': {'endtime': self.convert_to_str(starttime),
                                                          'result': 'error',
                                                          'traceinfo': 'No results uploaded in 60mins, set it ERROR'}})
-            self.updateTestsessionSummary(case['sid'])
+                self.updateTestsessionSummary(case['sid'])
 
     def del_testcase(self, tid):
         self._db['testresults'].remove({'_id': tid})
@@ -1140,7 +1143,6 @@ class DataStore(object):
                                                  'endtime': results['time'],
                                                  'snapshots': snapshots}})
 
-        self.updateTestsessionSummary(sid)
 
     def writeTestLog(self, gid, sid, tid, logfile):
         """
