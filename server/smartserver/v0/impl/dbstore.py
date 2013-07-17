@@ -108,8 +108,11 @@ class DataStore(object):
         # TODO Why to use the format...
         return date.strftime(DATE_FORMAT_STR)
 
-    @duration
     def validate_session_endtime(self):
+        '''
+        If a "N/A" session has not been updated for 60mins, set a reasonable endtime to it,
+        if this is a dirty session, which has session info but no related cases, ignore it here.
+        '''
         for session in self._db['testsessions'].find({'endtime': 'N/A'}):
             cases_collection = self._db['testresults'].find({'sid': session['sid']}, {
                                                             'starttime': 1, 'endtime': 1}).sort('starttime', pymongo.DESCENDING)
@@ -124,18 +127,22 @@ class DataStore(object):
                 self._db['testsessions'].update(
                     {'sid': session['sid']}, {'$set': {'endtime': self.convert_to_str(endtime)}})
 
-    @duration
+
     def active_testsession(self, sid):
-        # 'N/A' to indicate the session is running..!? TODO
+        '''Set session endtime to "N/A", back to life'''
         self._db['testsessions'].update(
             {'sid': sid}, {'$set': {'endtime': 'N/A'}})
 
-    @duration
+
     def validate_testcase_endtime(self):
+        '''
+        If a testcase has not been updated for 60 mins, set its starttime as its endtime,
+        if this is a dirty case, which does not even has reasonable starttime, remove it 
+        '''
         for case in self._db['testresults'].find({'endtime': 'N/A', 'result': 'running'}, {'starttime': 1, 'sid': 1}):
             starttime = self.convert_to_datetime(case['starttime'])
             if starttime is None:
-                self._db['testresults'].remove({'_id': case['_id']})  # remove invalid testresult
+                self._db['testresults'].remove({'_id': case['_id']})
                 self.updateTestsessionSummary(case['sid'])
             elif (datetime.now() - starttime).total_seconds() >= 3600:
                 # TODO: Should use time of database server as "now" time
@@ -1082,6 +1089,10 @@ class DataStore(object):
                                               {'$set': {'comments': results['comments']}})
 
     def updateTestsessionSummary(self, sid):
+        '''
+        count the pass/fail/error cases of a session,
+        calculate the runtime of a session
+        '''
 
         counts, total = defaultdict(int), 0
         minStartTime = maxEndTime = None
@@ -1119,6 +1130,7 @@ class DataStore(object):
                                                   'summary.error': counts['error'],
                                                   'runtime': runtime,
                                                   'summary.total': total}})
+    
 
     def updateTestCaseResult(self, gid, sid, tid, results):
 

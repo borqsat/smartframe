@@ -23,13 +23,13 @@ CELERYBEAT_SCHEDULE = {
         'task': 'smartserver.tasks.ws_del_dirty',
         'schedule': crontab(minute=0, hour=0, day_of_month=1)
     },
-    'validate-session-endtime-every-10-minutes': {
+    'validate-session-endtime-every-30-minutes': {
         'task': 'smartserver.tasks.ws_validate_session_endtime',
-        'schedule': crontab(minute='*/1')
+        'schedule': crontab(minute='*/30')
     },
     'validate-testcase-endtime-every-30-minutes': {
         'task': 'smartserver.tasks.ws_validate_testcase_endtime',
-        'schedule': crontab(minute='*/1')
+        'schedule': crontab(minute='*/30')
     },
 }
 
