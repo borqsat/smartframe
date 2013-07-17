@@ -231,7 +231,8 @@ function editCIdFunction(gid, sid, cid_sel){
 
 function getCycleList(key, gid, sid, cid){
      var cyclelist_options = "";
-     var cycles = _appglobal.cyclelist[key];
+     var cycles = _appglobal.cyclelist[key] === undefined ? [] :　_appglobal.cyclelist[key];
+     
      if ( cid !== "" ){
         cyclelist_options = "<li><a>"+cid+"</a><b></b>";
      }else {
