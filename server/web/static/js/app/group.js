@@ -1192,7 +1192,7 @@ function showDomainInfo(data){
                 "</tr>"
           $dev_table.append($tr);
 
-          var $th_sub = '<tr class="hidden" style="color:blue" id="subtr_1'+i.toString()+'">'+
+          var $th_sub = '<tr class="hidden" style="color:blue" id="subtr_domain_'+i.toString()+'">'+
               '<td></td>'+
               '<td style="background:#ffff99">Run Case</td>'+      
               '<td style="background:#ffff99">Total</td>'+
