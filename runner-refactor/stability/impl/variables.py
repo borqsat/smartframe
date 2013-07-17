@@ -10,6 +10,7 @@ SERVER_CONFIG_PATH = join(WORK_SPACE, 'server.config')
 DEVICE_CONFIG_PATH = join(WORK_SPACE, 'device.config')
 TOKEN_CONFIG_PATH = join(WORK_SPACE, '.token')
 
+TID_FILE_NAME = '.tid'
 RESULT_FILE_NAME = '.result'
 FOLDER_NAME_SYMBOL = '-'
 
@@ -25,3 +26,4 @@ IMAGE_SUFFIX = '.png'
 #TIME_STAMP_FORMAT = '%Y.%m.%d-%H.%M.%S'
 TIME_STAMP_FORMAT = '%Y-%m-%d_%H:%M:%S'
 FILE_NAME_SEPARATOR = '@'
+FOLDER_NAME_SEPARATOR = '@'

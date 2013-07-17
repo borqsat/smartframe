@@ -1,5 +1,5 @@
 import sys
-from stability import logger,Options,on,TestBuilder,TestRunner,TestResultImpl,Topics,TopicsHandler,Authentication
+from stability import logger,Options,TestBuilder,TestRunner,TestResultImpl,Authentication,on,Topics,TopicsHandler
 
 def run_cmdline(arguments):
     '''
@@ -11,7 +11,6 @@ def run_cmdline(arguments):
     options = Options(arguments)
 
     if options['upload']:
-        on(Topics.AUTH, TopicsHandler.onAuth)
         on(Topics.UPLOAD, TopicsHandler.onUpload)
         Authentication.auth()
     #if options['screenmonitor']: on(Topics.TOPIC_SNAPSHOT, TopicsHandler.onSnapshot)

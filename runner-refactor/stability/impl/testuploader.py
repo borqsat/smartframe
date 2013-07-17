@@ -14,27 +14,90 @@ import variables
 from serialize import Serializer
 from devicemanager import DeviceManager
 from cStringIO import StringIO
+import getpass
+import hashlib
+import base64
+#from ps import Topics,emit
 
-reference_url = 'http://ats.borqs.com/smartserver/login.html'
+#reference_url = 'http://ats.borqs.com/smartserver/login.html'
 
 def _time():
     return time.strftime(variables.TIME_STAMP_FORMAT, time.localtime(time.time()))
 
-class NetworkMonitor(object):
-    '''
-    Class for monitor network status.
-    '''
-    def getConnectivityStatus(self,reference_url):
-        '''
-        check if the network is avaiable.
-        @rtype: boolean
-        @return: true is avaiable, false if unavaiable
-        '''
 
-    def notify(self,status):
-        #emit(Topics.Network,status)
-        pass
+class Authentication(object):
+    @staticmethod
+    def auth():
+        print '\nwhen enable --upload there requires accountname/password.\n'
+        account_name = raw_input('Enter account name:\n')
+        password = base64.b64encode(getpass.getpass('Enter password:\n'))
+        auth_url = None
+        token = None
+        #validate token if validation failed. get a new token.
+        #TODO: add function to verify the token from server
+        if os.path.exists(variables.TOKEN_CONFIG_PATH):
+            return
+        #read server config 
+        server_info = ConfigParser.ConfigParser()
+        server_info.read(variables.SERVER_CONFIG_PATH)
+        auth_url = None
+        try:
+            auth_url = server_info.get('server','authentication_url')
+            if not auth_url:
+                raise
+        except Exception,e:
+            print 'invalid config file %s\n' % variables.SERVER_CONFIG_PATH
+            #abort due to read error. sys.exit(1)
 
+        #do auth
+        md = hashlib.md5()
+        md.update(base64.b64decode(password))
+        pwd_encode = md.hexdigest()
+        postdata = {'appid':'01','username':account_name,'password':pwd_encode}
+        response = None
+        try:
+            request = urllib2.Request(auth_url)
+            request.add_header('Content-Type','application/json')
+            request.add_header('Accept', 'application/json')
+            request.add_data(json.dumps(postdata))
+            request.get_method = lambda: 'POST'
+            response = urllib2.urlopen(request,timeout=10)
+            json_feedback = response.read()
+            dic = eval(json_feedback)
+            if 'errors' in dic.keys():
+                raise Exception('account name or password incorrect')
+            token = dic['results']['token']
+        except urllib2.URLError, ue:
+            print ue
+            sys.exit(1)
+            
+        except urllib2.HTTPError, he:
+            print he
+            sys.exit(1)
+
+        except Exception, e:
+            if hasattr(e, 'reason'):
+                print 'Failed to reach a server.'
+                print '%s %s' % ('Reason:',str(e.reason))
+            elif hasattr(e, 'code'):
+                print 'The server couldn\'t fulfill the request.'
+                print '%s %s' % ('Error code:',str(e.code))
+            else:
+                print '%s %s' % ('Get token failed:',str(e))
+            sys.exit(1)      
+        finally:
+            if response != None:
+                response.close()
+
+        cf = ConfigParser.ConfigParser()
+        cf.read(variables.TOKEN_CONFIG_PATH)
+        if not cf.has_section('account'):
+            cf.add_section('account')
+        cf.set('account','account',account_name)
+        cf.set('account','password',password)
+        cf.set('account','token',token)
+        with open(variables.TOKEN_CONFIG_PATH,'wb') as f:
+            cf.write(f)
 class ResultUploader(object):
     """
     Singleton class for uploading result
@@ -104,7 +167,6 @@ class ResultUploader(object):
         return cls.__instance
 
     def upload(self,path):
-        #self.createSession(os.path.join(path,'.session'))
         if not self._sender:
             print '>>>>>>send_therad: _sender is None. first sender create'
             self._sender = Sender(workspace=path, urls=self._urls,token=self._token)
@@ -116,7 +178,7 @@ class ResultUploader(object):
             self._sender.setDaemon(True)
             self._sender.start()
 
-tid = 1
+
 class Sender(threading.Thread):
     '''
     Thread for uploading result to remote server
@@ -214,13 +276,14 @@ class Sender(threading.Thread):
         print target
         case_name, case_start_time = target.split(variables.FILE_NAME_SEPARATOR)
         result_file_path = os.path.join(path,variables.RESULT_FILE_NAME)
+        tid_file_path = os.path.join(path,variables.TID_FILE_NAME)
         if os.path.exists(result_file_path):
             print '>>>>>>send_thread: find result file begin to update test result'
             #SWITCH TO update test case result on server
             datas = Serializer.unserialize(file_path=result_file_path)
+            tid = datas.pop('tid')
             datas.update({'token':self._token,'casename':case_name,'starttime':case_start_time})
             print 'result update TID:'
-            global tid
             print str(tid)
             if datas['result'] == 'pass':
                 print 'ready to send PASS result request'
@@ -279,51 +342,32 @@ class Sender(threading.Thread):
                 else:
                     print '<<<<<<<<<<send_thread: equest failed'
                     return False
-            tid = tid + 1
+            #tid = tid + 1
             import shutil
             print '>>>>>>send_thread: upload success delete the orgin folder DELETING-------'
             #print path
             a = shutil.rmtree(path)
             return True
-            #self.stop()
-                #request = {'method':'PUT',
-                #           'url':self._urls['upload_file_url'],
-                #           'Content-Type': 'image/png',
-                #           'exttype':'record:'}
-
-                #request = {'method':'POST',
-                #           'url':self._urls['caseresult_update_url'],
-                #           'Content-Type':'application/json',
-                #           'Accept':'application/json',
-                #           'data':datas}
-                #RequestUtils.send()
-            #request = {'method':'POST',
-            #           'url':self._urls['caseresult_update_url'],
-            #           'Content-Type':'application/json',
-            #           'Accept':'application/json',
-            #           'data':{'casename':case_name,'starttime':case_start_time}}
-        else:
-            print 'get create test case request'
-            #no result file so SWITCH TO create test case id on server
-            global tid
-            print 'current TID:\n'
-            print str(tid)
+        elif os.path.exists(tid_file_path):
+            print 'create test case request>>>>>>>>>>>>>>>>>'
+            datas = Serializer.unserialize(file_path=tid_file_path)
+            print datas['tid']
             request = {'method':'POST',
-                       'url':self._urls['caseresult_create_url'] % (self.session_id,str(tid)),
+                       'url':self._urls['caseresult_create_url'] % (self.session_id,datas['tid']),
                        'Content-Type':'application/json',
                        'Accept':'application/json',
                        'data':{'token':self._token,'casename':case_name,'starttime':case_start_time}}
             print request
             if RequestUtils.send(request):
-                print '>>>>>>send_thread: case create request'
+                print '>>>>>>send_thread: case create request success'
                 #if create request OK. stop sender thread.
                 self.stop()
-
+                return True
             else:
                 print '<<<<<<<<<<send_thread: request failed'
                 return False
+        else:
             return True
-        #return request
 
 # Retry decorator with exponential backoff
 def retry(tries, delay=1, backoff=2):
@@ -350,7 +394,7 @@ def retry(tries, delay=1, backoff=2):
 
       rv = f(*args, **kwargs) # first attempt
       while mtries > 0:
-        if rv == True or type(rv) == str: # Done on success ..
+        if rv == True or type(rv) == str or type(rv) == dict: # Done on success ..
           return rv
 
         mtries -= 1      # consume an attempt
@@ -387,7 +431,7 @@ class RequestUtils(object):
     debugid = 1
     @staticmethod
     #@retry(3)
-    def send(kwargs):
+    def send1(kwargs):
         '''
         sends a Request.
         Parameters:
@@ -402,12 +446,8 @@ class RequestUtils(object):
         @rtype: boolean
         @return: true if server return OK. flase if server return failed.
         '''
-        RequestUtils.debugid = RequestUtils.debugid + 1
-        if RequestUtils.debugid == 5 or RequestUtils.debugid == 8 or RequestUtils.debugid == 9:
-            return False
-        else:
-            return True
         response = None
+        ret = None
         try:
             request = urllib2.Request(kwargs['url'])
             request.add_header('Content-Type',kwargs['Content-Type'])
@@ -416,9 +456,9 @@ class RequestUtils(object):
             request.get_method = lambda: kwargs['method']
             response = urllib2.urlopen(request,timeout=10)
             json_feedback = response.read()
-            dic = eval(json_feedback)
-            print dic
-            if 'errors' in dic.keys():
+            ret = eval(json_feedback)
+            print ret
+            if 'errors' in ret.keys():
                 raise Exception('Errors from server!')
 
         except urllib2.URLError, ue:
@@ -444,12 +484,12 @@ class RequestUtils(object):
         finally:
             if response != None:
                 response.close()
-        return True
+        return ret
 
     i = 1
     @staticmethod
     @retry(3)
-    def ssend():
+    def send(kwargs):
         print '>>>>>>send_thread sneding:%s'%str(RequestUtils.i)
         if RequestUtils.i < 3:
             RequestUtils.i = RequestUtils.i + 1
