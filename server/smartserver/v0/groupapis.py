@@ -382,10 +382,14 @@ def doCreateCaseResult(gid, sid, tid):
     @rtype:JSON
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
+
+    For now, when create testcase result, set the end time of corresponding testsession to N/A
+    Update testsession summary here.
     """
-    """For now, when create testcase result, set the end time of corresponding testsession to N/A"""
     tasks.ws_active_testsession.delay(sid)
-    return createCaseResult(gid, sid, tid, request.json['casename'], request.json['starttime'])
+    result = createCaseResult(gid, sid, tid, request.json['casename'], request.json['starttime'])
+    tasks.ws_update_testsession_summary(sid)
+    return result
 
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/update', method='POST', content_type='application/json')

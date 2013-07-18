@@ -30,7 +30,7 @@ def ws_del_dirty():
     store.del_dirty()
 
 
-@w.task
+@w.task(ignore_result=True)
 def ws_check_fs(fid):
     store.check_fs(fid)
 
