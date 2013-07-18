@@ -126,7 +126,7 @@ class DataStore(object):
     def validate_testcase_endtime(self):
         '''
         If a testcase has not been updated for 60 mins, set its starttime as its endtime,
-        if this is a dirty case, which does not even has reasonable starttime, remove it 
+        if this is a dirty case, which does not even have reasonable starttime, remove it 
         '''
         print "Start to validate testcase endtime"
         for case in self._db['testresults'].find({'endtime': 'N/A', 'result': 'running'}, {'starttime': 1, 'sid': 1}):
