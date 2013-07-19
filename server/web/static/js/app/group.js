@@ -430,8 +430,8 @@ function renderCaseSnaps(gid, sid, tid){
                         var $snapli = $('<div>');
                         var $igdiv = $('<div>');
                         var $icgdiv = $('<div>');
-                        var $ig = new Image();
-                        var $icg = new Image();
+                        var $ig = document.createElement('img');
+                        var $icg = document.createElement('img');
                         var title = '';
                         var rect = '';
                         var imgurl = data.results.snaps[d]['url'];
@@ -562,7 +562,7 @@ function renderSnapshotDiv(gid, sid) {
     }
 
     function doRenderImg(data) {
-        var img = new Image();
+        var img = document.createElement('img');
         img.src = data;
         img.onload = function() {
             cxt.drawImage(img, 0, 0, wd, ht);
@@ -802,9 +802,9 @@ function initScreenInfo(data) {
 }
 
 function showSessionInfo(gid,sid) {
-      invokeWebApi('/group/'+gid+'/test/'+sid+'/summary',
-                   prepareData({}),
-                   function(data){
+    invokeWebApi('/group/'+gid+'/test/'+sid+'/summary',
+                  prepareData({}),
+                  function(data){
                         $('#session-name').parent().attr('href','#/group/' + gid + '/session/' + sid);
                         $('#session-name').html('session:' + data.results['id']);
                         initScreenInfo(data);
