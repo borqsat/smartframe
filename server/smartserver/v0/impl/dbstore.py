@@ -1048,30 +1048,16 @@ class DataStore(object):
         calculate the runtime of a session
         '''
         #TODO: This func. can be optimized.
-        counts, total = defaultdict(int), 0
-        minStartTime = maxEndTime = None
-        
-        for case in self._db['testresults'].find({'sid': sid}, {'_id': False, 'result': 1, 'starttime': 1, 'endtime': 1}):
-            total += 1
-            counts[case['result']] += 1
 
-            starttime = self.convert_to_datetime(case['starttime'])
-            endtime = self.convert_to_datetime(case['endtime'])
+        passCount = store._db['testresults'].find({'sid': sid, 'result': 'pass'}).count()
+        failCount = store._db['testresults'].find({'sid': sid, 'result': 'fail'}).count()
+        errorCount = store._db['testresults'].find({'sid': sid, 'result': 'error'}).count()
+        total = store._db['testresults'].find({'sid': sid}, {'result': 1}).count()
 
-            if minStartTime is None:
-                minStartTime = starttime
-            elif starttime is not None and minStartTime > starttime:
-                minStartTime = starttime
-
-            if maxEndTime is None:
-                if endtime is not None:
-                    maxEndTime = endtime
-                elif starttime is not None:
-                    maxEndTime = starttime
-            elif endtime is not None and endtime > maxEndTime:
-                maxEndTime = endtime
-            elif starttime is not None and starttime > maxEndTime:
-                maxEndTime = starttime
+        tids = self._db['testresults'].find({'sid': sid}, {'_id': 0, 'tid': 1}).distinct('tid')
+        minStartTime = self.convert_to_datetime(store._db['testresults'].find_one({'sid': sid, 'tid': tids[-1]}, {'starttime': 1})['starttime'])
+        case = store._db['testresults'].find_one({'sid': sid, 'tid': tids[0]}, {'starttime': 1, 'endtime': 1})
+        maxEndTime = self.convert_to_datetime(case['starttime'] if case['endtime'] == 'N/A' else case['endtime'])
 
         if maxEndTime and minStartTime:
             runtime = (maxEndTime - minStartTime).total_seconds()
@@ -1079,9 +1065,9 @@ class DataStore(object):
             runtime = 0
 
         self._db['testsessions'].update({'sid': sid},
-                                        {'$set': {'summary.pass': counts['pass'],
-                                                  'summary.fail': counts['fail'],
-                                                  'summary.error': counts['error'],
+                                        {'$set': {'summary.pass': passCount,
+                                                  'summary.fail': failCount,
+                                                  'summary.error': errorCount,
                                                   'runtime': runtime,
                                                   'summary.total': total}})
 
