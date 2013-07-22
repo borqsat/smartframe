@@ -7,14 +7,19 @@ class SampleTest(unittest.TestCase):
         super(SampleTest,self).setUp()
 
     def testSMSSend(self):
-        #self.device.touch_image(name='app_gmail1.png')
-        self.device.expect(name='app_message.png')\
-                   .touch_image(name='app_message.png')\
-                   .expect(name='msg_launch.png')     
-        #self.device.touch('200','300')
-        #self.device.press('home')
+        self.device.expect(name='app_message1.png')\
+                   .touch_image(name='app_message1.png')\
+                   .expect(name='msg_launch1.png')
+    
+    def testUIAutomator(self):
+        self.device.press('back')\
+                   .press('back')\
+                   .press('home')\
+                   .press('menu')\
+                   .press('up')\
+                   .press('down')\
+                   .press('center')
 
-        
     def tearDown(self):
-        self.device.press(key='KEYCODE_BACK')
+        self.device.press(key='back').press(key='back').press(key='home')
         super(SampleTest,self).tearDown()

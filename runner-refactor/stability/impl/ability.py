@@ -49,7 +49,7 @@ class Ability(object):
             if success and recognization.isRegionMatch(src_path,sub_path):
                 return self
             time.sleep(interval)
-        setattr(self,'expect_result',expect_result)
+        #setattr(self,'expect_result',expect_result)
         if not msg:
             reason = 'Fail Reason: Unable to find the expected image <%s> in current screen!' % os.path.basename(sub_path)
         else:
@@ -71,6 +71,7 @@ class Ability(object):
         @rtype: boolean
         @return: return ture if the expect check point exists in screen. false if not exists.
         '''
+        #TODO add time out checking
         result = getattr(self, 'result')
         src = join(result.localpath['ws_testcase'], name)
         self.takeSnapshot(path=src)
@@ -92,6 +93,7 @@ class Ability(object):
         pass
     
     def touch_image(self,name):
+        #TODO add time out checking
         result = getattr(self, 'result')
         expect_result = ExpectResult(result.localpath['ws_testcase_right'])
         sub_path = expect_result.getCurrentCheckPointPath(name)
@@ -102,6 +104,5 @@ class Ability(object):
         src_path = join(result.localpath['ws_testcase'], names)
         if self.takeSnapshot(path=src_path):
             point = recognization.getRegionCenterPoint(src=src_path,sub=sub_path)
-        print point
         self.touch(x=point[0],y=point[1])
         return self
