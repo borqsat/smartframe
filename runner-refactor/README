@@ -21,13 +21,23 @@ environment
 * python library: python-opencv. python-numpy
 * adb,sdb work on your machine
 
-depend library installation:	
+depend library installation:
 sudo apt-get install python-opencv	
 sudo apt-get install python-numpy
 
 usage	
 -----
-python runtest.py --product android_sample --plan android_sample/plan/plan
+1: push EasyAutomator.jar to device
+UIAutomator is only available on devices with API level 16 or higher (Android 4.1 and 4.2). And some API only available on API level 17. it's not be available on a 2.3.3 device.
+
+Run the following command on a command-line to get the version of Android installed:
+adb shell getprop ro.build.version.sdk
+
+For Android device with API 16 or higher, please push EasyAutomator.jar to device via adb:
+adb push EasyAutomator.jar /mnt/sdcard/
+
+2: demo script:
+python runtest.py --plan android_sample/plan/plan --product android_sample
 
       
 more
