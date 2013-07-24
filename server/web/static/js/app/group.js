@@ -595,11 +595,18 @@ function fillDetailTable(gid, sid, data, ids, tag) {
           if(tag !== 'total' && tag !== cresult) continue;
           var trId = "tr_"+ctid;
           var ctraceinfo = "<img src=\"./static/css/images/edit.png\" onclick=\"javascript:showComment('"+gid+"','"+sid+"','"+ctid+"')\" id=\"combtn_"+ctid+"\" align=\"right\" alt=\"edit\"></img>";
+          
           if(comResult !== undefined){
              if (comResult['endsession'] === 0){var sessionCom = "";}
              else{var sessionCom = " :: Yes";}
-             var hintInfo = comResult['commentinfo'];
-             var showComment = ""+comResult['caseresult']+" :: "+comResult['issuetype']+""+sessionCom+"";
+
+             if (comResult['commentinfo'] !== undefined && comResult['issuetype'] !== undefined && comResult['caseresult'] !== undefined){
+                 var hintInfo = comResult['commentinfo'];
+                 var showComment = ""+comResult['caseresult']+" :: "+comResult['issuetype']+""+sessionCom+"";
+             }
+             else{             
+                 var showComment = "";
+                 var hintInfo = "";}
           }
           else{
              var showComment = "";
@@ -670,7 +677,8 @@ function fillCommentDiv(comResult,ctid, gid, sid){
       val[comResult['issuetype']] = "selected";
       val[comResult['caseresult']] = "selected";
       if(comResult['endsession'] === 1){val['1'] = "checked";}
-      val['commentinfo'] = comResult['commentinfo'];
+      if(comResult['commentinfo'] !== undefined){val['commentinfo'] = comResult['commentinfo']}
+      else{val['commentinfo'] = "";}
     }
     else{
       val['commentinfo'] = "";
@@ -701,37 +709,50 @@ function fillCommentDiv(comResult,ctid, gid, sid){
                         "<label class=\"checkbox\" for=\"endsession\">"+
                         "<span>Session ends here?</span><input id=\"endsession"+ctid+"\" type=\"checkbox\" "+val['1']+">"+
                         "</label><br>"+
-                        "<input id=\"btn_"+ctid+"\" onclick=\"submitUpdate('"+ctid+"', '"+gid+"', '"+sid+"')\" type=\"button\" class=\"pull-right\" value=\"Commit\"></input>"+
+                        "<input id=\"btnc_"+ctid+"\" onclick=\"submitUpdate('"+ctid+"', '"+gid+"', '"+sid+"', 'clear')\" type=\"button\" class=\"pull-right\" value=\"Clear\"></input>"+
+                        "<input id=\"btn_"+ctid+"\" onclick=\"submitUpdate('"+ctid+"', '"+gid+"', '"+sid+"', 'submit')\" type=\"button\" class=\"pull-right\" value=\"Commit\"></input>"+
                       "</div>"+
                    "</div></form></td></tr>";
 
     return commentDiv;
 }
 
-function submitUpdate(ctid, gid, sid){
-  var comResult = {};
-  $("option[name='issuetype"+ctid+"']").each(function(i,obj){if(obj.selected){comResult['issuetype']=obj.value;}});
-  $("option[name='caseresult"+ctid+"']").each(function(i,obj){if(obj.selected){comResult['caseresult']=obj.value;}});
-  $("input#endsession"+ctid+"").each(function(i,obj){if(obj.checked){comResult['endsession'] = 1;}
-                                                     else{comResult['endsession'] = 0;}});
-  comResult['commentinfo'] = $("textarea[name='commentinfo"+ctid+"']").val();
-  if (comResult['issuetype'] === 'na' || comResult['caseresult'] === 'na' || comResult['commentinfo'] === undefined){
-    alert("IssueType, CaseResult and Comments are all expected to be provided!");
-    return
+function submitUpdate(ctid, gid, sid, tag){
+  if (tag == 'submit'){
+    var comResult = {};
+    $("option[name='issuetype"+ctid+"']").each(function(i,obj){if(obj.selected){comResult['issuetype']=obj.value;}});
+    $("option[name='caseresult"+ctid+"']").each(function(i,obj){if(obj.selected){comResult['caseresult']=obj.value;}});
+    $("input#endsession"+ctid+"").each(function(i,obj){if(obj.checked){comResult['endsession'] = 1;}
+                                                       else{comResult['endsession'] = 0;}});
+    comResult['commentinfo'] = $("textarea[name='commentinfo"+ctid+"']").val();
+    if (comResult['issuetype'] === 'na' || comResult['caseresult'] === 'na' || comResult['commentinfo'] === undefined){
+      alert("IssueType, CaseResult and Comments are all expected to be provided!");
+      return
+    }
+    invokeWebApiEx("/group/"+gid+"/test/"+sid+"/case/"+ctid+"/update",
+                   prepareData({'comments':comResult}),
+                   afterCommit);
+
+    if (comResult['endsession'] === 0){var sessionCom = "";}
+    else{var sessionCom = " :: Yes";}
+    var $hintInfo = comResult['commentinfo'];
+    var $showComment = ""+comResult['caseresult']+" :: "+comResult['issuetype']+""+sessionCom+"";
+    $("span#span_"+ctid).html("");
+    $("span#span_"+ctid).append($showComment);
+    $("div#hint_"+ctid).html("");
+    $("div#hint_"+ctid).append($hintInfo);}
+  else if (tag == 'clear'){
+    invokeWebApiEx("/group/"+gid+"/test/"+sid+"/case/"+ctid+"/update",
+               prepareData({'comments': {'endsession': 0}}),
+               afterCommit);
+
+    var $hintInfo = "";
+    var $showComment = "";
+    $("span#span_"+ctid).html("");
+    $("span#span_"+ctid).append($showComment);
+    $("div#hint_"+ctid).html("");
+    $("div#hint_"+ctid).append($hintInfo);
   }
-  invokeWebApiEx("/group/"+gid+"/test/"+sid+"/case/"+ctid+"/update",
-                 prepareData({'comments':comResult}),
-                 afterCommit);
-
-  if (comResult['endsession'] === 0){var sessionCom = "";}
-  else{var sessionCom = " :: Yes";}
-  var $hintInfo = comResult['commentinfo'];
-  var $showComment = ""+comResult['caseresult']+" :: "+comResult['issuetype']+""+sessionCom+"";
-  $("span#span_"+ctid).html("");
-  $("span#span_"+ctid).append($showComment);
-  $("div#hint_"+ctid).html("");
-  $("div#hint_"+ctid).append($hintInfo);
-
   $("#comDiv_"+ctid+"").dialog('close');
 }
 
