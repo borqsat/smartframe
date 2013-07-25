@@ -765,7 +765,8 @@ function showComment(gid, sid, ctid){
                                 height: 310,
                                 width: 595,
                                 resizable:false,
-                                modal: true});
+                                modal: true,
+                                draggable: false});
 }
 
 function afterCommit(data){
