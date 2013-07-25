@@ -975,18 +975,23 @@ function toggle(){
             } else {
                 articleID.style.display="none";
             }
-    }
+}
+ 
+
+
 
 function showCommentInfo(){
 
-    $('#show-title').html('<a href=\"javascript:void(0)\">Tap here to get more information==> </a><br />');
-    $('#article').html("<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
-                       "<b>Uptime:</b> Device running time, from 'Start Time' to 'End Time'. " + 
-                       "(Block time will not included.) <br />" + 
-                       "<b>Failures</b>= (critical issues) + (Non-Critical issues). <br />"+
-                       "<b>Critial Issues:</b> Phone hang, kernel reboot/panic, system crash, etc. <br />"+
-                       "<b>Non-Critical Issues:</b> Application/process force close/ANR, core dump (native process crash), etc.<br />"+
-                       "<b>First Failure Uptime:</b> From the 'Start Time' to first failure occur. <br />");
+    $('#show-title').html('<a style="text-align:center" href=\"javascript:void(0)\">Tap here to get more information</a><br />');
+    $('#article').html( "<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
+    					"<b>Product:</b> The device platform and product information. <br />" + 
+    					"<b>Start Time:</b> The test start time. <br />" + 
+    					"<b>End Time: </b>The test finish timestamp. Genericlly the value should be the ciritical issue happen time or the test stop time. 'N/A' means the test is ongoing. <br />" + 
+    					"<b>Uptime:</b> Uptime = Endtime - StarTime . EndTime is the critical issue happen time or test stop time. <br />" + 
+                        "<b>Failures</b>= (critical issues) + (Non-Critical issues). <br />"+
+                        "<b>Critial Issues:</b> Phone hang, kernel reboot/panic, system crash, etc. <br />"+
+                        "<b>Non-Critical Issues:</b> Application/process force close/ANR, core dump (native process crash), etc.<br />"+
+                        "<b>First Failure Uptime:</b> From the <b>Start Time</b> to first failure occurs. <br />");
 
 }
 
@@ -1029,7 +1034,7 @@ function showFailureSummaryInfo(data) {
     var data = data.results.issuesummany;
 
     var $dev_table = $('<table>').attr('class','table table-bordered');
-    var $title = '<thead type="height:10px"><tr><th colspan="2"><p align="center">Failure Summary</p></th></tr></thead>'
+    var $title = '<thead><tr><th colspan="2" style="text-align:center;font-size:16px;">Failure Summary</th></tr></thead>'
     var $th = '<thead><tr>'+
               '<th style="text-align:center" width="50%">Issue Type </th>'+
               '<th style="text-align:center" width="50%">Occurs</th>'+
@@ -1087,7 +1092,7 @@ function showFailureDetailsInfo(data,gid){
 
     var $dev_table = $('<table border="1">').attr('class','table table-bordered');
     var $th = '<thead><tr>'+
-              '<td></td>'+
+              '<th></th>'+
               '<th>Device#</th>'+
               '<th>Start Time</th>'+           
               '<th>End Time</th>'+            
@@ -1114,12 +1119,12 @@ function showFailureDetailsInfo(data,gid){
                     "<td>"+setRunTime(data[i].faildur)+"</td>"+
                     "<td>"+setRunTime(data[i].totaldur)+"</td>"+
                     "</tr>";
-        var $th_sub = '<tr style="color:blue" id="subtr_'+i.toString()+'" class="hidden">'+
+        var $th_sub = '<tr  id="subtr_'+i.toString()+'" class="hidden">'+
               '<td></td>'+
-              '<td style="background:#ffff99"></td>'+      
-              '<td style="background:#ffff99">Happened Time</td>'+
-              '<td style="background:#ffff99">Issue Type</td>'+
-              '<td style="background:#ffff99;text-align:center" colspan="3">Comments</td>'+
+              '<th style="background:#ECECFF"></th>'+      
+              '<th style="background:#ECECFF;">Happened Time</th>'+
+              '<th style="background:#ECECFF">Issue Type</th>'+
+              '<th style="background:#ECECFF;text-align:center" colspan="3">Comments</th>'+
               '</tr>';
 
         $dev_table.append($tr);
@@ -1132,14 +1137,14 @@ function showFailureDetailsInfo(data,gid){
             },function(){
               $('tr#sub'+this.id).addClass('hidden');
           });
-
+        
         for (var j = 0; j < data[i].caselist.length; j ++){
-            var $th_sub1 = "<tr id='subtr_"+i.toString()+"' class='hidden'>"+ 
+            var $th_sub1 = "<tr  id='subtr_"+i.toString()+"' class='hidden'>"+ 
                     '<td></td>'+ 
-                    "<td style='background:#ffff99'><p align='center'>"+(j+1)+"</p></td>"+            
-                    "<td style='background:#ffff99'>"+data[i].caselist[j].happentime+"</td>"+
-                    "<td style='background:#ffff99'>"+data[i].caselist[j].issuetype+"</td>"+
-                    "<td style='background:#ffff99' colspan='3'>"+data[i].caselist[j].comments+"</td>"+
+                    "<td style='background:#ECECFF;text-align:center'>"+(j+1)+"</td>"+            
+                    "<td style='background:#ECECFF'>"+data[i].caselist[j].happentime+"</td>"+
+                    "<td style='background:#ECECFF'>"+data[i].caselist[j].issuetype+"</td>"+
+                    "<td style='background:#ECECFF' colspan='3'>"+data[i].caselist[j].comments+"</td>"+
                     "</tr>";
             
             $dev_table.append($th_sub1)
@@ -1163,7 +1168,7 @@ function showDomainInfo(data){
     var data = data.results.domain
     var $dev_table = $('<table>').attr('class','table table-bordered');
     var $th = '<thead><tr>'+
-              '<td width="4%"></td>'+
+              '<th width="4%"></th>'+
               '<th width="20%">Domain</th>'+
               '<th >Total</th>'+           
               '<th >Pass</th>'+            
@@ -1183,7 +1188,7 @@ function showDomainInfo(data){
 
           var $tr = "<tr>"+ 
                 "<td onclick=showPic('pic1_"+i.toString()+"') id='tr_domain_"+i.toString()+"';><img id='pic1_"+i.toString()+"' src='static/img/spread.png'></img></td>"+
-                "<td>"+data[i].domain+"</td>"+
+                "<td style='font-size:15px'>"+data[i].domain+"</td>"+
                 "<td>"+totalCount+"</td>"+
                 "<td>"+passCount+"</td>"+ 
                 "<td>"+data[i].failcnt+"</td>"+
@@ -1192,14 +1197,14 @@ function showDomainInfo(data){
                 "</tr>"
           $dev_table.append($tr);
 
-          var $th_sub = '<tr class="hidden" style="color:blue" id="subtr_domain_'+i.toString()+'">'+
+          var $th_sub = '<tr class="hidden" id="subtr_domain_'+i.toString()+'">'+
               '<td></td>'+
-              '<td style="background:#ffff99">Run Case</td>'+      
-              '<td style="background:#ffff99">Total</td>'+
-              '<td style="background:#ffff99">Pass</td>'+
-              '<td style="background:#ffff99;color:red">Fail</td>'+
-              '<td style="background:#ffff99">Block</td>'+
-              '<td style="background:#ffff99">Success Rate</td>'+
+              '<th style="background:#ECECFF">Run Case</th>'+      
+              '<th style="background:#ECECFF">Total</th>'+
+              '<th style="background:#ECECFF">Pass</th>'+
+              '<th style="background:#ECECFF;color:red">Fail</th>'+
+              '<th style="background:#ECECFF">Block</th>'+
+              '<th style="background:#ECECFF">Success Rate</th>'+
               '</tr>';
           $dev_table.append($th_sub);
           
@@ -1215,12 +1220,12 @@ function showDomainInfo(data){
               var passRate1 = countRate(passCnt,totalCnt)
               var $th_sub1 = "<tr class='hidden' id='subtr_domain_"+i.toString()+"'>"+ 
                     '<td></td>'+ 
-                    "<td style='background:#ffff99'>"+data[i].detail[j].casename+"</td>"+            
-                    "<td style='background:#ffff99'>"+totalCnt+"</td>"+
-                    "<td style='background:#ffff99'>"+passCnt+"</td>"+
-                    "<td style='background:#ffff99;color:red'>"+data[i].detail[j].failcnt+"</td>"+
-                    "<td style='background:#ffff99'>"+data[i].detail[j].blockcnt+"</td>"+
-                    "<td style='background:#ffff99'>"+passRate1+"</td>"+
+                    "<td style='background:#ECECFF'>"+data[i].detail[j].casename+"</td>"+            
+                    "<td style='background:#ECECFF'>"+totalCnt+"</td>"+
+                    "<td style='background:#ECECFF'>"+passCnt+"</td>"+
+                    "<td style='background:#ECECFF;color:red'>"+data[i].detail[j].failcnt+"</td>"+
+                    "<td style='background:#ECECFF'>"+data[i].detail[j].blockcnt+"</td>"+
+                    "<td style='background:#ECECFF'>"+passRate1+"</td>"+
                     "</tr>";
             $dev_table.append($th_sub1)
        }
