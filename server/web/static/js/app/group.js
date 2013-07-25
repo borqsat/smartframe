@@ -597,10 +597,12 @@ function fillDetailTable(gid, sid, data, ids, tag) {
           var ctraceinfo = "<img src=\"./static/css/images/edit.png\" onclick=\"javascript:showComment('"+gid+"','"+sid+"','"+ctid+"')\" id=\"combtn_"+ctid+"\" align=\"right\" alt=\"edit\"></img>";
           
           if(comResult !== undefined){
-             if (comResult['endsession'] === 0){var sessionCom = "";}
-             else{var sessionCom = " :: Yes";}
+             if(comResult['endsession'] === 0)
+                 {var sessionCom = "";}
+             else
+                 {var sessionCom = " :: Yes";}
 
-             if (comResult['commentinfo'] !== undefined && comResult['issuetype'] !== undefined && comResult['caseresult'] !== undefined){
+             if(comResult['commentinfo'] !== undefined && comResult['issuetype'] !== undefined && comResult['caseresult'] !== undefined){
                  var hintInfo = comResult['commentinfo'];
                  var showComment = ""+comResult['caseresult']+" :: "+comResult['issuetype']+""+sessionCom+"";
              }
@@ -677,8 +679,10 @@ function fillCommentDiv(comResult,ctid, gid, sid){
       val[comResult['issuetype']] = "selected";
       val[comResult['caseresult']] = "selected";
       if(comResult['endsession'] === 1){val['1'] = "checked";}
-      if(comResult['commentinfo'] !== undefined){val['commentinfo'] = comResult['commentinfo']}
-      else{val['commentinfo'] = "";}
+      if(comResult['commentinfo'] !== undefined)
+        {val['commentinfo'] = comResult['commentinfo']}
+      else
+        {val['commentinfo'] = "";}
     }
     else{
       val['commentinfo'] = "";
