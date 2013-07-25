@@ -729,7 +729,7 @@ function submitUpdate(ctid, gid, sid, tag){
     $("input#endsession"+ctid+"").each(function(i,obj){if(obj.checked){comResult['endsession'] = 1;}
                                                        else{comResult['endsession'] = 0;}});
     comResult['commentinfo'] = $("textarea[name='commentinfo"+ctid+"']").val();
-    if (comResult['issuetype'] === 'na' || comResult['caseresult'] === 'na' || comResult['commentinfo'] === undefined){
+    if (comResult['issuetype'] === 'na' || comResult['caseresult'] === 'na' || comResult['commentinfo'] === ''){
       alert("IssueType, CaseResult and Comments are all expected to be provided!");
       return
     }
