@@ -192,6 +192,8 @@ function viewHistory(){
 }
 
 function clearTab() {
+    $('#tabs_session').hide();
+    $('#live_cases_div').hide();
     $('#cases_div').show();
 }
 
