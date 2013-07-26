@@ -976,14 +976,16 @@ class DataStore(object):
         comments = {}
         caseresult = self._db['testresults']
 
-        if 'comments' in results:
+        if tid == '00000':
             comments = results['comments']
+            tmpTids = comments.pop('tids')
+            tids = []
+            for tmp in tmpTids:
+                tids.append(int(tmp))
             if comments['endsession'] == 1:
-                tmpt = caseresult.find_one({
-                                           'gid': gid, 'sid': sid, 'tid': int(tid)})
-                self._db['testsessions'].update({'gid': gid, 'sid': sid}, {
-                                                '$set': {'failtime': tmpt['endtime']}})
-            return caseresult.update({'gid': gid, 'sid': sid, 'tid': int(tid)},  {'$set': {'comments': comments}})
+                tmpt = caseresult.find_one({'gid': gid, 'sid': sid, 'tid': tids[0]})
+                self._db['testsessions'].update({'gid': gid, 'sid': sid}, {'$set': {'failtime': tmpt['endtime']}})
+            return caseresult.update({'gid': gid, 'sid': sid, 'tid': {'$in':tids}}, {'$set': {'comments': comments}}, multi=True)
 
         status = results['result']
         traceinfo = results['traceinfo']
