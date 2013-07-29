@@ -413,6 +413,14 @@ function renderCaseSnaps(gid, sid, tid){
                               resizable:false,
                               modal: true});
 
+    function getCheckRect(rect) {
+        var x = parseInt(rect.substring(rect.indexOf('x')+1, rect.indexOf('y'))) >> zoom;
+        var y = parseInt(rect.substring(rect.indexOf('y')+1, rect.indexOf('w'))) >> zoom;
+        var w = parseInt(rect.substring(rect.indexOf('w')+1, rect.indexOf('h'))) >> zoom;
+        var h = parseInt(rect.substring(rect.indexOf('h')+1)) >> zoom;
+        return $('<div>').attr('style','border:3px solid green; position:absolute; top:'+y+'px; left:'+x+'px; width:' +w+'px; height:'+h+'px');
+    }
+
     invokeWebApi('/group/'+gid+'/test/'+sid+'/case/'+tid+'/snaps',
                 prepareData({}),
                 function(data){
@@ -454,17 +462,13 @@ function renderCaseSnaps(gid, sid, tid){
                                 rect = title.substring(title.indexOf('(')+1, title.indexOf(')'));
                                 title = title.substring(0, title.indexOf('('))+'.png';
                             }
-                            var x = parseInt(rect.substring(rect.indexOf('x')+1, rect.indexOf('y'))) >> zoom;
-                            var y = parseInt(rect.substring(rect.indexOf('y')+1, rect.indexOf('w'))) >> zoom;
-                            var w = parseInt(rect.substring(rect.indexOf('w')+1, rect.indexOf('h'))) >> zoom;
-                            var h = parseInt(rect.substring(rect.indexOf('h')+1)) >> zoom;
+                            var $pdiv = getCheckRect(rect);
                             $igdiv.append($ig);
-                            $icgdiv.append($icg);   
-                            var $pdiv = $('<div>').attr('style','border:3px solid green; position:absolute; top:'+y+'px; left:'+x+'px; width:' +w+'px; height:'+h+'px');
+                            $icgdiv.append($icg);
                             $icgdiv.append($pdiv);
                             $icgdiv.attr('style','float:left');
                             $igdiv.attr('style','float:right');
-                            $snapli.attr('class','item active');                                                 
+                            $snapli.attr('class','item active');
                         } else {
                             $ig.setAttribute('class','thumbnail');
                             title = data.results.snaps[d]['title']
@@ -472,28 +476,25 @@ function renderCaseSnaps(gid, sid, tid){
                                 rect = title.substring(title.indexOf('(')+1, title.indexOf(')'));
                                 title = title.substring(0, title.indexOf('('))+'.png';
                             }
-                            var x = parseInt(rect.substring(rect.indexOf('x')+1, rect.indexOf('y'))) >> zoom;
-                            var y = parseInt(rect.substring(rect.indexOf('y')+1, rect.indexOf('w'))) >> zoom;
-                            var w = parseInt(rect.substring(rect.indexOf('w')+1, rect.indexOf('h'))) >> zoom;
-                            var h = parseInt(rect.substring(rect.indexOf('h')+1)) >> zoom;
+                            var $pdiv = getCheckRect(rect);
                             $igdiv.append($ig);
-                            var $pdiv = $('<div>').attr('style','border:3px solid green; position:absolute; top:'+y+'px; left:'+x+'px; width:' +w+'px; height:'+h+'px');
                             $igdiv.append($pdiv).attr('style','float:left'); 
                             $icgdiv = undefined;
-                            $snapli.attr('class','item');                                     
+                            $snapli.attr('class','item');
                         }
-
-               $snaptitle = $('<span>');
-               $snaptitle.html('<h3>('+idx+'/'+total+')'+ title +'</h3>'); 
-                           //$snapli.append($snaptitle);
-                           if($icgdiv !== undefined) $snapli.append($icgdiv); 
-                           $snapli.append($igdiv);
-                           $snaplist.append($snapli);
-                           //$snapli.append($snaptitle);
-      }
-          $('#history_div').carousel({"interval":100000});
-          }
-       );
+                        $snaptitle = $('<span>');
+                        $snaptitle.html('<h3>('+idx+'/'+total+')'+ title +'</h3>'); 
+                        if($icgdiv !== undefined) $snapli.append($icgdiv); 
+                        $snapli.append($igdiv);
+                        $snaplist.append($snapli);
+                        if(total == 1) {
+                            $snapholder = $snapli.clone();
+                            $snapholder.attr('class','item');
+                            $snaplist.append($snapholder);
+                        }
+                  }
+                  $('#history_div').carousel({"interval":100000});
+          })
 }
 
 function createDetailTable(div, ids){
