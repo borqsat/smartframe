@@ -192,6 +192,8 @@ function viewHistory(){
 }
 
 function clearTab() {
+    $('#tabs_session').hide();
+    $('#live_cases_div').hide();
     $('#cases_div').show();
 }
 
@@ -498,13 +500,14 @@ function createDetailTable(div, ids){
     var $div_detail = $("#"+div);
     var $tb = $('<table>').attr('id', ids).attr('class','table table-striped table-hover').attr('style','table-layout:fixed;word-wrap:break-word;');
     var $th = '<thead><tr>'+
+              '<th align="left" width="3%"></th>'+
               '<th align="left" width="6%">Tid</th>'+
               '<th align="left" width="31%">Testcase</th>'+
               '<th align="left" width="17%">Start Time</th>'+
               '<th align="left" width="7%">Result</th>'+
               '<th align="left" width="5%">Log</th>'+
               '<th align="left" width="7%">Image</th>'+
-              '<th align="left" width="27%">Comments</th>'+
+              '<th align="left" width="24%"><a href="javascript:showComment()">Comments</th>'+
               '</tr></thead>';
     var $tbody = '<tbody></tbody>';
     $tb.append($th);
@@ -580,10 +583,23 @@ function sortTestCases(data) {
     return datacases;
 }
 
+function collectID(ctid){
+  var key = _appglobal.collectIDs['tids'].indexOf(ctid);
+  if (key === -1){
+    _appglobal.collectIDs['tids'].push(ctid);
+  }
+  else{
+    _appglobal.collectIDs['tids'].splice(key, key);
+  }
+}
+
 function fillDetailTable(gid, sid, data, ids, tag) {
     var tablerows = '';
     var detail_table = $("#"+ids+" > tbody").html('');
     var len = data.length;
+    _appglobal.collectIDs = {'tids':[]};
+    _appglobal.collectIDs['gid'] = gid;
+    _appglobal.collectIDs['sid'] = sid;
     for (var i = 0; i < data.length; i++){
           var citem = data[i];
           var ctid = citem['tid'];
@@ -594,7 +610,6 @@ function fillDetailTable(gid, sid, data, ids, tag) {
           var comResult = citem['comments'];
           if(tag !== 'total' && tag !== cresult) continue;
           var trId = "tr_"+ctid;
-          var ctraceinfo = "<img src=\"./static/css/images/edit.png\" onclick=\"javascript:showComment('"+gid+"','"+sid+"','"+ctid+"')\" id=\"combtn_"+ctid+"\" align=\"right\" alt=\"edit\"></img>";
           
           if(comResult !== undefined){
              if(comResult['endsession'] === 0)
@@ -616,6 +631,7 @@ function fillDetailTable(gid, sid, data, ids, tag) {
           }
           if(cresult === 'fail'){
               tablerows += "<tr id=\""+trId+"\">"+
+                                        "<td><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID('"+ctid+"')\"></input></td>"+
                                         "<td>"+ctid+"</td>"+    
                                         "<td>"+cname+"</td>"+              
                                         "<td>"+ctime+"</td>"+
@@ -624,12 +640,11 @@ function fillDetailTable(gid, sid, data, ids, tag) {
                                         "<td><a href=\"javascript:showHistoryDiv('"+gid+"','"+sid+"','"+ctid+"');\">image</a></td>"+
                                         "<td>"+                                      
                                         "<span id=\"span_"+ctid+"\" onmouseover=\"showHint('"+ctid+"')\" onmouseout=\"hideHint('"+ctid+"')\">"+showComment+"</span>"+
-                                        ""+ctraceinfo+""+
                                         "<br><div id=\"hint_"+ctid+"\" style=\"display:none\">"+hintInfo+"</div>"+
-                                        "</td></tr>";                            
-              tablerows += fillCommentDiv(comResult,ctid, gid, sid);                         
+                                        "</td></tr>";                                                 
          } else if (cresult === 'error') {
                 tablerows += "<tr id=\""+trId+"\">"+
+                                     "<td><input type=\"checkbox\" onselect=\"collectID('"+ctid+"')\"></input></td>"+
                                      "<td>"+ctid+"</td>"+
                                      "<td>"+cname+"</td>"+
                                      "<td>"+ctime+"</td>"+
@@ -638,13 +653,12 @@ function fillDetailTable(gid, sid, data, ids, tag) {
                                      "<td></td>"+
                                      "<td>"+
                                      "<span id=\"span_"+ctid+"\" onmouseover=\"showHint('"+ctid+"')\" onmouseout=\"hideHint('"+ctid+"')\">"+showComment+"</span>"+
-                                     ""+ctraceinfo+""+
                                      "<br><div id=\"hint_"+ctid+"\" style=\"display:none\">"+hintInfo+"</div>"+
                                      "</td></tr>";
-                tablerows += fillCommentDiv(comResult,ctid, gid, sid);
          } else if (cresult === 'running' || cresult === 'pass'){
                  if (cresult == 'running'){
                     tablerows += "<tr id=\""+trId+"\">"+
+                                        "<td></td>"+
                                         "<td>"+ctid+"</td>"+
                                         "<td>"+cname+"</td>"+
                                         "<td>"+ctime+"</td>"+
@@ -655,6 +669,7 @@ function fillDetailTable(gid, sid, data, ids, tag) {
                                         "</tr>";     
                  } else {    
                     tablerows += "<tr id=\""+trId+"\">"+
+                                        "<td></td>"+
                                         "<td>"+ctid+"</td>"+
                                         "<td>"+cname+"</td>"+
                                         "<td>"+ctime+"</td>"+
@@ -666,6 +681,7 @@ function fillDetailTable(gid, sid, data, ids, tag) {
                  }    
           }
     }
+    tablerows += fillCommentDiv(gid, sid);
     detail_table.append(tablerows);
 }
 
@@ -673,100 +689,103 @@ function showHint(ctid){$("#hint_"+ctid).slideDown('slow');}
 
 function hideHint(ctid){$("#hint_"+ctid).hide('slow');}
 
-function fillCommentDiv(comResult,ctid, gid, sid){
-    var val = {};
-    if(comResult !== undefined){
-      val[comResult['issuetype']] = "selected";
-      val[comResult['caseresult']] = "selected";
-      if(comResult['endsession'] === 1){val['1'] = "checked";}
-      if(comResult['commentinfo'] !== undefined)
-        {val['commentinfo'] = comResult['commentinfo']}
-      else
-        {val['commentinfo'] = "";}
-    }
-    else{
-      val['commentinfo'] = "";
-    }
-
-    var commentDiv = "<tr id=\"comDiv_"+ctid+"\" style=\"display:none\"><td colspan=\"7\"><form class=\"form-inner\">"+
+function fillCommentDiv(gid, sid){
+    var commentDiv = "<tr id=\"comDiv\" style=\"display:none\"><td colspan=\"7\"><form class=\"form-inner\">"+
                        "<div class=\"row\">"+
                          "<div class=\"span4\">"+
-                            "<textarea name=\"commentinfo"+ctid+"\" id=\"commentInfo\" class=\"input-xlarge span4\" rows=\"9\" placeholder=\"Please comments here...\">"+val['commentinfo']+"</textarea>"+
+                            "<textarea name=\"commentinfo\" id=\"commentInfo\" class=\"input-xlarge span4\" rows=\"9\" placeholder=\"Please comments here...\"></textarea>"+
                          "</div>"+
                          "<div class=\"span3\">"+
                             "<label>Issue Type</label>"+
                             "<select class=\"span3\">"+
-                               "<option value=\"na\" name=\"issuetype"+ctid+"\" selected=\"\">Choose One:</option>"+
-                               "<option id=\"PhoneHang\" name=\"issuetype"+ctid+"\" value=\"PhoneHang\" "+val['PhoneHang']+">PhoneHang</option>"+
-                               "<option id=\"ForceClose\" name=\"issuetype"+ctid+"\" value=\"ForceClose\" "+val['ForceClose']+">ForceClose</option>"+
-                               "<option id=\"ANR\" name=\"issuetype"+ctid+"\" value=\"ANR\" "+val['ANR']+">ANR</option>"+
-                               "<option id=\"SystemCrash\" name=\"issuetype"+ctid+"\" value=\"SystemCrash\" "+val['SystemCrash']+">SystemCrash</option>"+
-                               "<option id=\"UiFreeze\" name=\"issuetype"+ctid+"\" value=\"UIFreeze\" "+val['UIFreeze']+">UIFreeze</option>"+
-                               "<option id=\"Others\" name=\"issuetype"+ctid+"\" value=\"Others\" "+val['Others']+">Others</option>"+
+                               "<option value=\"na\" name=\"issuetype\" selected=\"\">Choose One:</option>"+
+                               "<option id=\"PhoneHang\" name=\"issuetype\" value=\"PhoneHang\">PhoneHang</option>"+
+                               "<option id=\"ForceClose\" name=\"issuetype\" value=\"ForceClose\">ForceClose</option>"+
+                               "<option id=\"ANR\" name=\"issuetype\" value=\"ANR\" >ANR</option>"+
+                               "<option id=\"SystemCrash\" name=\"issuetype\" value=\"SystemCrash\">SystemCrash</option>"+
+                               "<option id=\"UiFreeze\" name=\"issuetype\" value=\"UIFreeze\">UIFreeze</option>"+
+                               "<option id=\"Others\" name=\"issuetype\" value=\"Others\">Others</option>"+
                             "</select>"+
                         "<label>Case Result</label>"+
                         "<select class=\"span3\">"+
-                          "<option value=\"na\" name=\"caseresult"+ctid+"\" selected=\"\">Choose One:</option>"+
-                          "<option id=\"Fail\" name=\"caseresult"+ctid+"\" value=\"Fail\" "+val['Fail']+">Fail</option>"+
-                          "<option id=\"Block\" name=\"caseresult"+ctid+"\" value=\"Block\" "+val['Block']+">Block</option>"+
+                          "<option value=\"na\" name=\"caseresult\" selected=\"\">Choose One:</option>"+
+                          "<option id=\"Fail\" name=\"caseresult\" value=\"Fail\">Fail</option>"+
+                          "<option id=\"Block\" name=\"caseresult\" value=\"Block\">Block</option>"+
                         "</select>"+
                         "<label class=\"checkbox\" for=\"endsession\">"+
-                        "<span>Session ends here?</span><input id=\"endsession"+ctid+"\" type=\"checkbox\" "+val['1']+">"+
+                        "<span>Session ends here?</span><input id=\"endsession\" type=\"checkbox\">"+
                         "</label><br>"+
-                        "<input id=\"btnc_"+ctid+"\" onclick=\"submitUpdate('"+ctid+"', '"+gid+"', '"+sid+"', 'clear')\" type=\"button\" class=\"pull-right\" value=\"Clear\"></input>"+
-                        "<input id=\"btn_"+ctid+"\" onclick=\"submitUpdate('"+ctid+"', '"+gid+"', '"+sid+"', 'submit')\" type=\"button\" class=\"pull-right\" value=\"Commit\"></input>"+
+                        "<input id=\"btnc\" onclick=\"submitUpdate('"+gid+"', '"+sid+"', 'clear')\" type=\"button\" class=\"pull-right\" value=\"Clear\"></input>"+
+                        "<input id=\"btn\" onclick=\"submitUpdate('"+gid+"', '"+sid+"', 'submit')\" type=\"button\" class=\"pull-right\" value=\"Commit\"></input>"+
                       "</div>"+
                    "</div></form></td></tr>";
-
     return commentDiv;
 }
 
-function submitUpdate(ctid, gid, sid, tag){
-  if (tag == 'submit'){
+function submitUpdate(gid, sid, tag){
     var comResult = {};
-    $("option[name='issuetype"+ctid+"']").each(function(i,obj){if(obj.selected){comResult['issuetype']=obj.value;}});
-    $("option[name='caseresult"+ctid+"']").each(function(i,obj){if(obj.selected){comResult['caseresult']=obj.value;}});
-    $("input#endsession"+ctid+"").each(function(i,obj){if(obj.checked){comResult['endsession'] = 1;}
-                                                       else{comResult['endsession'] = 0;}});
-    comResult['commentinfo'] = $("textarea[name='commentinfo"+ctid+"']").val();
-    if (comResult['issuetype'] === 'na' || comResult['caseresult'] === 'na' || comResult['commentinfo'] === undefined){
-      alert("IssueType, CaseResult and Comments are all expected to be provided!");
-      return
+    if (tag === 'submit'){
+      $("option[name='issuetype']").each(function(i,obj){if(obj.selected){comResult['issuetype']=obj.value;}});
+      $("option[name='caseresult']").each(function(i,obj){if(obj.selected){comResult['caseresult']=obj.value;}});
+      $("input#endsession").each(function(i,obj){if(obj.checked){comResult['endsession'] = 1;}
+                                                 else{comResult['endsession'] = 0;}});
+      comResult['commentinfo'] = $("textarea[name='commentinfo']").val();
+      comResult['tids'] = _appglobal.collectIDs['tids'];
+
+      if (comResult['issuetype'] === 'na' || comResult['caseresult'] === 'na' || comResult['commentinfo'] === ''){
+        alert("IssueType, CaseResult and Comments are all expected to be provided!");
+        return
+      }
+      if (comResult['tids'].length > 1 && comResult['endsession'] === 1){
+        alert("Session end can only be assigned to ONE case!");
+        return
+      }
+
+      if (comResult['endsession'] === 0){var sessionCom = "";}
+      else{var sessionCom = " :: Yes";}
+      var $hintInfo = comResult['commentinfo'];
+      var $showComment = ""+comResult['caseresult']+" :: "+comResult['issuetype']+""+sessionCom+"";
+      for (var i = 0; i < _appglobal.collectIDs['tids'].length; i++){
+          $("span#span_"+_appglobal.collectIDs['tids'][i]).html("");
+          $("span#span_"+_appglobal.collectIDs['tids'][i]).append($showComment);
+          $("div#hint_"+_appglobal.collectIDs['tids'][i]).html("");
+          $("div#hint_"+_appglobal.collectIDs['tids'][i]).append($hintInfo);
+          $("#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked', false);
+      }
+
+      invokeWebApiEx("/group/"+gid+"/test/"+sid+"/case/00000/update",
+                     prepareData({'comments':comResult}),
+                     afterCommit);
     }
-    invokeWebApiEx("/group/"+gid+"/test/"+sid+"/case/"+ctid+"/update",
-                   prepareData({'comments':comResult}),
-                   afterCommit);
+    else if (tag === 'clear'){
+      for (var i = 0; i < _appglobal.collectIDs['tids'].length; i++){
+          var $hintInfo = "";
+          var $showComment = "";
+          $("span#span_"+_appglobal.collectIDs['tids'][i]).html("");
+          $("span#span_"+_appglobal.collectIDs['tids'][i]).append($showComment);
+          $("div#hint_"+_appglobal.collectIDs['tids'][i]).html("");
+          $("div#hint_"+_appglobal.collectIDs['tids'][i]).append($hintInfo);
+          $("#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked',false);
+      }
 
-    if (comResult['endsession'] === 0){var sessionCom = "";}
-    else{var sessionCom = " :: Yes";}
-    var $hintInfo = comResult['commentinfo'];
-    var $showComment = ""+comResult['caseresult']+" :: "+comResult['issuetype']+""+sessionCom+"";
-    $("span#span_"+ctid).html("");
-    $("span#span_"+ctid).append($showComment);
-    $("div#hint_"+ctid).html("");
-    $("div#hint_"+ctid).append($hintInfo);}
-  else if (tag == 'clear'){
-    invokeWebApiEx("/group/"+gid+"/test/"+sid+"/case/"+ctid+"/update",
-               prepareData({'comments': {'endsession': 0}}),
-               afterCommit);
-
-    var $hintInfo = "";
-    var $showComment = "";
-    $("span#span_"+ctid).html("");
-    $("span#span_"+ctid).append($showComment);
-    $("div#hint_"+ctid).html("");
-    $("div#hint_"+ctid).append($hintInfo);
-  }
-  $("#comDiv_"+ctid+"").dialog('close');
+      comResult['endsession'] = 0;
+      comResult['tids'] = _appglobal.collectIDs['tids'];
+      
+      invokeWebApiEx("/group/"+gid+"/test/"+sid+"/case/00000/update",
+                 prepareData({'comments': comResult}),
+                 afterCommit);
+    }
+    _appglobal.collectIDs = {'tids':[]};
+    $("#comDiv").dialog('close');
 }
 
-function showComment(gid, sid, ctid){
-  $("tr#comDiv_"+ctid+"").dialog({title: "Comments of Case:"+ctid,
-                                height: 310,
-                                width: 595,
-                                resizable:false,
-                                modal: true,
-                                draggable: false});
+function showComment(){
+    $("tr#comDiv").dialog({title: "Comments for Cases:",
+                                  height: 310,
+                                  width: 595,
+                                  resizable:false,
+                                  modal: true,
+                                  draggable: false});
 }
 
 function afterCommit(data){
