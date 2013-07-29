@@ -226,8 +226,7 @@ function editCIdFunction(gid, sid, cid_sel){
                     function(data) {
                         showTestSummary(gid);
                 });
-    };
-    //return false;
+    }
 }
 
 
@@ -237,7 +236,7 @@ function getCycleList(key, gid, sid, cid){
      
      if ( cid !== "" ){
         cyclelist_options = "<li><a>"+cid+"</a><b></b>";
-     }else {
+     } else {
         cyclelist_options = "<li><a>Edit</a><b></b>";
      }
      
@@ -246,7 +245,7 @@ function getCycleList(key, gid, sid, cid){
          if (cycles[i] !== cid){
              cyclelist_options = cyclelist_options + "<a href=\"javascript:editCIdFunction('"+gid+"','"+sid+"','"+cycles[i]+"')\">"+cycles[i] +"</a><br>";
          }
-     };
+     }
      cyclelist_options = cyclelist_options + "<a href=\"javascript:editCIdFunction('"+gid+"','"+sid+"','newCycleId')\">New</a><br>" ;
      if ( cid !== "" ){
          cyclelist_options = cyclelist_options + "<a href=\"javascript:editCIdFunction('"+gid+"','"+sid+"','deletecycle')\">Delete</a>"
@@ -275,21 +274,11 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
     $product_table.append($th);
     $product_table.append($tbody);
     $cycle_panel.append($product_table);
-    
-    // _appglobal.cyclelist = [];//new Array();
-    // for(var s = 0; s < test_session.length;s++){
-    //     var cid = test_session[s].cid;
-    //     if (cid !== "" && cid !== "N/A"){
-    //         _appglobal.cyclelist.push(cid);
-    //     }
-    // }
-    
-    _appglobal.cyclelist = {};//new Array();
 
+    _appglobal.cyclelist = {};//new Array();
     for(var s = 0; s < test_session.length;s++){
         var cid = test_session[s].cid;
         if (cid !== "" && cid !== "N/A"){
-            //_appglobal.cyclelist.push(cid);
             var product = test_session[s].product ;
             var revision = test_session[s].revision ;
             var key = product + ":" + revision;
@@ -319,27 +308,27 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
     sessions.sort(function(a,b) { return ( (a.status < b.status) || ((a.status == b.status) && (b.cid > a.cid))|| ((a.status == b.status) && (b.cid == a.cid) && (a.id < b.id)))?1:-1 ;})
 
     for(var t = 0; t < sessions.length; t++) {
-            var value = sessions[t];
-            var key = value.id ;
-            var sid = value.sid;
-            var endtime = value.endtime;
-            var key = value.product + ":" + value.revision;
-            var css = value.status == 'running' ? "style='background-color:#4682B4'":"style='background-color:#8C8C8C'";
-            $tr = "<tr class='info'>"+
-                      "<td "+css+"></td>"+
-                      "<td><div id ='showCidSelect'"+value.sid+" class=\"sitenav\"><ul class='cycleposition'>"+getCycleList(key,value.gid,value.sid,value.cid)+
-                      "</ul></div></td>"+
-                      "<td>"+value.deviceid+"</td>"+     
-                      "<td>"+value.revision+"</td>"+              
-                      "<td>"+value.starttime+"</td>"+
-                      "<td>"+setRunTime(value.runtime)+"</td>"+
-                      "<td>"+value.product+"</td>"+
-                      "<td>"+value.tester+"</td>"+
-                      "<td><a href=\"#/group/"+value.gid+"/session/"+value.sid+"\">detail</a></td>"+ 
-                      "<td><a href=\"javascript:deleteSessionById('"+value.gid+"','"+value.sid+"');\">[X]</a></td>"+
-                      "</tr>";
-            $product_table.append($tr);
-    };
+        var value = sessions[t];
+        var key = value.id ;
+        var sid = value.sid;
+        var endtime = value.endtime;
+        var key = value.product + ":" + value.revision;
+        var css = value.status == 'running' ? "style='background-color:#4682B4'":"style='background-color:#8C8C8C'";
+        $tr = "<tr class='info'>"+
+                  "<td "+css+"></td>"+
+                  "<td><div id ='showCidSelect'"+value.sid+" class=\"sitenav\"><ul class='cycleposition'>"+getCycleList(key,value.gid,value.sid,value.cid)+
+                  "</ul></div></td>"+
+                  "<td>"+value.deviceid+"</td>"+
+                  "<td>"+value.revision+"</td>"+
+                  "<td>"+value.starttime+"</td>"+
+                  "<td>"+setRunTime(value.runtime)+"</td>"+
+                  "<td>"+value.product+"</td>"+
+                  "<td>"+value.tester+"</td>"+
+                  "<td><a href=\"#/group/"+value.gid+"/session/"+value.sid+"\">detail</a></td>"+
+                  "<td><a href=\"javascript:deleteSessionById('"+value.gid+"','"+value.sid+"');\">[X]</a></td>"+
+                  "</tr>";
+        $product_table.append($tr);
+    }
 }
 
 function linkToSessionDetailList(gid, sid, cid){
@@ -353,8 +342,6 @@ function renderTestSessionDiv_cyclelist(div_id, test_session){
                       '<th width="2%">Cycle</th>'+
                       '<th width="5%">Product</th>'+
                       '<th width="20%">Build Version</th>'+
-                      //'<th width="10%">Start Time</th>'+
-                      //'<th width="10%">End Time</th>'+
                       '<th width="5%">Devices</th>'+
                       '<th width="7%">Living Devices</th>'+
                       '<th width="1%">Report</th>'+ 
@@ -378,8 +365,6 @@ function renderTestSessionDiv_cyclelist(div_id, test_session){
                 "<td>"+cid+"</td>"+ 
                 "<td>"+product+"</td>"+      
                 "<td>"+revision+"</td>"+
-                //"<td>"+starttime+"</td>"+
-                //"<td>"+endtime+"</td>"+
                 "<td>"+count+"</td>"+                   
                 "<td>"+livecount+"</td>"+
                 "<td><a href=\"#/group/"+test_session[k].sessions[0].gid+"/report/"+cid+"\">Report</a></td>"+
@@ -418,7 +403,9 @@ function renderCaseSnaps(gid, sid, tid){
         var y = parseInt(rect.substring(rect.indexOf('y')+1, rect.indexOf('w'))) >> zoom;
         var w = parseInt(rect.substring(rect.indexOf('w')+1, rect.indexOf('h'))) >> zoom;
         var h = parseInt(rect.substring(rect.indexOf('h')+1)) >> zoom;
-        return $('<div>').attr('style','border:3px solid green; position:absolute; top:'+y+'px; left:'+x+'px; width:' +w+'px; height:'+h+'px');
+        return $('<div>').attr('style','border:3px solid green; position:absolute; top:'
+                               +y+'px; left:'+x+'px; width:'
+                               +w+'px; height:'+h+'px');
     }
 
     invokeWebApi('/group/'+gid+'/test/'+sid+'/case/'+tid+'/snaps',
@@ -823,7 +810,7 @@ function showLiveSessionCases(gid,sid) {
                     function(data){
                         if(data.results === undefined) return;
                         var caseslist = sortTestCases(data.results.cases);
-                        createSessionSummary(data, gid, sid);
+                        updateTestSessionSummary(data);
                         createDetailTable('live_cases_div', 'table_latest_' + sid);
                         fillDetailTable(gid, sid, caseslist,'table_latest_' + sid, 'total');
                   });
@@ -860,33 +847,55 @@ function showSessionInfo(gid,sid) {
                         $('#session-name').html('session:' + data.results['id']);
                         initScreenInfo(data);
                         if(data['results']['endtime'] === undefined 
-                          || data['results']['endtime'] === 'N/A') {
+                            || data['results']['endtime'] === 'N/A') {
                             $('#tabs_session').show();
                             viewLatest();
-                            createSessionBaseInfo(data, gid, sid);
-                            createSessionSummary(data, gid, sid);
+                            createSessionBaseInfo(data, gid, sid, true);
                             showLiveSessionCases(gid, sid);
-                            $('#tabhistory').bind('click', function() {
+                            $('#tabhistory').unbind().bind('click', function() {
                                 viewHistory();
                             });
-                            $('#tablatest').bind('click', function() {
+                            $('#tablatest').unbind().bind('click', function() {
                                 viewLatest();
                             });
-                            showHistorySessionCases(gid, sid);                                                    
+                            showHistorySessionCases(gid, sid);
                             _appglobal.t1 = setInterval("pollSessionStatus(\""+gid+"\",\""+sid+"\")", 20000);
                         }
                         else {
                             clearTab();
-                            createSessionBaseInfo(data, '', '');
-                            createSessionSummary(data, gid, sid);
+                            createSessionBaseInfo(data, gid, sid);
+                            updateTestSessionSummary(data);
                             showHistorySessionCases(gid, sid);
                         }
                   });
 }
 
-function createSessionBaseInfo(data, gid, sid) {
+function updateTestSessionSummary(data) {
     data = data['results'];
+    var key = data['sid'];
+    var alllink = "o_"+key;
+    var faillink = 'fail_'+key;
+    var passlink = 'pass_'+key;
+    var errorlink = 'error_'+key;
+    var runtimelink = 'runtime_'+key;
+
+    $('#'+runtimelink).html(setRunTime(data.runtime));
+    $('#'+alllink).html(data.summary.total);
+    $('#'+passlink).html(data.summary.pass);
+    $('#'+faillink).html(data.summary.fail);
+    $('#'+errorlink).html(data.summary.error);
+}
+
+function createSessionBaseInfo(data, gid, sid, blive) {
+    data = data['results'];
+    var key = data['sid'];
+    var alllink = "o_"+key;
+    var faillink = 'fail_'+key;
+    var passlink = 'pass_'+key;
+    var errorlink = 'error_'+key;
+    var runtimelink = 'runtime_'+key;
     var $dev_table = $('<table>').attr('class','table table-bordered');
+    $('#summary_div').html('').append($dev_table);
     var $th = '<thead><tr>'+
               '<th>Planname</th>'+
               '<th>Tester</th>'+
@@ -894,39 +903,6 @@ function createSessionBaseInfo(data, gid, sid) {
               '<th>Product</th>'+
               '<th>Build Version</th>'+
               '<th>Start Time</th>'+
-              '</tr></thead>';
-    var $tbody = '<tbody></tbody>';
-    $('#device_div').html('').append($dev_table);
-    $dev_table.append($th);
-    $dev_table.append($tbody);
-
-    var strid = data.deviceid;
-    if(gid !== '' && sid !== '') {
-        strid = "<a href=javascript:showSnapDiv(\""+gid+"\",\""+sid+"\")>"+strid+"</a>";      
-    }
-
-    var $tr = "<tr>"+ 
-          "<td>"+data['planname']+"</td>"+
-          "<td>"+data.tester+"</td>"+
-          "<td>"+strid+"</td>"+ 
-          "<td>"+data.deviceinfo.product+"</td>"+
-          "<td>"+data.deviceinfo.revision+"</td>"+
-          "<td>"+data.starttime+"</td>"+
-          "</tr>"
-
-    $dev_table.append($tr);
-}
-
-function createSessionSummary(data, gid, sid) {
-    data = data['results'];
-    var key = data['sid'];
-    var alllink = "o_"+key;
-    var faillink = 'fail_'+key;
-    var passlink = 'pass_'+key;
-    var errorlink = 'error_'+key;
-    $('#summary_div').html('');
-    var $summary_table = $('<table>').attr('class','table table-bordered').attr('id','stable'+key);
-    var $th = '<thead><tr>'+
               '<th>Uptime</th>'+
               '<th>All</th>'+
               '<th>Pass</th>'+
@@ -934,22 +910,30 @@ function createSessionSummary(data, gid, sid) {
               '<th>Error</th>'+
               '</tr></thead>';
     var $tbody = '<tbody></tbody>';
-    $('#summary_div').append($summary_table);
-    $summary_table.append($th);
-    $summary_table.append($tbody);
-
-    $tr = "<tr>"+     
-          "<td>"+setRunTime(data.runtime)+"</td>"+
-          "<td>"+"<a id="+alllink+" href=\"javascript:void(0)\" >"
-          +data['summary']['total']+"</a></td>"+
-          "<td>"+"<a id="+passlink+" href=\"javascript:void(0)\" >"
-          +data['summary']['pass']+"</a></td>"+
-          "<td>"+"<a id="+faillink+" href=\"javascript:void(0)\" >"
-          +data['summary']['fail']+"</a></td>"+
-          "<td>"+"<a id="+errorlink+" href=\"javascript:void(0)\" >"
-          +data['summary']['error']+"</a></td>"+
+    var strid = data.deviceid;
+    if(blive !== undefined) {
+        strid = "<a href=javascript:showSnapDiv(\""+gid+"\",\""+sid+"\")>"+strid+"</a>";
+    }
+    var $tr = "<tr>"
+          +"<td>"+data.planname+"</td>"
+          +"<td>"+data.tester+"</td>"
+          +"<td>"+strid+"</td>"
+          +"<td>"+data.deviceinfo.product+"</td>"
+          +"<td>"+data.deviceinfo.revision+"</td>"
+          +"<td>"+data.starttime+"</td>"
+          +"<td><span id="+runtimelink+">"+setRunTime(data.runtime)+"</span></td>"
+          +"<td><a id="+alllink+" href=\"javascript:void(0)\" >"
+          +data.summary.total+"</a></td>"+
+          "<td><a id="+passlink+" href=\"javascript:void(0)\" >"
+          +data.summary.pass+"</a></td>"+
+          "<td><a id="+faillink+" href=\"javascript:void(0)\" >"
+          +data.summary.fail+"</a></td>"+
+          "<td><a id="+errorlink+" href=\"javascript:void(0)\" >"
+          +data.summary.error+"</a></td>"+
           "</tr>";
-    $summary_table.append($tr);
+    $dev_table.append($th);
+    $dev_table.append($tbody);
+    $dev_table.append($tr);
 
     $("#"+alllink).click(function(){
                            viewHistory();
@@ -1008,7 +992,6 @@ function createSessionSummary(data, gid, sid) {
                           });
 }
 
-
 function showReportInfo(gid,cid){
     invokeWebApi('/group/'+gid+'/testsummary',
                 prepareData({'cid':cid}),
@@ -1022,16 +1005,13 @@ function showReportInfo(gid,cid){
 }
 
 function toggle(){
-        var articleID=document.getElementById("article");
-            if (articleID.style.display=="none"){
-                articleID.style.display="block";
-            } else {
-                articleID.style.display="none";
-            }
+    var articleID=document.getElementById("article");
+    if (articleID.style.display=="none"){
+        articleID.style.display="block";
+    } else {
+        articleID.style.display="none";
+    }
 }
- 
-
-
 
 function showCommentInfo(){
 
@@ -1077,9 +1057,7 @@ function showCycleBaseInfo(data){
           "<td>"+setRunTime(data.totaldur)+"</td>"+
           "<td>"+setRunTime(avgTime)+"</td>"+
           "</tr>"
-
     $dev_table.append($tr);
-
 }
 
 function showFailureSummaryInfo(data) {
