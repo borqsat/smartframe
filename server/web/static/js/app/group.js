@@ -723,6 +723,10 @@ function fillCommentDiv(gid, sid){
 }
 
 function submitUpdate(gid, sid, tag){
+    if (_appglobal.collectIDs['tids'].length === 0){
+      alert("No case selected!!");
+      return
+    }
     var comResult = {};
     if (tag === 'submit'){
       $("option[name='issuetype']").each(function(i,obj){if(obj.selected){comResult['issuetype']=obj.value;}});
