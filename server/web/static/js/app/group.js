@@ -589,6 +589,9 @@ function collectID(ctid){
   if (key === -1){
     _appglobal.collectIDs['tids'].push(ctid);
   }
+  else if (key === 0){
+    _appglobal.collectIDs['tids'].splice(0, 1);
+  }
   else{
     _appglobal.collectIDs['tids'].splice(key, key);
   }
@@ -726,6 +729,8 @@ function fillCommentDiv(gid, sid){
 function submitUpdate(gid, sid, tag){
     if (_appglobal.collectIDs['tids'].length === 0){
       alert("No case selected!!");
+      _appglobal.collectIDs = {'tids':[]};
+      $("#comDiv").dialog('close');
       return
     }
     var comResult = {};
@@ -757,7 +762,6 @@ function submitUpdate(gid, sid, tag){
           $("div#hint_"+_appglobal.collectIDs['tids'][i]).append($hintInfo);
           $("#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked', false);
       }
-
       invokeWebApiEx("/group/"+gid+"/test/"+sid+"/case/00000/update",
                      prepareData({'comments':comResult}),
                      afterCommit);
@@ -775,7 +779,6 @@ function submitUpdate(gid, sid, tag){
 
       comResult['endsession'] = 0;
       comResult['tids'] = _appglobal.collectIDs['tids'];
-      
       invokeWebApiEx("/group/"+gid+"/test/"+sid+"/case/00000/update",
                  prepareData({'comments': comResult}),
                  afterCommit);
