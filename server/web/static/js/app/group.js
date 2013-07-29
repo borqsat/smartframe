@@ -645,7 +645,7 @@ function fillDetailTable(gid, sid, data, ids, tag) {
                                         "</td></tr>";                                                 
          } else if (cresult === 'error') {
                 tablerows += "<tr id=\""+trId+"\">"+
-                                     "<td><input type=\"checkbox\" onselect=\"collectID('"+ctid+"')\"></input></td>"+
+                                     "<td><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID('"+ctid+"')\"></input></td>"+
                                      "<td>"+ctid+"</td>"+
                                      "<td>"+cname+"</td>"+
                                      "<td>"+ctime+"</td>"+
