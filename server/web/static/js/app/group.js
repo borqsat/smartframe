@@ -607,6 +607,7 @@ function fillDetailTable(gid, sid, data, ids, tag) {
     for (var i = 0; i < data.length; i++){
           var citem = data[i];
           var ctid = citem['tid'];
+          // Collect tids here for the feature of select-all/de-select-all.
           var ctime = citem['starttime'];
           var cname = citem['casename'];
           var cresult = citem['result'];
