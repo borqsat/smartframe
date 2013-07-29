@@ -262,14 +262,14 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
     var $th =     '<thead><tr>'+
                       '<th width="1%"></th>'+
                       '<th width="5%">Cycle</th>'+
-                      '<th width="15%">Device#</th>'+
-                      '<th width="10%">Build Version</th>'+
-                      '<th width="15%">Start Time</th>'+
-                      '<th width="15%">Uptime</th>'+
-                      '<th width="5%">Product</th>'+
-                      '<th width="5%">Tester</th>'+ 
+                      '<th width="5%">Device#</th>'+
+                      '<th width="15%">Build Version</th>'+
+                      '<th width="5%">Start Time</th>'+
+                      '<th width="3%">Uptime</th>'+
+                      '<th width="15%">Product</th>'+
+                      '<th width="2%">Tester</th>'+ 
                       '<th width="2%">Detail</th>'+
-                      '<th width="3%"></th>'+
+                      '<th width="1%"></th>'+
                       '</tr></thead>';
     var $tbody = '<tbody></tbody>';
     $product_table.append($th);
