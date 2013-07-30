@@ -661,8 +661,12 @@ function fillDetailTable(gid, sid, data, ids, tag) {
                  }    
           }
     }
-    tablerows += fillCommentDiv(gid, sid);
     detail_table.append(tablerows);
+
+    if(!$('#comDiv').length) {
+        var comdiv = fillCommentDiv(gid, sid);
+        $('#session-div').append(comdiv);
+    }
 }
 
 function showHint(ctid){$("#hint_"+ctid).slideDown('slow');}
@@ -670,7 +674,7 @@ function showHint(ctid){$("#hint_"+ctid).slideDown('slow');}
 function hideHint(ctid){$("#hint_"+ctid).hide('slow');}
 
 function fillCommentDiv(gid, sid){
-    var commentDiv = "<tr id=\"comDiv\" style=\"display:none\"><td colspan=\"7\"><form class=\"form-inner\">"+
+    var commentDiv = "<div id=\"comDiv\" style=\"display:none\"><form class=\"form-inner\">"+
                        "<div class=\"row\">"+
                          "<div class=\"span4\">"+
                             "<textarea name=\"commentinfo\" id=\"commentInfo\" class=\"input-xlarge span4\" rows=\"9\" placeholder=\"Please comments here...\"></textarea>"+
@@ -698,7 +702,7 @@ function fillCommentDiv(gid, sid){
                         "<input id=\"btnc\" onclick=\"submitUpdate('"+gid+"', '"+sid+"', 'clear')\" type=\"button\" class=\"pull-right\" value=\"Clear\"></input>"+
                         "<input id=\"btn\" onclick=\"submitUpdate('"+gid+"', '"+sid+"', 'submit')\" type=\"button\" class=\"pull-right\" value=\"Commit\"></input>"+
                       "</div>"+
-                   "</div></form></td></tr>";
+                   "</div></form></div>";
     return commentDiv;
 }
 
@@ -764,12 +768,11 @@ function submitUpdate(gid, sid, tag){
 }
 
 function showComment(){
-    $("tr#comDiv").dialog({title: "Comments for Cases:",
-                                  height: 310,
-                                  width: 595,
+    $("#comDiv").dialog({title: "Comments for Cases:",
+                                  height: 350,
+                                  width: 615,
                                   resizable:false,
-                                  modal: true,
-                                  draggable: false});
+                                  modal: true});
 }
 
 function afterCommit(data){
