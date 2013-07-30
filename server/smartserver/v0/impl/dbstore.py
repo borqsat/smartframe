@@ -750,26 +750,24 @@ class DataStore(object):
             res3.append(tmpR3)
 
         rdata2 = caseresult.group({'comments.issuetype': 1}, {'sid': {'$in': sidList}, 'comments.caseresult': {
-            '$in': ['fail', 'Fail']}}, {'cnt': 0}, 'function(obj,prev){prev.cnt+=1;}')
+            '$in': ['fail', 'Fail']}}, {'cnt': 0}, 'function(obj,prev) { prev.cnt+=1; }')
         for d in rdata2:
             res2.append(
                 {'issuetype': d['comments.issuetype'], 'count': d['cnt']})
-
         rdata4 = caseresult.group({'casename': 1}, {'sid': {'$in': sidList}}, {'totalcnt': 0, 'passcnt': 0, 'failcnt': 0, 'blockcnt': 0}, '''
           function(obj,prev){
             prev.totalcnt+=1;
             if(obj.result=='pass'){
-              prev.passcnt+=1;
-            }else if('comments' in obj && obj.comments.caseresult.toLowerCase()=='fail'){
-              prev.failcnt+=1;
-            }else if('comments' in obj && obj.comments.caseresult.toLowerCase()=='block'){
-              prev.blockcnt+=1;
+                prev.passcnt+=1;
+            }else if('comments' in obj && obj.comments.caseresult !== undefined) {
+                var resulttag = obj.comments.caseresult.toLowerCase();
+                if (resulttag == 'fail') { prev.failcnt+=1; }
+                else if (resulttag == 'block') { prev.blockcnt+=1; }
             }
           }
           ''')
         domainTag = {}
         tmpi = 0
-
         for d in rdata4:
             try:
                 tmpDomain = d['casename'].split('.')[-2]
@@ -789,10 +787,11 @@ class DataStore(object):
             res4[tmpj]['detail'].append(
                 {'casename': d['casename'], 'totalcnt': tmpTotal, 'passcnt': d['passcnt'], 'failcnt': d['failcnt'], 'blockcnt': d['blockcnt']})
 
-        result = {}
         res1['starttime'] = datetime.strftime(datetime.strptime(res1['starttime'], DATE_FORMAT_STR), DATE_FORMAT_STR2)
         if res1['endtime'] != 'N/A':
             res1['endtime'] = datetime.strftime(datetime.strptime(res1['endtime'], DATE_FORMAT_STR), DATE_FORMAT_STR2)
+
+        result = {}
         result['cylesummany'] = res1
         result['issuesummany'] = res2
         result['issuedetail'] = res3
