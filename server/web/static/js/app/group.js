@@ -2,28 +2,29 @@ function showGroupInfo(id) {
       invokeWebApi('/group/'+id+'/info',
                    prepareData({}),
                    function(data){
-                         data = data.results;
-                         if(data === undefined) return;
-                         $('#group-name').parent().attr('href','#/group/'+id);
-                         $('#group-name').html(data['groupname']);         
-                         var $groupprf = $('#group-members').html('');
-                         var members = data['members'];
-                         var bAdmin = false;
-                         var userid = $.cookie('userid');
-                         $.each(members, function(i, o) {
+                          data = data.results;
+                          if(data === undefined) return;
+                          $('#group-name').parent().attr('href','#/group/'+id);
+                          $('#group-name').html(data['groupname']);
+                          var $groupprf = $('#group-members').html('');
+                          var members = data['members'];
+                          var bAdmin = false;
+                          var userid = $.cookie('userid');
+                          members.sort(function(a,b) { return a['username'] > b['username']; })
+                          $.each(members, function(i, o) {
                               if(o['uid'] === userid)
                                   bAdmin = (o['rolename'] === 'owner') || (o['rolename'] === 'admin');                          
-                         });
-                         _appglobal.members = [];
-                         $.each(members, function(i, o) {
+                          });
+                          _appglobal.members = [];
+                          $.each(members, function(i, o) {
                             _appglobal.members.push(o['username']);
                             var uid = o['uid'];
                             var role = o['rolename'];
                             $groupprf.append('<li>' + o['username'] + '('+ o['rolename'] + ')'
                                              + '<a href="javascript:deletemembersById(\''+id+'\',\''+uid+'\',\' '+role+'\')">' 
                                              + (bAdmin && o['rolename'] !== 'owner'? '[X]':'')+'</a></li>')
-                         })
-                   })
+                          })
+                    })
       $('#dialog-user')
                       .dialog({
                           resizable:false,
@@ -56,17 +57,17 @@ function showGroupInfo(id) {
                         data = data.results;
                         $('#dialog-user #name').html('');
                         var users = data['users'];
-                        var userlist = [];
+                        users.sort(function(a,b) { return a['username'] > b['username']; })
                         $.each(users, function(i, o) {
                             if(_appglobal.members.indexOf(o['username']) < 0)
                                 $('#dialog-user #name').append('<option value="'+o['uid']+'">' + o['username']+ '</option>')
-                        })                        
+                        })
                         $("#dialog-user").dialog("open");
                       })
             });
 }
 
-function deletemembersById(id, uid,role){
+function deletemembersById(id, uid, role){
       if(confirm('Confirm to delete this members?')) {
         invokeWebApiEx('/group/'+id+'/delmember',
                     prepareData({'members':[{'uid':uid,'role':role}]}),
@@ -559,18 +560,6 @@ function renderSnapshotDiv(gid, sid) {
     }
 }
 
-function sortTestCases(data) {
-    var datacases = data;
-    if(datacases !== undefined) {
-        datacases.sort(function(a,b){ 
-           return parseInt(b['tid']) - parseInt(a['tid']) ; 
-        });
-        _appglobal.tid = datacases[0]['tid'];
-    } else _appglobal.tid = 0;
-
-    return datacases;
-}
-
 function collectID(ctid){
   var key = _appglobal.collectIDs['tids'].indexOf(ctid);
   if (key === -1){
@@ -805,15 +794,15 @@ function pollSessionStatus(gid, sid) {
 }
 
 function showLiveSessionCases(gid,sid) {
-      invokeWebApi('/group/'+gid+'/test/'+sid+'/live',
-                    prepareData({'limit':20}),
-                    function(data){
-                        if(data.results === undefined) return;
-                        var caseslist = sortTestCases(data.results.cases);
-                        updateTestSessionSummary(data);
-                        createDetailTable('live_cases_div', 'table_latest_' + sid);
-                        fillDetailTable(gid, sid, caseslist,'table_latest_' + sid, 'total');
-                  });
+    invokeWebApi('/group/'+gid+'/test/'+sid+'/live',
+                  prepareData({'limit':20}),
+                  function(data){
+                      if(data.results === undefined) return;
+                      updateTestSessionSummary(data);
+                      _appglobal.tid = data.results.summary.total;
+                      createDetailTable('live_cases_div', 'table_latest_' + sid);
+                      fillDetailTable(gid, sid, data.results.cases,'table_latest_' + sid, 'total');
+                });
 }
 
 function showHistorySessionCases(gid,sid) {
@@ -846,12 +835,10 @@ function showSessionInfo(gid,sid) {
                         $('#session-name').parent().attr('href','#/group/' + gid + '/session/' + sid);
                         $('#session-name').html('session:' + data.results['id']);
                         initScreenInfo(data);
-                        if(data['results']['endtime'] === undefined 
-                            || data['results']['endtime'] === 'N/A') {
+                        if(data['results']['endtime'] === 'N/A') {
                             $('#tabs_session').show();
                             viewLatest();
                             createSessionBaseInfo(data, gid, sid, true);
-                            showLiveSessionCases(gid, sid);
                             $('#tabhistory').unbind().bind('click', function() {
                                 viewHistory();
                             });
@@ -859,6 +846,7 @@ function showSessionInfo(gid,sid) {
                                 viewLatest();
                             });
                             showHistorySessionCases(gid, sid);
+                            showLiveSessionCases(gid, sid);
                             _appglobal.t1 = setInterval("pollSessionStatus(\""+gid+"\",\""+sid+"\")", 20000);
                         }
                         else {
