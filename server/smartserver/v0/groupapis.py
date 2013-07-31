@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from gevent import monkey
 monkey.patch_all()
 
@@ -379,8 +382,14 @@ def doCreateCaseResult(gid, sid, tid):
     @rtype:JSON
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
+
+    For now, when create testcase result, set the end time of corresponding testsession to N/A
+    Update testsession summary here.
     """
-    return createCaseResult(gid, sid, tid, request.json['casename'], request.json['starttime'])
+    tasks.ws_active_testsession.delay(sid)
+    result = createCaseResult(gid, sid, tid, request.json['casename'], request.json['starttime'])
+    tasks.ws_update_testsession_summary(sid)
+    return result
 
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/update', method='POST', content_type='application/json')
@@ -403,7 +412,9 @@ def doUpdateCaseResult(gid, sid, tid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    return updateCaseResult(gid, sid, tid, request.json)
+    result = updateCaseResult(gid, sid, tid, request.json)
+    tasks.ws_update_testsession_summary.delay(sid)
+    return result
 
 
 @appweb.route('/group/<gid>/test/<sid>/case/<tid>/fileupload', method='PUT', content_type=['application/zip', 'image/png'], login=False)
