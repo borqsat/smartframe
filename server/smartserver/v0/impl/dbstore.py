@@ -733,20 +733,46 @@ class DataStore(object):
             tmpR3['totaldur'] = tmpDur
             tmpR3['caselist'] = []
             tmpFailTime = tmpEndTime
-            rdata3 = caseresult.find({'sid': d['sid'],'comments.caseresult': {'$in': ['fail', 'Fail']}})
+            
+            blockDur = 0
+            fblockDur = 0
+            tmpBlockStart = ''
+            tmpBlockEnd = ''
+            lastTid = 0
+            rdata3 = caseresult.find({'sid': d['sid'],'comments.caseresult': {'$in': ['fail', 'Fail', 'block', 'Block']}}).sort('tid',pymongo.ASCENDING)
             for d3 in rdata3:
-                if _compareDateTime(tmpFailTime, d3['starttime']): tmpFailTime = d3['starttime']
-
-                tmpR3['caselist'].append({'happentime': datetime.strftime(datetime.strptime(d3['starttime'], DATE_FORMAT_STR), DATE_FORMAT_STR2), 
+                if d3['comments']['caseresult'] == 'block' or d3['comments']['caseresult'] == 'Block':
+                    if d3['tid']!=lastTid+1 and lastTid!=0:
+                        blockDur+=_deltaDataTime(tmpBlockEnd,tmpBlockStart)
+                        tmpBlockStart = ''
+                        tmpBlockEnd = ''
+                    if tmpBlockEnd == '' or d3['tid']==lastTid+1: 
+                        tmpBlockEnd=d3['endtime']
+                    if tmpBlockStart == '': 
+                        tmpBlockStart=d3['starttime']
+                    lastTid = d3['tid']
+                    
+                if d3['comments']['caseresult'] == 'fail' or d3['comments']['caseresult'] == 'Fail':
+                    if _compareDateTime(tmpFailTime, d3['starttime']): 
+                        tmpFailTime = d3['starttime']
+                        fblockDur = blockDur + (tmpBlockStart=='' and 0 or _deltaDataTime(tmpBlockEnd,tmpBlockStart)) 
+    
+                    tmpR3['caselist'].append({'happentime': datetime.strftime(datetime.strptime(d3['starttime'], DATE_FORMAT_STR), DATE_FORMAT_STR2), 
                                          'issuetype': d3['comments']['issuetype'], 
                                          'comments': d3['comments']['commentinfo']})
-                res1['failcnt'] += 1
-                tmpR3['failcount'] += 1
+                    res1['failcnt'] += 1
+                    tmpR3['failcount'] += 1
+                if 'comments.endsession' in d3 and d3['comments']['endsession']==1: break 
+
+            if tmpBlockStart!='':
+                blockDur+=_deltaDataTime(tmpBlockEnd,tmpBlockStart)
+            res1['totaldur']-=blockDur
+            tmpR3['totaldur']-=blockDur
 
             if rdata3.count() <= 0:
                 tmpR3['faildur'] = 0
             else:
-                tmpR3['faildur'] = _deltaDataTime(tmpFailTime, d['starttime'])
+                tmpR3['faildur'] = _deltaDataTime(tmpFailTime, d['starttime']) - fblockDur
             res3.append(tmpR3)
 
         rdata2 = caseresult.group({'comments.issuetype': 1}, {'sid': {'$in': sidList}, 'comments.caseresult': {
@@ -754,6 +780,7 @@ class DataStore(object):
         for d in rdata2:
             res2.append(
                 {'issuetype': d['comments.issuetype'], 'count': d['cnt']})
+
         rdata4 = caseresult.group({'casename': 1}, {'sid': {'$in': sidList}}, {'totalcnt': 0, 'passcnt': 0, 'failcnt': 0, 'blockcnt': 0}, '''
           function(obj,prev){
             prev.totalcnt+=1;
@@ -768,6 +795,7 @@ class DataStore(object):
           ''')
         domainTag = {}
         tmpi = 0
+
         for d in rdata4:
             try:
                 tmpDomain = d['casename'].split('.')[-2]
@@ -984,11 +1012,7 @@ class DataStore(object):
             if comments['endsession'] == 1:
                 tmpt = caseresult.find_one({'gid': gid, 'sid': sid, 'tid': tids[0]})
                 self._db['testsessions'].update({'gid': gid, 'sid': sid}, {'$set': {'failtime': tmpt['endtime']}})
-<<<<<<< HEAD
-            return caseresult.update({'gid': gid, 'sid': sid, 'tid': {'$in':tids}},  {'$set': {'comments': comments}})
-=======
             return caseresult.update({'gid': gid, 'sid': sid, 'tid': {'$in':tids}}, {'$set': {'comments': comments}}, multi=True)
->>>>>>> upstream/server-dev
 
         status = results['result']
         traceinfo = results['traceinfo']
