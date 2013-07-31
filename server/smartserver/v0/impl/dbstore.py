@@ -50,12 +50,9 @@ def _compareDateTime(dt1, dt2):
     date2 = datetime.strptime(dt2, DATE_FORMAT_STR)
     return date1 > date2
 
-
 def _deltaDataTime(dt1, dt2):
-    delta = datetime.strptime(dt1, DATE_FORMAT_STR) - \
-        datetime.strptime(dt2, DATE_FORMAT_STR)
+    delta = datetime.strptime(dt1, DATE_FORMAT_STR) - datetime.strptime(dt2, DATE_FORMAT_STR)
     return delta.days * 86400 + delta.seconds
-
 
 class DataStore(object):
 
@@ -505,8 +502,7 @@ class DataStore(object):
         if user is None:  # return None in case of not exist
             return None
 
-        result = {'uid': uid, 'username':
-                  user['username'], 'info': user['info']}
+        result = {'uid': uid, 'username': user['username'], 'info': user['info']}
 
         if with_group:
             members = self._db['group_members']
@@ -676,8 +672,7 @@ class DataStore(object):
         tResult = self._db['testresults']
         result = 'N/A'
         specs = {'sid': sid}
-        ret = tResult.find(
-            spec=specs, limit=1, sort=[('tid', pymongo.DESCENDING)])
+        ret = tResult.find(spec=specs, limit=1, sort=[('tid', pymongo.DESCENDING)])
         for line in ret:
             result = line['starttime']
         return result
@@ -694,8 +689,7 @@ class DataStore(object):
         else:
             idletime = IDLE_TIME_OUT
 
-        result = self.getSessionLasttime(
-            sid) if idletime >= IDLE_TIME_OUT else 'N/A'
+        result = self.getSessionLasttime(sid) if idletime >= IDLE_TIME_OUT else 'N/A'
         return result
 
     def readTestSessionList(self, gid):
@@ -758,10 +752,10 @@ class DataStore(object):
         sidList = []
         res1 = {'product': '--',
                 'count': 0,
-                'starttime': '--',
-                'endtime': '--',
-                'failcnt': 0,
-                'totaldur': 0
+                'starttime':'--',
+                'endtime':'--',
+                'failcnt':0,
+                'totaldur':0
                 }
         res2 = []
         res3 = []
@@ -782,8 +776,7 @@ class DataStore(object):
                 if res1['endtime'] == '--' or d['endtime'] == 'N/A' or _compareDateTime(d['endtime'], res1['endtime']):
                     res1['endtime'] = d['endtime']
 
-            tmpEndTime = (
-                d['endtime'] == 'N/A' and self.getSessionLasttime(d['sid'])) or d['endtime']
+            tmpEndTime = (d['endtime'] == 'N/A' and self.getSessionLasttime(d['sid'])) or d['endtime']
             tmpDur = _deltaDataTime(tmpEndTime, d['starttime'])
             res1['totaldur'] += tmpDur
             tmpR3 = {}
@@ -797,16 +790,13 @@ class DataStore(object):
             tmpR3['totaldur'] = tmpDur
             tmpR3['caselist'] = []
             tmpFailTime = tmpEndTime
-            rdata3 = caseresult.find(
-                {'sid': d['sid'], 'comments.caseresult': {'$in': ['fail', 'Fail']}})
+            rdata3 = caseresult.find({'sid': d['sid'],'comments.caseresult': {'$in': ['fail', 'Fail']}})
             for d3 in rdata3:
-                if _compareDateTime(tmpFailTime, d3['starttime']):
-                    tmpFailTime = d3['starttime']
+                if _compareDateTime(tmpFailTime, d3['starttime']): tmpFailTime = d3['starttime']
 
-                tmpR3[
-                    'caselist'].append({'happentime': datetime.strftime(datetime.strptime(d3['starttime'], DATE_FORMAT_STR), DATE_FORMAT_STR2),
-                                        'issuetype': d3['comments']['issuetype'],
-                                        'comments': d3['comments']['commentinfo']})
+                tmpR3['caselist'].append({'happentime': datetime.strftime(datetime.strptime(d3['starttime'], DATE_FORMAT_STR), DATE_FORMAT_STR2), 
+                                         'issuetype': d3['comments']['issuetype'], 
+                                         'comments': d3['comments']['commentinfo']})
                 res1['failcnt'] += 1
                 tmpR3['failcount'] += 1
 
@@ -817,26 +807,24 @@ class DataStore(object):
             res3.append(tmpR3)
 
         rdata2 = caseresult.group({'comments.issuetype': 1}, {'sid': {'$in': sidList}, 'comments.caseresult': {
-            '$in': ['fail', 'Fail']}}, {'cnt': 0}, 'function(obj,prev){prev.cnt+=1;}')
+            '$in': ['fail', 'Fail']}}, {'cnt': 0}, 'function(obj,prev) { prev.cnt+=1; }')
         for d in rdata2:
             res2.append(
                 {'issuetype': d['comments.issuetype'], 'count': d['cnt']})
-
         rdata4 = caseresult.group({'casename': 1}, {'sid': {'$in': sidList}}, {'totalcnt': 0, 'passcnt': 0, 'failcnt': 0, 'blockcnt': 0}, '''
           function(obj,prev){
             prev.totalcnt+=1;
             if(obj.result=='pass'){
-              prev.passcnt+=1;
-            }else if('comments' in obj && obj.comments.caseresult.toLowerCase()=='fail'){
-              prev.failcnt+=1;
-            }else if('comments' in obj && obj.comments.caseresult.toLowerCase()=='block'){
-              prev.blockcnt+=1;
+                prev.passcnt+=1;
+            }else if('comments' in obj && obj.comments.caseresult !== undefined) {
+                var resulttag = obj.comments.caseresult.toLowerCase();
+                if (resulttag == 'fail') { prev.failcnt+=1; }
+                else if (resulttag == 'block') { prev.blockcnt+=1; }
             }
           }
           ''')
         domainTag = {}
         tmpi = 0
-
         for d in rdata4:
             try:
                 tmpDomain = d['casename'].split('.')[-2]
@@ -856,12 +844,11 @@ class DataStore(object):
             res4[tmpj]['detail'].append(
                 {'casename': d['casename'], 'totalcnt': tmpTotal, 'passcnt': d['passcnt'], 'failcnt': d['failcnt'], 'blockcnt': d['blockcnt']})
 
-        result = {}
-        res1['starttime'] = datetime.strftime(
-            datetime.strptime(res1['starttime'], DATE_FORMAT_STR), DATE_FORMAT_STR2)
+        res1['starttime'] = datetime.strftime(datetime.strptime(res1['starttime'], DATE_FORMAT_STR), DATE_FORMAT_STR2)
         if res1['endtime'] != 'N/A':
-            res1['endtime'] = datetime.strftime(
-                datetime.strptime(res1['endtime'], DATE_FORMAT_STR), DATE_FORMAT_STR2)
+            res1['endtime'] = datetime.strftime(datetime.strptime(res1['endtime'], DATE_FORMAT_STR), DATE_FORMAT_STR2)
+
+        result = {}
         result['cylesummany'] = res1
         result['issuesummany'] = res2
         result['issuedetail'] = res3
@@ -1035,12 +1022,18 @@ class DataStore(object):
                            'traceinfo': 'N/A', 'result': 'running',  'snapshots': []})
 
     def updateTestcaseComments(self, gid, sid, tid, results):
-        if results['comments']['endsession'] == 1:
-            self._db['testsessions'].update({'gid': gid, 'sid': sid},
-                                            {'$set': {'failtime': self._db['testresult'].find_one({'gid': gid, 'sid': sid, 'tid': int(tid)})['endtime']}})
-        return self._db[
-            'testresults'].update({'gid': gid, 'sid': sid, 'tid': int(tid)},
-                                  {'$set': {'comments': results['comments']}})
+        caseresult = self._db['testresults']
+        comments = results['comments']
+
+        tids = []
+        for tmp in comments.pop('tids'):
+            tids.append(int(tmp))
+
+        if comments['endsession'] == 1:
+            tmpt = caseresult.find_one({'gid': gid, 'sid': sid, 'tid': tids[0]}, {'endtime': 1, '_id': 0})
+            self._db['testsessions'].update({'gid': gid, 'sid': sid}, {'$set': {'failtime': tmpt['endtime']}})
+
+        return caseresult.update({'gid': gid, 'sid': sid, 'tid': {'$in': tids}}, {'$set': {'comments': comments}}, multi=True)
 
     def updateTestsessionSummary(self, sid):
         '''
@@ -1073,7 +1066,7 @@ class DataStore(object):
 
     def updateTestCaseResult(self, gid, sid, tid, results):
 
-        if 'comments' in results:
+        if tid == '00000':
             return self.updateTestcaseComments(gid, sid, tid, results)
 
         self.setCache(str('sid:' + sid + ':uptime'),
@@ -1126,8 +1119,7 @@ class DataStore(object):
                 timenow = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
                 self.setCache(str('sid:' + sid + ':snap'), snapfile.read())
                 self.setCache(str('sid:' + sid + ':snaptime'), timenow)
-                self.setCache(
-                    str('sid:' + sid + ':tid:' + tid + ':snaps'), snaps)
+                self.setCache(str('sid:' + sid + ':tid:' + tid + ':snaps'), snaps)
         except:
             pass
 
