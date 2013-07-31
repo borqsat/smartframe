@@ -569,7 +569,7 @@ function collectID(ctid){
     _appglobal.collectIDs['tids'].splice(0, 1);
   }
   else{
-    _appglobal.collectIDs['tids'].splice(key, key);
+    _appglobal.collectIDs['tids'].splice(key, 1);
   }
 }
 
