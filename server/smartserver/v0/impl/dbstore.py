@@ -9,6 +9,7 @@ import base64
 from bson.objectid import ObjectId
 from datetime import datetime
 from datetime import timedelta
+from collections import defaultdict
 
 import pymongo
 from pymongo import MongoClient, MongoReplicaSetClient
@@ -44,18 +45,6 @@ DATE_FORMAT_STR2 = "%Y/%m/%d %H:%M"
 IDLE_TIME_OUT = 1800
 
 
-def duration(fn):
-    def wrapper(*args, **kwargs):
-        start = datetime.now()
-        result = fn(*args, **kwargs)
-        duration = datetime.now() - start
-        print "Duration to invoke %s is %.3f" % (fn.__name__, duration.total_seconds())
-        return result
-
-    wrapper.__name__ = fn.__name__
-    return wrapper
-
-
 def _compareDateTime(dt1, dt2):
     date1 = datetime.strptime(dt1, DATE_FORMAT_STR)
     date2 = datetime.strptime(dt2, DATE_FORMAT_STR)
@@ -86,6 +75,74 @@ class DataStore(object):
         ret = self._db.counter.find_and_modify(query={
                                                "_id": keyname}, update={"$inc": {"next": 1}}, new=True, upsert=True)
         return int(ret["next"])
+
+    def convert_to_datetime(self, time_str):
+        '''convert a string to datetime or None in case of invalid string'''
+        dt = None
+        try:
+            dt = datetime.strptime(time_str, DATE_FORMAT_STR)
+        except:
+            pass
+        if dt is None:
+            try:
+                dt = datetime.strptime(time_str, DATE_FORMAT_STR1)
+            except:
+                pass
+        return dt
+
+    def convert_to_str(self, date):
+        '''convert a datetime to formatted string.'''
+        # TODO Why to use the format...
+        return date.strftime(DATE_FORMAT_STR)
+
+    def validate_session_endtime(self):
+        '''
+        If a "N/A" session has not been updated for 60mins, set a reasonable endtime to it,
+        if this is a dirty session, which has session info but no related cases, ignore it here.
+        '''
+        print "Start to validate session endtime"
+        for session in self._db['testsessions'].find({'endtime': 'N/A'}, {'sid': 1, 'starttime': 1}):
+            cases_collection = self._db['testresults'].find({'sid': session['sid']}, {
+                                                            'starttime': 1, 'endtime': 1}).sort('starttime', pymongo.DESCENDING)
+            if cases_collection.count() == 0:
+                endtime = self.convert_to_datetime(session['starttime'])
+            else:
+                case = cases_collection[0]
+                endtime = self.convert_to_datetime(
+                    case['starttime'] if case['endtime'] is 'N/A' else case['endtime'])
+
+            if endtime is not None and (datetime.now() - endtime).total_seconds() >= 3600:
+                # TODO: Should use time of database server as "now" time
+                self._db['testsessions'].update(
+                    {'sid': session['sid']}, {'$set': {'endtime': self.convert_to_str(endtime)}})
+
+    def active_testsession(self, sid):
+        '''Set session endtime to "N/A", back to life'''
+        print "Start to active testsession"
+        self._db['testsessions'].update(
+            {'sid': sid}, {'$set': {'endtime': 'N/A'}})
+
+    def validate_testcase_endtime(self):
+        '''
+        If a testcase has not been updated for 60 mins, set its starttime as its endtime,
+        if this is a dirty case, which does not even have reasonable starttime, remove it
+        '''
+        print "Start to validate testcase endtime"
+        for case in self._db['testresults'].find({'endtime': 'N/A', 'result': 'running'}, {'starttime': 1, 'sid': 1}):
+            starttime = self.convert_to_datetime(case['starttime'])
+            if starttime is None:
+                self._db['testresults'].remove({'_id': case['_id']})
+                self.updateTestsessionSummary(case['sid'])
+            elif (datetime.now() - starttime).total_seconds() >= 3600:
+                # TODO: Should use time of database server as "now" time
+                self._db['testresults'].update({'_id': case['_id']},
+                                               {'$set': {'endtime': self.convert_to_str(starttime),
+                                                         'result': 'error',
+                                                         'traceinfo': 'No results uploaded in 60mins, set it ERROR'}})
+                self.updateTestsessionSummary(case['sid'])
+
+    def del_testcase(self, tid):
+        self._db['testresults'].remove({'_id': tid})
 
     def del_session(self, sid):
         '''
@@ -733,24 +790,49 @@ class DataStore(object):
             tmpR3['totaldur'] = tmpDur
             tmpR3['caselist'] = []
             tmpFailTime = tmpEndTime
-            rdata3 = caseresult.find({'sid': d['sid'],'comments.caseresult': {'$in': ['fail', 'Fail']}})
+            
+            blockDur = 0
+            fblockDur = 0
+            tmpBlockStart = ''
+            tmpBlockEnd = ''
+            lastTid = 0
+            rdata3 = caseresult.find({'sid': d['sid'],'comments.caseresult': {'$in': ['fail', 'Fail', 'block', 'Block']}}).sort('tid',pymongo.ASCENDING)
             for d3 in rdata3:
-                if _compareDateTime(tmpFailTime, d3['starttime']): tmpFailTime = d3['starttime']
-
-                tmpR3['caselist'].append({'happentime': datetime.strftime(datetime.strptime(d3['starttime'], DATE_FORMAT_STR), DATE_FORMAT_STR2), 
+                if d3['comments']['caseresult'] == 'block' or d3['comments']['caseresult'] == 'Block':
+                    if d3['tid']!=lastTid+1 and lastTid!=0:
+                        blockDur+=_deltaDataTime(tmpBlockEnd,tmpBlockStart)
+                        tmpBlockStart = ''
+                        tmpBlockEnd = ''
+                    if tmpBlockEnd == '' or d3['tid']==lastTid+1: 
+                        tmpBlockEnd=d3['endtime']
+                    if tmpBlockStart == '': 
+                        tmpBlockStart=d3['starttime']
+                    lastTid = d3['tid']
+                    
+                if d3['comments']['caseresult'] == 'fail' or d3['comments']['caseresult'] == 'Fail':
+                    if _compareDateTime(tmpFailTime, d3['starttime']): 
+                        tmpFailTime = d3['starttime']
+                        fblockDur = blockDur -1 + ((tmpBlockStart=='' or tmpBlockEnd=='') and 1 or _deltaDataTime(tmpBlockEnd,tmpBlockStart)+1)    
+                    tmpR3['caselist'].append({'happentime': datetime.strftime(datetime.strptime(d3['starttime'], DATE_FORMAT_STR), DATE_FORMAT_STR2), 
                                          'issuetype': d3['comments']['issuetype'], 
                                          'comments': d3['comments']['commentinfo']})
-                res1['failcnt'] += 1
-                tmpR3['failcount'] += 1
+                    res1['failcnt'] += 1
+                    tmpR3['failcount'] += 1
+                if 'comments.endsession' in d3 and d3['comments']['endsession']==1: break 
+
+            if tmpBlockStart!='':
+                blockDur+=_deltaDataTime(tmpBlockEnd,tmpBlockStart)
+            res1['totaldur']-=blockDur
+            tmpR3['totaldur']-=blockDur
 
             if rdata3.count() <= 0:
                 tmpR3['faildur'] = 0
             else:
-                tmpR3['faildur'] = _deltaDataTime(tmpFailTime, d['starttime'])
+                tmpR3['faildur'] = _deltaDataTime(tmpFailTime, d['starttime']) - fblockDur
             res3.append(tmpR3)
 
         rdata2 = caseresult.group({'comments.issuetype': 1}, {'sid': {'$in': sidList}, 'comments.caseresult': {
-            '$in': ['fail', 'Fail']}}, {'cnt': 0}, 'function(obj,prev){prev.cnt+=1;}')
+            '$in': ['fail', 'Fail']}}, {'cnt': 0}, 'function(obj,prev) { prev.cnt+=1; }')
         for d in rdata2:
             res2.append(
                 {'issuetype': d['comments.issuetype'], 'count': d['cnt']})
@@ -759,11 +841,11 @@ class DataStore(object):
           function(obj,prev){
             prev.totalcnt+=1;
             if(obj.result=='pass'){
-              prev.passcnt+=1;
-            }else if('comments' in obj && obj.comments.caseresult.toLowerCase()=='fail'){
-              prev.failcnt+=1;
-            }else if('comments' in obj && obj.comments.caseresult.toLowerCase()=='block'){
-              prev.blockcnt+=1;
+                prev.passcnt+=1;
+            }else if('comments' in obj && obj.comments.caseresult !== undefined) {
+                var resulttag = obj.comments.caseresult.toLowerCase();
+                if (resulttag == 'fail') { prev.failcnt+=1; }
+                else if (resulttag == 'block') { prev.blockcnt+=1; }
             }
           }
           ''')
@@ -789,10 +871,11 @@ class DataStore(object):
             res4[tmpj]['detail'].append(
                 {'casename': d['casename'], 'totalcnt': tmpTotal, 'passcnt': d['passcnt'], 'failcnt': d['failcnt'], 'blockcnt': d['blockcnt']})
 
-        result = {}
         res1['starttime'] = datetime.strftime(datetime.strptime(res1['starttime'], DATE_FORMAT_STR), DATE_FORMAT_STR2)
         if res1['endtime'] != 'N/A':
             res1['endtime'] = datetime.strftime(datetime.strptime(res1['endtime'], DATE_FORMAT_STR), DATE_FORMAT_STR2)
+
+        result = {}
         result['cylesummany'] = res1
         result['issuesummany'] = res2
         result['issuedetail'] = res3
@@ -955,7 +1038,7 @@ class DataStore(object):
 
     def createTestCaseResult(self, gid, sid, tid, casename, starttime):
         """
-        write a test case resut record in database
+        write a test case result record in database
         """
         self.setCache(str('sid:' + sid + ':tid:' + tid + ':snaps'), [])
         timestamp = datetime.now().strftime(DATE_FORMAT_STR)
@@ -964,60 +1047,73 @@ class DataStore(object):
         caseresult.insert({'gid': gid, 'sid': sid, 'tid': int(tid),
                            'casename': casename, 'log': 'N/A', 'starttime': starttime, 'endtime': 'N/A',
                            'traceinfo': 'N/A', 'result': 'running',  'snapshots': []})
-        session = self._db['testsessions']
-        session.update({'gid': gid, 'sid': sid}, {
-                       '$inc': {'summary.total': 1}})
+
+    def updateTestcaseComments(self, gid, sid, tid, results):
+        caseresult = self._db['testresults']
+        comments = results['comments']
+
+        tids = []
+        for tmp in comments.pop('tids'):
+            tids.append(int(tmp))
+
+        if comments['endsession'] == 1:
+            tmpt = caseresult.find_one({'gid': gid, 'sid': sid, 'tid': tids[0]}, {'endtime': 1, '_id': 0})
+            self._db['testsessions'].update({'gid': gid, 'sid': sid}, {'$set': {'failtime': tmpt['endtime']}})
+
+        return caseresult.update({'gid': gid, 'sid': sid, 'tid': {'$in': tids}}, {'$set': {'comments': comments}}, multi=True)
+
+    def updateTestsessionSummary(self, sid):
+        '''
+        count the pass/fail/error cases of a session,
+        calculate the runtime of a session
+        '''
+        #TODO: This func. can be optimized.
+
+        passCount = store._db['testresults'].find({'sid': sid, 'result': 'pass'}).count()
+        failCount = store._db['testresults'].find({'sid': sid, 'result': 'fail'}).count()
+        errorCount = store._db['testresults'].find({'sid': sid, 'result': 'error'}).count()
+        total = store._db['testresults'].find({'sid': sid}, {'result': 1}).count()
+
+        tids = self._db['testresults'].find({'sid': sid}, {'_id': 0, 'tid': 1}).distinct('tid')
+        minStartTime = self.convert_to_datetime(store._db['testresults'].find_one({'sid': sid, 'tid': tids[-1]}, {'starttime': 1})['starttime'])
+        case = store._db['testresults'].find_one({'sid': sid, 'tid': tids[0]}, {'starttime': 1, 'endtime': 1})
+        maxEndTime = self.convert_to_datetime(case['starttime'] if case['endtime'] == 'N/A' else case['endtime'])
+
+        if maxEndTime and minStartTime:
+            runtime = (maxEndTime - minStartTime).total_seconds()
+        else:
+            runtime = 0
+
+        self._db['testsessions'].update({'sid': sid},
+                                        {'$set': {'summary.pass': passCount,
+                                                  'summary.fail': failCount,
+                                                  'summary.error': errorCount,
+                                                  'runtime': runtime,
+                                                  'summary.total': total}})
 
     def updateTestCaseResult(self, gid, sid, tid, results):
-        """
-        update a test case resut record in database
-        If case get failed, write snapshot png files in GridFS
-        """
-        comments = {}
-        caseresult = self._db['testresults']
 
-        if 'comments' in results:
-            comments = results['comments']
-            if comments['endsession'] == 1:
-                tmpt = caseresult.find_one({
-                                           'gid': gid, 'sid': sid, 'tid': int(tid)})
-                self._db['testsessions'].update({'gid': gid, 'sid': sid}, {
-                                                '$set': {'failtime': tmpt['endtime']}})
-            return caseresult.update({'gid': gid, 'sid': sid, 'tid': int(tid)},  {'$set': {'comments': comments}})
+        if tid == '00000':
+            return self.updateTestcaseComments(gid, sid, tid, results)
 
-        status = results['result']
-        traceinfo = results['traceinfo']
-        endtime = results['time']
-
-        timestamp = datetime.now().strftime(DATE_FORMAT_STR)
-        self.setCache(str('sid:' + sid + ':uptime'), timestamp)
+        self.setCache(str('sid:' + sid + ':uptime'),
+                      datetime.now().strftime(DATE_FORMAT_STR))
         snapshots = self.getCache(str('sid:' + sid + ':tid:' + tid + ':snaps'))
         self.clearCache(str('sid:' + sid + ':tid:' + tid + ':snaps'))
 
-        session = self._db['testsessions']
-        status = status.lower()
-        runtime = 0
-        ret = session.find_one({'sid': sid})
-        if not ret is None:
-            runtime = _deltaDataTime(endtime, ret['starttime'])
-
-        if status == 'pass':
+        if results['result'].lower() == 'pass':
             if snapshots is not None:
                 for d in snapshots:
                     if 'fid' in d:
                         self.deletefile(d['fid'])
             snapshots = []
-            session.update({'gid': gid, 'sid': sid}, {'$inc': {
-                           'summary.pass': 1}, '$set': {'runtime': runtime}})
-        elif status == 'fail':
-            session.update({'gid': gid, 'sid': sid}, {'$inc': {
-                           'summary.fail': 1}, '$set': {'runtime': runtime}})
-        else:
-            session.update({'gid': gid, 'sid': sid}, {'$inc': {
-                           'summary.error': 1}, '$set': {'runtime': runtime}})
 
-        caseresult.update({'gid': gid, 'sid': sid, 'tid': int(tid)},  {'$set': {
-                          'result': status, 'traceinfo': traceinfo, 'endtime': endtime, 'snapshots': snapshots}})
+        self._db[
+            'testresults'].update({'gid': gid, 'sid': sid, 'tid': int(tid)},
+                                  {'$set': {'result': results['result'].lower(),
+                                            'traceinfo': results['traceinfo'],
+                                            'endtime': results['time'],
+                                            'snapshots': snapshots}})
 
     def writeTestLog(self, gid, sid, tid, logfile):
         """
@@ -1041,6 +1137,7 @@ class DataStore(object):
             xtype, sfile = values[0], values[1]
             results = self._db['testresults']
             fkey = self.setfile(snapfile)
+            # For the passed cases, its snapshots will not be removed from db?
             snapfile.seek(0)
             if xtype == 'expect':
                 results.update({'gid': gid, 'sid': sid, 'tid': int(tid)},
