@@ -811,6 +811,9 @@ function showLiveSessionCases(gid,sid) {
                       _appglobal.tid = data.results.summary.total;
                       createDetailTable('live_cases_div', 'table_latest_' + sid);
                       fillDetailTable(gid, sid, data.results.cases,'table_latest_' + sid, 'total');
+                      for (var i = 0; i < _appglobal.collectIDs['tids'].length; i++){
+                        $("div#live_cases_div input#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked', true);
+                      }
                 });
 }
 
