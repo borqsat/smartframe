@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from . import config
 from celery.schedules import crontab
 
@@ -19,6 +22,14 @@ CELERYBEAT_SCHEDULE = {
     'cleardirty-every-week': {
         'task': 'smartserver.tasks.ws_del_dirty',
         'schedule': crontab(minute=0, hour=0, day_of_month=1)
+    },
+    'validate-session-endtime-every-30-minutes': {
+        'task': 'smartserver.tasks.ws_validate_session_endtime',
+        'schedule': crontab(minute='*/30')
+    },
+    'validate-testcase-endtime-every-30-minutes': {
+        'task': 'smartserver.tasks.ws_validate_testcase_endtime',
+        'schedule': crontab(minute='*/30')
     },
 }
 
