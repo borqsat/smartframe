@@ -183,13 +183,15 @@ function viewLatest(){
     $('#tabhistory').removeClass('active');
     $('#live_cases_div').show();
     $('#cases_div').hide();
+    _appglobal.collectIDs['farthernode'] = 'live_cases_div';
 }
 
 function viewHistory(){
     $('#tablatest').removeClass('active');
     $('#tabhistory').addClass('active');
     $('#live_cases_div').hide();
-    $('#cases_div').show();    
+    $('#cases_div').show();
+    _appglobal.collectIDs['farthernode'] = 'cases_div';    
 }
 
 function clearTab() {
@@ -573,11 +575,12 @@ function collectID(ctid){
     }
 }
 
+_appglobal.collectIDs = {'tids':[]};
+
 function fillDetailTable(gid, sid, data, ids, tag) {
     var tablerows = '';
     var detail_table = $("#"+ids+" > tbody").html('');
     var len = data.length;
-    _appglobal.collectIDs = {'tids':[]};
     _appglobal.collectIDs['gid'] = gid;
     _appglobal.collectIDs['sid'] = sid;
     for (var i = 0; i < data.length; i++){
@@ -741,7 +744,7 @@ function submitUpdate(gid, sid, tag){
           $("span#span_"+_appglobal.collectIDs['tids'][i]).append($showComment);
           $("div#hint_"+_appglobal.collectIDs['tids'][i]).html("");
           $("div#hint_"+_appglobal.collectIDs['tids'][i]).append($hintInfo);
-          $("#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked', false);
+          $("div#"+_appglobal.collectIDs['farthernode']+" input#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked', false);
       }
       invokeWebApiEx("/group/"+gid+"/test/"+sid+"/case/00000/update",
                      prepareData({'comments':comResult}),
@@ -755,7 +758,7 @@ function submitUpdate(gid, sid, tag){
           $("span#span_"+_appglobal.collectIDs['tids'][i]).append($showComment);
           $("div#hint_"+_appglobal.collectIDs['tids'][i]).html("");
           $("div#hint_"+_appglobal.collectIDs['tids'][i]).append($hintInfo);
-          $("#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked',false);
+          $("div#"+_appglobal.collectIDs['farthernode']+" input#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked',false);
       }
 
       comResult['endsession'] = 0;
@@ -764,7 +767,7 @@ function submitUpdate(gid, sid, tag){
                  prepareData({'comments': comResult}),
                  afterCommit);
     }
-    _appglobal.collectIDs = {'tids':[]};
+    _appglobal.collectIDs['tids'] = [];
     $("#comDiv").dialog('close');
 }
 
@@ -776,7 +779,7 @@ function showComment(){
                         resizable:false,
                         modal: true
                       });
-}
+}pollSessionStatus
 
 function afterCommit(data){
     var ret = data['error'];
@@ -794,6 +797,7 @@ function pollSessionStatus(gid, sid) {
                   function(data) {
                       var status = data.results;
                       if(status > 0) {
+                          _appglobal.collectIDs['tids'] = [];
                           showLiveSessionCases(gid, sid);
                       }
                 })
