@@ -797,7 +797,6 @@ function pollSessionStatus(gid, sid) {
                   function(data) {
                       var status = data.results;
                       if(status > 0) {
-                          _appglobal.collectIDs['tids'] = [];
                           showLiveSessionCases(gid, sid);
                       }
                 })
