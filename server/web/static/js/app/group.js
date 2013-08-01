@@ -779,7 +779,7 @@ function showComment(){
                         resizable:false,
                         modal: true
                       });
-}pollSessionStatus
+}
 
 function afterCommit(data){
     var ret = data['error'];

@@ -1138,7 +1138,6 @@ class DataStore(object):
             xtype, sfile = values[0], values[1]
             results = self._db['testresults']
             fkey = self.setfile(snapfile)
-            # For the passed cases, its snapshots will not be removed from db?
             snapfile.seek(0)
             if xtype == 'expect':
                 results.update({'gid': gid, 'sid': sid, 'tid': int(tid)},
