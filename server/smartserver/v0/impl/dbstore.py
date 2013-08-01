@@ -812,8 +812,7 @@ class DataStore(object):
                 if d3['comments']['caseresult'] == 'fail' or d3['comments']['caseresult'] == 'Fail':
                     if _compareDateTime(tmpFailTime, d3['starttime']): 
                         tmpFailTime = d3['starttime']
-                        fblockDur = blockDur + (tmpBlockStart=='' and 0 or _deltaDataTime(tmpBlockEnd,tmpBlockStart)) 
-    
+                        fblockDur = blockDur -1 + ((tmpBlockStart=='' or tmpBlockEnd=='') and 1 or _deltaDataTime(tmpBlockEnd,tmpBlockStart)+1)    
                     tmpR3['caselist'].append({'happentime': datetime.strftime(datetime.strptime(d3['starttime'], DATE_FORMAT_STR), DATE_FORMAT_STR2), 
                                          'issuetype': d3['comments']['issuetype'], 
                                          'comments': d3['comments']['commentinfo']})
