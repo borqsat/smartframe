@@ -561,16 +561,16 @@ function renderSnapshotDiv(gid, sid) {
 }
 
 function collectID(ctid){
-  var key = _appglobal.collectIDs['tids'].indexOf(ctid);
-  if (key === -1){
-    _appglobal.collectIDs['tids'].push(ctid);
-  }
-  else if (key === 0){
-    _appglobal.collectIDs['tids'].splice(0, 1);
-  }
-  else{
-    _appglobal.collectIDs['tids'].splice(key, key);
-  }
+    var key = _appglobal.collectIDs['tids'].indexOf(ctid);
+    if (key === -1){
+      _appglobal.collectIDs['tids'].push(ctid);
+    }
+    else if (key === 0){
+      _appglobal.collectIDs['tids'].splice(0, 1);
+    }
+    else{
+      _appglobal.collectIDs['tids'].splice(key, 1);
+    }
 }
 
 function fillDetailTable(gid, sid, data, ids, tag) {
@@ -583,6 +583,7 @@ function fillDetailTable(gid, sid, data, ids, tag) {
     for (var i = 0; i < data.length; i++){
           var citem = data[i];
           var ctid = citem['tid'];
+          // Collect tids here for the feature of select-all/de-select-all.
           var ctime = citem['starttime'];
           var cname = citem['casename'];
           var cresult = citem['result'];
@@ -768,21 +769,23 @@ function submitUpdate(gid, sid, tag){
 }
 
 function showComment(){
-    $("#comDiv").dialog({title: "Comments for Cases:",
-                                  height: 350,
-                                  width: 615,
-                                  resizable:false,
-                                  modal: true});
+    $("#comDiv").dialog({
+                        title: "Comments for Cases:",
+                        height: 350,
+                        width: 615,
+                        resizable:false,
+                        modal: true
+                      });
 }
 
 function afterCommit(data){
-  var ret = data['error'];
-  if (ret !== undefined){
-    alert(ret['msg']);
-  }
-  else{
-    alert("Commit successfully!");
-  }
+    var ret = data['error'];
+    if (ret !== undefined){
+        alert(ret['msg']);
+    }
+    else{
+        alert("Commit successfully!");
+    }
 }
 
 function pollSessionStatus(gid, sid) {
@@ -809,16 +812,18 @@ function showLiveSessionCases(gid,sid) {
 }
 
 function showHistorySessionCases(gid,sid) {
-      invokeWebApi('/group/'+gid+'/test/'+sid+'/history',
-                   prepareData({'type':'total'}),
-                   function(data){
-                        if(data.results === undefined) return;
-                        var paging = data.results.paging;
-                        var caseslist = data.results.cases;
-                        createDetailTable('cases_div','table_total_' + sid);
-                        fillDetailTable(gid, sid, caseslist,'table_total_' + sid, 'total');
-                        if(paging !== undefined)  TablePage(gid, sid, paging['totalpage'], paging['pagesize'], fillDetailTable,'table_total_' + sid,'total');
-                  },true);
+    invokeWebApi('/group/'+gid+'/test/'+sid+'/history',
+                prepareData({'type':'total'}),
+                function(data){
+                    if(data.results === undefined) return;
+                    var paging = data.results.paging;
+                    var caseslist = data.results.cases;
+                    createDetailTable('cases_div','table_cases_total');
+                    fillDetailTable(gid, sid, caseslist,'table_cases_total', 'total');
+                    if(paging !== undefined) {
+                        TablePage(gid, sid, paging['totalpage'], paging['pagesize'], fillDetailTable,'table_cases_total', 'total');
+                    }
+                },true);
 }
 
 function initScreenInfo(data) {
@@ -863,30 +868,34 @@ function showSessionInfo(gid,sid) {
 
 function updateTestSessionSummary(data) {
     data = data['results'];
-    var key = data['sid'];
-    var alllink = "o_"+key;
-    var faillink = 'fail_'+key;
-    var passlink = 'pass_'+key;
-    var errorlink = 'error_'+key;
-    var runtimelink = 'runtime_'+key;
-
-    $('#'+runtimelink).html(setRunTime(data.runtime));
-    $('#'+alllink).html(data.summary.total);
-    $('#'+passlink).html(data.summary.pass);
-    $('#'+faillink).html(data.summary.fail);
-    $('#'+errorlink).html(data.summary.error);
+    $('#runtime_td').html(setRunTime(data.runtime));
+    $('#total_td').html(data.summary.total);
+    $('#pass_td').html(data.summary.pass);
+    $('#fail_td').html(data.summary.fail);
+    $('#error_td').html(data.summary.error);
 }
+
+function getRenderingfunc(gid, sid, tag) {
+    return  function() {
+                viewHistory();
+                invokeWebApi('/group/'+gid+'/test/'+sid+'/history',
+                          prepareData({'type':tag}),
+                          function(data){
+                          if(data.results === undefined) return;
+                          var paging = data.results.paging;
+                          var caseslist = data.results.cases;
+                          createDetailTable('cases_div','table_cases_' + tag);
+                          fillDetailTable(gid, sid, caseslist,'table_cases_' + tag, tag);
+                          if(paging !== undefined) {
+                              TablePage(gid, sid, paging['totalpage'], paging['pagesize'], fillDetailTable, 'table_cases_' + tag, tag);
+                          }}, true);
+            }    
+}
+
 
 function createSessionBaseInfo(data, gid, sid, blive) {
     data = data['results'];
-    var key = data['sid'];
-    var alllink = "o_"+key;
-    var faillink = 'fail_'+key;
-    var passlink = 'pass_'+key;
-    var errorlink = 'error_'+key;
-    var runtimelink = 'runtime_'+key;
     var $dev_table = $('<table>').attr('class','table table-bordered');
-    $('#summary_div').html('').append($dev_table);
     var $th = '<thead><tr>'+
               '<th>Planname</th>'+
               '<th>Tester</th>'+
@@ -912,75 +921,26 @@ function createSessionBaseInfo(data, gid, sid, blive) {
           +"<td>"+data.deviceinfo.product+"</td>"
           +"<td>"+data.deviceinfo.revision+"</td>"
           +"<td>"+data.starttime+"</td>"
-          +"<td><span id="+runtimelink+">"+setRunTime(data.runtime)+"</span></td>"
-          +"<td><a id="+alllink+" href=\"javascript:void(0)\" >"
+          +"<td><span id='runtime_td'>"+setRunTime(data.runtime)+"</span></td>"
+          +"<td><a id='total_td' href=\"javascript:void(0)\" >"
           +data.summary.total+"</a></td>"+
-          "<td><a id="+passlink+" href=\"javascript:void(0)\" >"
+          "<td><a id='pass_td' href=\"javascript:void(0)\" >"
           +data.summary.pass+"</a></td>"+
-          "<td><a id="+faillink+" href=\"javascript:void(0)\" >"
+          "<td><a id='fail_td' href=\"javascript:void(0)\" >"
           +data.summary.fail+"</a></td>"+
-          "<td><a id="+errorlink+" href=\"javascript:void(0)\" >"
+          "<td><a id='error_td' href=\"javascript:void(0)\" >"
           +data.summary.error+"</a></td>"+
           "</tr>";
+
+    $('#summary_div').html('').append($dev_table);
     $dev_table.append($th);
     $dev_table.append($tbody);
     $dev_table.append($tr);
 
-    $("#"+alllink).click(function(){
-                           viewHistory();
-                           invokeWebApi('/group/'+gid+'/test/'+sid+'/history',
-                                        prepareData({'type':'total'}),
-                                        function(data){
-                                            if(data.results === undefined) return;
-                                            var paging = data.results.paging;
-                                            var caseslist = data.results.cases;
-                                            createDetailTable('cases_div','table_total_' + sid);
-                                            fillDetailTable(gid, sid, caseslist,'table_total_' + sid, 'total');
-                                            if(paging !== undefined) TablePage(gid, sid, paging['totalpage'], paging['pagesize'], fillDetailTable,'table_total_' + sid,'total');
-                                        });
-                      });       
-
-    $("#"+faillink).click(function(){
-                           viewHistory();
-                           invokeWebApi('/group/'+gid+'/test/'+sid+'/history',
-                                        prepareData({'type':'fail'}),
-                                        function(data){
-                                            if(data.results === undefined) return;
-                                            var paging = data.results.paging;
-                                            var caseslist = data.results.cases;
-                                            createDetailTable('cases_div','table_fail_' + sid);
-                                            fillDetailTable(gid, sid, caseslist,'table_fail_' + sid,'fail');
-                                            if(paging !== undefined) TablePage(gid, sid, paging['totalpage'], paging['pagesize'], fillDetailTable, 'table_fail_' + sid,'fail');
-                                        });
-                          });
-
-    $("#"+passlink).click(function(){
-                           viewHistory();
-                           invokeWebApi('/group/'+gid+'/test/'+sid+'/history',
-                                        prepareData({'type':'pass'}),
-                                        function(data){
-                                            if(data.results === undefined) return;
-                                            var paging = data.results.paging;
-                                            var caseslist = data.results.cases;
-                                            createDetailTable('cases_div','table_pass_' + sid);
-                                            fillDetailTable(gid, sid, caseslist,'table_pass_' + sid,'pass');
-                                            if(paging !== undefined) TablePage(gid, sid, paging['totalpage'], paging['pagesize'], fillDetailTable, 'table_pass_' + sid,'pass');
-                                        });
-                          });
-
-    $("#"+errorlink).click(function(){
-                           viewHistory();
-                           invokeWebApi('/group/'+gid+'/test/'+sid+'/history',
-                                        prepareData({'type':'error'}),
-                                        function(data){
-                                            if(data.results === undefined) return;
-                                            var paging = data.results.paging;
-                                            var caseslist = data.results.cases;
-                                            createDetailTable('cases_div','table_error_' + sid);
-                                            fillDetailTable(gid, sid, caseslist,'table_error_' + sid,'error');
-                                            if(paging !== undefined) TablePage(gid, sid, paging['totalpage'], paging['pagesize'], fillDetailTable, 'table_error_' + sid, 'error');
-                                        });
-                          });
+    $("#total_td").click(getRenderingfunc(gid, sid, 'total'));
+    $("#pass_td").click(getRenderingfunc(gid, sid, 'pass'));
+    $("#fail_td").click(getRenderingfunc(gid, sid, 'fail'));
+    $("#error_td").click(getRenderingfunc(gid, sid, 'error'));
 }
 
 function showReportInfo(gid,cid){
