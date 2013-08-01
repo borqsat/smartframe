@@ -398,7 +398,7 @@ function renderTestSessionView(data) {
     renderTestSessionDiv_cyclelist('cyclelist_panel', data.results);
     renderTestSessionDiv_devicelist('devicelist_panel', data.results);
 }
-
+/***
 function renderCaseSnaps(gid, sid, tid){
     var $snaplist = $('#img_list').html('');
     var wd = _appglobal.screensize['width']
@@ -492,6 +492,63 @@ function renderCaseSnaps(gid, sid, tid){
           $('#history_div').carousel({"interval":100000});
           }
        );
+}
+***/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function renderCaseSnaps(gid, sid, tid){    
+    
+    var imglist = [{href:'http://127.0.0.1:8080/smartserver/1b.jpg',
+                    href1:'http://127.0.0.1:8080/smartserver/1s.png', 
+                    title:'0_FMRadio_launched_checkpoint'},
+                    {href:'http://127.0.0.1:8080/smartserver/1s.png',
+                    href1:'http://127.0.0.1:8080/smartserver/2b.jpg', 
+                    title:'test'}
+                   ];
+    
+    $.fancybox.open(imglist,
+                    {
+                     helpers : {
+                     thumbs : {
+                     width: 75,
+                     height: 50
+                    }
+          }
+    });
+
+  invokeWebApi('/group/'+gid+'/test/'+sid+'/case/'+tid+'/snaps',
+                prepareData({}),
+                function(data){
+                            var x = 50
+                            var y =100
+                            var w = 400
+                            var h = 400 
+                            $('<div>').attr('style','z-index:999; border:3px solid green; position:absolute; top:'+y+'px; left:'+x+'px; width:' +w+'px; height:'+h+'px');
+                            
+                            //$snapli.append($icgdiv); 
+                            //$snapli.append($igdiv);
+                            //$snapli.attr('class','item active');                                                 
+              }
+
+       );
+    
 }
 
 function createDetailTable(div, ids){
