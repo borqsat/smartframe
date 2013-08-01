@@ -280,9 +280,6 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
     for(var s = 0; s < test_session.length;s++){
         var cid = test_session[s].cid;
         if (cid !== "" && cid !== "N/A"){
-            var product = test_session[s].product ;
-            var revision = test_session[s].revision ;
-            var key = product + ":" + revision;
             if (_appglobal.cyclelist[key] === undefined) {
                 _appglobal.cyclelist[key] = [];
             }
@@ -296,12 +293,12 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
         var count = test_session[k].count;
         var starttime = test_session[k].starttime;
         var product = test_session[k].product;
-        var revision = test_session[k].revision;
+        //var revision = test_session[k].revision;
         for (var i = 0 ; i < test_session[k].sessions.length; i++) {
             var session_item = test_session[k].sessions[i];
             session_item['cid'] = cid;    
             session_item['product'] = product;
-            session_item['revision'] = revision;
+            session_item['revision'] = session_item.revision;
             sessions.push(session_item);
         }
     }
@@ -360,7 +357,7 @@ function renderTestSessionDiv_cyclelist(div_id, test_session){
         var starttime = test_session[k].starttime;
         var endtime = test_session[k].endtime;
         var product = test_session[k].product;
-        var revision = test_session[k].revision;
+        var revision = test_session[k].sessions[0].revision;
         if (cid !== "" && cid !== "N/A") {
             $tr = "<tr>"+
                 "<td>"+cid+"</td>"+ 
