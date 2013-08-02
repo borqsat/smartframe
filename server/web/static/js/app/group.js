@@ -646,7 +646,10 @@ function fillDetailTable(gid, sid, data, ids, tag) {
                                         "<td>N/A</td>"+
                                         "<td></td>"+
                                         "<td></td>"+
-                                        "<td></td>"+
+                                        "<td>"+
+                                        "<span id=\"span_"+ctid+"\" onmouseover=\"showHint('"+ctid+"')\" onmouseout=\"hideHint('"+ctid+"')\">"+showComment+"</span>"+
+                                        "<br><div id=\"hint_"+ctid+"\" style=\"display:none\">"+hintInfo+"</div>"+
+                                        "</td>"+
                                         "</tr>";     
                  } else {    
                     tablerows += "<tr id=\""+trId+"\">"+
@@ -710,7 +713,7 @@ function fillCommentDiv(gid, sid){
 function submitUpdate(gid, sid, tag){
     if (_appglobal.collectIDs['tids'].length === 0){
       alert("No case selected!!");
-      _appglobal.collectIDs = {'tids':[]};
+      _appglobal.collectIDs['tids'] = [];
       $("#comDiv").dialog('close');
       return
     }
