@@ -178,11 +178,22 @@ function viewAllDeviceList(){
     $('#devicelist_panel').show();   
 }
 
+function clearCheckStatus(){
+    for (var i = 0; i < _appglobal.collectIDs['tids'].length; i++){
+      $("div#live_cases_div input#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked', false);
+    }
+    for (var i = 0; i < _appglobal.collectIDs['tids'].length; i++){
+      $("div#cases_div input#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked', false);
+    }
+    _appglobal.collectIDs['tids'] = [];
+}
+
 function viewLatest(){
     $('#tablatest').addClass('active');
     $('#tabhistory').removeClass('active');
     $('#live_cases_div').show();
     $('#cases_div').hide();
+    clearCheckStatus();
     _appglobal.collectIDs['farthernode'] = 'live_cases_div';
 }
 
@@ -191,6 +202,7 @@ function viewHistory(){
     $('#tabhistory').addClass('active');
     $('#live_cases_div').hide();
     $('#cases_div').show();
+    clearCheckStatus();
     _appglobal.collectIDs['farthernode'] = 'cases_div';    
 }
 
@@ -578,8 +590,6 @@ function fillDetailTable(gid, sid, data, ids, tag) {
     var tablerows = '';
     var detail_table = $("#"+ids+" > tbody").html('');
     var len = data.length;
-    _appglobal.collectIDs['gid'] = gid;
-    _appglobal.collectIDs['sid'] = sid;
     for (var i = 0; i < data.length; i++){
           var citem = data[i];
           var ctid = citem['tid'];
@@ -1248,6 +1258,7 @@ var AppRouter = Backbone.Router.extend({
         $('#report-div').hide();
         _appglobal.gid = gid;
         _appglobal.sid = sid;
+        _appglobal.collectIDs['tids'] = [];
         if(_appglobal.t1 !== undefined) clearInterval(_appglobal.t1);
         if(_appglobal.t2 !== undefined) clearTimeout(_appglobal.t2);
         showGroupInfo(gid);
