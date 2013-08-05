@@ -9,6 +9,7 @@ import base64
 from bson.objectid import ObjectId
 from datetime import datetime
 from datetime import timedelta
+import time
 from collections import defaultdict
 
 import pymongo
@@ -607,6 +608,15 @@ class DataStore(object):
         else:
             return {'code': '02', 'msg': 'Invalid token!'}
 
+    def validate_token_expiretime(self):
+        '''
+        Use UTC time, if utcnow >= the expire time of a token, remove this token from db.
+        '''
+        print "Start validating token expire time"
+        for token in self._db['tokens'].find({}, {'_id': 0, 'token': 1, 'expires': 1}):
+            if time.time() >= token['expires']:
+                self.deleteToken(token['token'])
+
     def createToken(self, appid, uid, info, expires):
         """
         write a user account record in database
@@ -616,7 +626,7 @@ class DataStore(object):
         m.update(str(uuid.uuid1()))
         token = m.hexdigest()
         tokens.insert({'appid': appid, 'uid': uid,
-                      'info': info, 'token': token, 'expires': expires})
+                      'info': info, 'token': token, 'expires': (time.time() + expires)})
         return {'token': token, 'uid': uid}
 
     def deleteToken(self, token):
