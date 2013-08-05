@@ -612,10 +612,9 @@ class DataStore(object):
         '''
         Use UTC time, if utcnow >= the expire time of a token, remove this token from db.
         '''
+        print "Start validating token expire time"
         for token in self._db['tokens'].find({}, {'_id': 0, 'token': 1, 'expires': 1}):
-            if token['expires'] in [999999, u'300000', 604800, 2592000]:
-                pass
-            elif time.time() >= token['expires']:
+            if time.time() >= token['expires']:
                 self.deleteToken(token['token'])
 
     def createToken(self, appid, uid, info, expires):

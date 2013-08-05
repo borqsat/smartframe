@@ -31,9 +31,9 @@ CELERYBEAT_SCHEDULE = {
         'task': 'smartserver.tasks.ws_validate_testcase_endtime',
         'schedule': crontab(minute='*/30')
     },
-    'validate-token-expiretime-every-midnight': {
-        'task': 'smartserver.tasks.ws_validate_token_expiretime'
-        'schedule': crontab(minute=0, hour=0)
+    'validate-token-expiretime-every-30-minutes': {
+        'task': 'smartserver.tasks.ws_validate_token_expiretime',
+        'schedule': crontab(minute='*/30')
     },
 }
 
