@@ -584,8 +584,6 @@ function collectID(ctid){
     }
 }
 
-_appglobal.collectIDs = {'tids':[]};
-
 function fillDetailTable(gid, sid, data, ids, tag) {
     var tablerows = '';
     var detail_table = $("#"+ids+" > tbody").html('');
@@ -754,13 +752,15 @@ function submitUpdate(gid, sid, tag){
           $("span#span_"+_appglobal.collectIDs['tids'][i]).append($showComment);
           $("div#hint_"+_appglobal.collectIDs['tids'][i]).html("");
           $("div#hint_"+_appglobal.collectIDs['tids'][i]).append($hintInfo);
-          $("div#"+_appglobal.collectIDs['farthernode']+" input#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked', false);
       }
+      clearCheckStatus();
+
       invokeWebApiEx("/group/"+gid+"/test/"+sid+"/case/00000/update",
                      prepareData({'comments':comResult}),
                      afterCommit);
     }
     else if (tag === 'clear'){
+      comResult['tids'] = _appglobal.collectIDs['tids'];
       for (var i = 0; i < _appglobal.collectIDs['tids'].length; i++){
           var $hintInfo = "";
           var $showComment = "";
@@ -768,16 +768,14 @@ function submitUpdate(gid, sid, tag){
           $("span#span_"+_appglobal.collectIDs['tids'][i]).append($showComment);
           $("div#hint_"+_appglobal.collectIDs['tids'][i]).html("");
           $("div#hint_"+_appglobal.collectIDs['tids'][i]).append($hintInfo);
-          $("div#"+_appglobal.collectIDs['farthernode']+" input#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked',false);
       }
+      clearCheckStatus();
 
       comResult['endsession'] = 0;
-      comResult['tids'] = _appglobal.collectIDs['tids'];
       invokeWebApiEx("/group/"+gid+"/test/"+sid+"/case/00000/update",
                  prepareData({'comments': comResult}),
                  afterCommit);
     }
-    _appglobal.collectIDs['tids'] = [];
     $("#comDiv").dialog('close');
 }
 
@@ -821,8 +819,10 @@ function showLiveSessionCases(gid,sid) {
                       _appglobal.tid = data.results.summary.total;
                       createDetailTable('live_cases_div', 'table_latest_' + sid);
                       fillDetailTable(gid, sid, data.results.cases,'table_latest_' + sid, 'total');
-                      for (var i = 0; i < _appglobal.collectIDs['tids'].length; i++){
-                        $("div#live_cases_div input#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked', true);
+                      if (_appglobal.collectIDs['farthernode'] === 'live_cases_div'){
+                          for (var i = 0; i < _appglobal.collectIDs['tids'].length; i++){
+                              $("div#live_cases_div input#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked', true);
+                          }
                       }
                 });
 }
@@ -1258,7 +1258,7 @@ var AppRouter = Backbone.Router.extend({
         $('#report-div').hide();
         _appglobal.gid = gid;
         _appglobal.sid = sid;
-        _appglobal.collectIDs['tids'] = [];
+        _appglobal.collectIDs = {'tids': []};
         if(_appglobal.t1 !== undefined) clearInterval(_appglobal.t1);
         if(_appglobal.t2 !== undefined) clearTimeout(_appglobal.t2);
         showGroupInfo(gid);
