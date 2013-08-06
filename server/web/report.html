@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>smartServer</title>  
+    <link href="static/css/jquery-ui-1.8.16.custom.css" rel="stylesheet">
+    <link href="static/css/core.css" rel="stylesheet">
+    <link href="static/css/bootstrap.css" rel="stylesheet">
+    <style type="text/css">.hidden{display:none;}.button{cursor:hand;}</style>  
+</head>
+  
+<body  class="page-index full-content">
+<div id="surface" class="clearfix" style="height: 786px;">
+    <div class="clearfix" id="content">
+        <div class="board-wrapper disabled-list-guide">
+            <div id="board" class="clearfix">  
+                <div id="report-div">
+                    <div id="article-div">
+                      <p id='show-title' style="background-color:white;color:blue;font-size:18px"></p>
+                      <article id='article' class="show-content" style="background-color:white;display:none"
+                      ></article>
+                    </div>
+                    <br />
+                    <div id="product-div"></div>             
+                    <div id="failure-detail-div"></div>
+                    <div id="device-failure-detail-div"></div>
+                    <div id="domain-div"></div>
+                </div>
+            </div>
+        </div> 
+    </div>
+</div>
+<div id="progress-img" style="position:absolute;z-index:1999;"></div>
+</body>
+    <!-- Library js -->
+    <script type="text/javascript" src="static/js/lib/jquery-1.7.2.min.js"></script>
+    <script type="text/javascript" src="static/js/lib/jquery.cookie.js"></script>   
+    <script type="text/javascript" src="static/js/lib/jquery-ui.js"></script>    
+    <script type="text/javascript" src="static/js/lib/json2.js"></script>
+    <script type="text/javascript" src="static/js/lib/bootstrap.js"></script>
+    <script type="text/javascript" src="static/js/lib/underscore-min.js"></script>
+    <script type="text/javascript" src="static/js/lib/backbone.js"></script>
+    <!-- Application js -->    
+    <script type="text/javascript" src="static/js/app/util.js"></script>
+    <script type="text/javascript" src="static/js/app/report.js"></script>
+</html>
