@@ -819,13 +819,13 @@ class DataStore(object):
                                          'comments': d3['comments']['commentinfo']})
                     res1['failcnt'] += 1
                     tmpR3['failcount'] += 1
-                if 'comments.endsession' in d3 and d3['comments']['endsession']==1: break 
+                if d3['comments']['endsession']==1: break 
 
             if tmpBlockStart!='':
                 blockDur+=_deltaDataTime(tmpBlockEnd,tmpBlockStart)
-            res1['totaldur']-=blockDur
-            tmpR3['totaldur']-=blockDur
-
+            #res1['totaldur']-=blockDur
+            #tmpR3['totaldur']-=blockDur
+            #print '+++++++++++++++'+ rdata3.count()
             if rdata3.count() <= 0:
                 tmpR3['faildur'] = 0
             else:
