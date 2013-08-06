@@ -60,14 +60,17 @@ def doRegister():
     @return: ok-{'results':1}
              error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
-    appid = request.json['appid']
-    username = request.json['username']
-    password = request.json['password']
-    info = request.json['info']
-    ret = userRegister(appid, username, password, info)
-    if 'results' in ret:
-        sendVerifyMail(info['email'], username, ret['results']['token'])
-    return ret
+    if request.json.get('results'):
+        return createReport(request.json['results'])
+    else:
+        appid = request.json['appid']
+        username = request.json['username']
+        password = request.json['password']
+        info = request.json['info']
+        ret = userRegister(appid, username, password, info)
+        if 'results' in ret:
+            sendVerifyMail(info['email'], username, ret['results']['token'])
+        return ret
 
 
 @appweb.route('/account/changepasswd', method='POST', content_type='application/json')

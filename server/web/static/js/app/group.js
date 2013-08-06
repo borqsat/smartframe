@@ -963,7 +963,9 @@ function showReportInfo(gid,cid){
     invokeWebApi('/group/'+gid+'/testsummary',
                 prepareData({'cid':cid}),
                 function(data) {
-                  showCommentInfo();
+                  _appglobal.reportData = data;
+                  //TODO: Use package closure to collect data
+                  showCommentInfo(data);
                   showCycleBaseInfo(data);
                   showFailureSummaryInfo(data);
                   showFailureDetailsInfo(data,gid);
@@ -980,9 +982,24 @@ function toggle(){
     }
 }
 
-function showCommentInfo(){
+function afterCreateReport(data){
+    if (data['results']['token'] !== undefined){
+      alert(data['results']['token']);
+    }
+    else{
+      alert(data['error']['msg']);
+    }
+}
 
-    $('#show-title').html('<a style="text-align:center" href=\"javascript:void(0)\">Tap here to get more information</a><br />');
+function createReport(data){
+    invokeWebApiEx("/account/register", 
+                   {"results":_appglobal.reportData},
+                   afterCreateReport
+                   );
+}
+
+function showCommentInfo(data){
+    $('#show-title').html('<a style="text-align:center" href=\"javascript:void(0)\" onclick=\"toggle()\">Tap here to get more information</a><a style="text-align:left" href=\"javascript:createReport()\">Share report</a>');
     $('#article').html( "<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
     					"<b>Product:</b> The device platform and product information. <br />" + 
     					"<b>Start Time:</b> The test start time. <br />" + 
