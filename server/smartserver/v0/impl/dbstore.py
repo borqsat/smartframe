@@ -10,7 +10,8 @@ from bson.objectid import ObjectId
 from datetime import datetime
 from datetime import timedelta
 from collections import defaultdict
-
+from random import choice
+import string
 import pymongo
 from pymongo import MongoClient, MongoReplicaSetClient
 from pymongo import ReadPreference
@@ -570,6 +571,20 @@ class DataStore(object):
                                    'username': username, 'password': password})
         if not rdata is None:
             return rdata['uid']
+        else:
+            return None
+            
+    def findUserByEmail(self, email):
+        users = self._db['users']
+        if '@' in email:
+            rdata = users.find_one({
+                                   'info.email': email, 'active': True})
+        if not rdata is None:
+            newpassword = ''.join([choice(string.ascii_letters+string.digits) for i in range(8)])
+            m = hashlib.md5()
+            m.update(newpassword)
+            users.update({'uid': rdata['uid']}, {'$set': {'password': m.hexdigest()}})
+            return {'uid':rdata['uid'],'password':newpassword}
         else:
             return None
 

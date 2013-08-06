@@ -37,6 +37,16 @@ function afterUpdateEmail(data) {
     }
 }
 
+function sendEmailForForgotPasswd(data,email) {
+    var ret = data["errors"];
+    if(ret !== undefined ) {
+        alert(ret["msg"]);
+    } else {
+        alert('Sent new password to your email successful!')
+        window.location = "login.html";
+    }
+}
+
 function afterChnpass(data) {
     var ret = data["errors"];
     if(ret !== undefined ) {
@@ -91,6 +101,21 @@ function checkemail(){
     }
 }
 
+
+function checkemail1(){
+    var temp = document.getElementById("verify_email");
+    var myreg = /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z0-9]+$/;
+    if(temp.value!=""){
+        if(!myreg.test(temp.value)){
+            document.getElementById("mail1").innerHTML="请输入有效的email!";
+            document.getElementById("mail1").style.color="red";
+            temp.value="";
+            temp.focus();
+            return false;
+        } 
+    }
+}
+
 //show user info
 function showEditAccountInfo(){
     invokeWebApi('/account/info',
@@ -112,6 +137,7 @@ var AppRouter = Backbone.Router.extend({
          "":"showLogin",
          "signup":"showSignup",
          "editaccount":"showeditaccount",
+         "forgotpassword":"forgotpassword",
          "emailVerify":"showemailverify"
     },
     showLogin: function(){
@@ -119,6 +145,7 @@ var AppRouter = Backbone.Router.extend({
          $('#signup-view').hide();
          $('#editaccount-view').hide();  
          $('#emailVerify-view').hide();
+         $('#forgotpassword').hide();
          $('#btnlogin').bind('click',
                              function(){
                                   var username = $('#username').val();
@@ -139,6 +166,7 @@ var AppRouter = Backbone.Router.extend({
          $('#signup-view').show();
          $('#editaccount-view').hide();
          $('#emailVerify-view').hide();
+         $('#forgotpassword').hide();
          $('#btnsignup').bind('click',
                              function(){
                                  var email = $('#regemail').val();                              
@@ -168,7 +196,7 @@ var AppRouter = Backbone.Router.extend({
          $('#signup-view').hide();
          $('#editaccount-view').show();
          $('#emailVerify-view').hide();
-         
+         $('#forgotpassword').hide();
          showEditAccountInfo();
          $('#btnchnpass').bind('click',
                              function(){                       
@@ -205,7 +233,6 @@ var AppRouter = Backbone.Router.extend({
                                                 afterUpdate
                                   );
                })
-               
           $('#btneditemail').bind('click',
                              function(){
                                  document.getElementById("upemail").style="";
@@ -254,10 +281,30 @@ var AppRouter = Backbone.Router.extend({
                })
                
      },
+     forgotpassword: function(){
+         $('#login-view').hide();
+         $('#signup-view').hide();
+         $('#editaccount-view').hide();
+         $('#emailVerify-view').hide();
+         $('#forgotpassword').show();
+         $('#btnSendEmailForgotPass').bind('click',
+                             function(){
+                                 var email = $('#verify_email').val();  
+                                 if (email === ''){
+                                     alert('Please input correct email!');
+                                 }else{
+                                     invokeWebApiEx("/account/forgotpasswd",
+                                                    prepareData({'email':email}),
+                                                    sendEmailForForgotPasswd(email));
+                                 }
+                                  
+               })
+     },
      showemailverify: function(){
          $('#login-view').hide();
          $('#signup-view').hide();
          $('#editaccount-view').hide();
+         $('#forgotpassword').hide();
          $('#emailVerify-view').show();
      }
 });
