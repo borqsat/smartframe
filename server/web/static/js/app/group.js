@@ -178,18 +178,32 @@ function viewAllDeviceList(){
     $('#devicelist_panel').show();   
 }
 
+function clearCheckStatus(){
+    for (var i = 0; i < _appglobal.collectIDs['tids'].length; i++){
+      $("div#live_cases_div input#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked', false);
+    }
+    for (var i = 0; i < _appglobal.collectIDs['tids'].length; i++){
+      $("div#cases_div input#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked', false);
+    }
+    _appglobal.collectIDs['tids'] = [];
+}
+
 function viewLatest(){
     $('#tablatest').addClass('active');
     $('#tabhistory').removeClass('active');
     $('#live_cases_div').show();
     $('#cases_div').hide();
+    clearCheckStatus();
+    _appglobal.collectIDs['farthernode'] = 'live_cases_div';
 }
 
 function viewHistory(){
     $('#tablatest').removeClass('active');
     $('#tabhistory').addClass('active');
     $('#live_cases_div').hide();
-    $('#cases_div').show();    
+    $('#cases_div').show();
+    clearCheckStatus();
+    _appglobal.collectIDs['farthernode'] = 'cases_div';    
 }
 
 function clearTab() {
@@ -296,12 +310,11 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
         var count = test_session[k].count;
         var starttime = test_session[k].starttime;
         var product = test_session[k].product;
-        var revision = test_session[k].sessions[0].revision;
         for (var i = 0 ; i < test_session[k].sessions.length; i++) {
             var session_item = test_session[k].sessions[i];
             session_item['cid'] = cid;    
             session_item['product'] = product;
-            session_item['revision'] = revision;
+            session_item['revision'] = session_item.revision;
             sessions.push(session_item);
         }
     }
@@ -444,7 +457,7 @@ function renderCaseSnaps(gid, sid, tid){
                             $icg.setAttribute("width", wd + "px");
                             $icg.setAttribute("height", ht + "px");
                             $ig.setAttribute('class','thumbnail thumbnailr');
-                            $icg.setAttribute('class','thumbnail thumbnaile'); 
+                            $icg.setAttribute('class','thumbnail thumbnaile');
                             title = data.results.checksnap['title']
                             if(title !== undefined && title.indexOf('(') > 0){
                                 rect = title.substring(title.indexOf('(')+1, title.indexOf(')'));
@@ -577,9 +590,6 @@ function fillDetailTable(gid, sid, data, ids, tag) {
     var tablerows = '';
     var detail_table = $("#"+ids+" > tbody").html('');
     var len = data.length;
-    _appglobal.collectIDs = {'tids':[]};
-    _appglobal.collectIDs['gid'] = gid;
-    _appglobal.collectIDs['sid'] = sid;
     for (var i = 0; i < data.length; i++){
           var citem = data[i];
           var ctid = citem['tid'];
@@ -646,7 +656,10 @@ function fillDetailTable(gid, sid, data, ids, tag) {
                                         "<td>N/A</td>"+
                                         "<td></td>"+
                                         "<td></td>"+
-                                        "<td></td>"+
+                                        "<td>"+
+                                        "<span id=\"span_"+ctid+"\" onmouseover=\"showHint('"+ctid+"')\" onmouseout=\"hideHint('"+ctid+"')\">"+showComment+"</span>"+
+                                        "<br><div id=\"hint_"+ctid+"\" style=\"display:none\">"+hintInfo+"</div>"+
+                                        "</td>"+
                                         "</tr>";     
                  } else {    
                     tablerows += "<tr id=\""+trId+"\">"+
@@ -710,7 +723,7 @@ function fillCommentDiv(gid, sid){
 function submitUpdate(gid, sid, tag){
     if (_appglobal.collectIDs['tids'].length === 0){
       alert("No case selected!!");
-      _appglobal.collectIDs = {'tids':[]};
+      _appglobal.collectIDs['tids'] = [];
       $("#comDiv").dialog('close');
       return
     }
@@ -741,13 +754,15 @@ function submitUpdate(gid, sid, tag){
           $("span#span_"+_appglobal.collectIDs['tids'][i]).append($showComment);
           $("div#hint_"+_appglobal.collectIDs['tids'][i]).html("");
           $("div#hint_"+_appglobal.collectIDs['tids'][i]).append($hintInfo);
-          $("#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked', false);
       }
+      clearCheckStatus();
+
       invokeWebApiEx("/group/"+gid+"/test/"+sid+"/case/00000/update",
                      prepareData({'comments':comResult}),
                      afterCommit);
     }
     else if (tag === 'clear'){
+      comResult['tids'] = _appglobal.collectIDs['tids'];
       for (var i = 0; i < _appglobal.collectIDs['tids'].length; i++){
           var $hintInfo = "";
           var $showComment = "";
@@ -755,16 +770,14 @@ function submitUpdate(gid, sid, tag){
           $("span#span_"+_appglobal.collectIDs['tids'][i]).append($showComment);
           $("div#hint_"+_appglobal.collectIDs['tids'][i]).html("");
           $("div#hint_"+_appglobal.collectIDs['tids'][i]).append($hintInfo);
-          $("#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked',false);
       }
+      clearCheckStatus();
 
       comResult['endsession'] = 0;
-      comResult['tids'] = _appglobal.collectIDs['tids'];
       invokeWebApiEx("/group/"+gid+"/test/"+sid+"/case/00000/update",
                  prepareData({'comments': comResult}),
                  afterCommit);
     }
-    _appglobal.collectIDs = {'tids':[]};
     $("#comDiv").dialog('close');
 }
 
@@ -808,6 +821,11 @@ function showLiveSessionCases(gid,sid) {
                       _appglobal.tid = data.results.summary.total;
                       createDetailTable('live_cases_div', 'table_latest_' + sid);
                       fillDetailTable(gid, sid, data.results.cases,'table_latest_' + sid, 'total');
+                      if (_appglobal.collectIDs['farthernode'] === 'live_cases_div'){
+                          for (var i = 0; i < _appglobal.collectIDs['tids'].length; i++){
+                              $("div#live_cases_div input#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked', true);
+                          }
+                      }
                 });
 }
 
@@ -1242,6 +1260,7 @@ var AppRouter = Backbone.Router.extend({
         $('#report-div').hide();
         _appglobal.gid = gid;
         _appglobal.sid = sid;
+        _appglobal.collectIDs = {'tids': []};
         if(_appglobal.t1 !== undefined) clearInterval(_appglobal.t1);
         if(_appglobal.t2 !== undefined) clearTimeout(_appglobal.t2);
         showGroupInfo(gid);
