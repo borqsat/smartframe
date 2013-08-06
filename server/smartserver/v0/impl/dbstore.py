@@ -617,6 +617,13 @@ class DataStore(object):
             if time.time() >= token['expires']:
                 self.deleteToken(token['token'])
 
+    def getReportData(self, token):
+        rdata = list(self._db['tokens'].find({'token': token}))
+        if len(rdata) == 0:
+            return {}
+        else:
+            return {'results': rdata[0]['info']['results']}
+
     def createToken(self, appid, uid, info, expires):
         """
         write a user account record in database

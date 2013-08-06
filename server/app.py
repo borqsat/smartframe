@@ -41,6 +41,9 @@ def assets(filename):
 def root():
     return redirect("/smartserver/index.html")
 
+@app.route("/report/<token>")
+def report(token):
+    return redirect("/smartserver/report.html#token/"+token+"")
 
 app.mount('/smartapi', v0)
 app.mount('/smart/0/api/', v0)

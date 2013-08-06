@@ -123,3 +123,10 @@ def createReport(info):
         return {'results': {'token': rdata['token']}}
     else:
         return {'error': {'msg': 'Create report failed!'}}
+
+def getReportData(token):
+    rdata = store.getReportData(token)
+    if 'results' in rdata:
+        return {'results': rdata['results']}
+    else:
+        return {'error': {'msg': 'Invalid request or the report has expired!'}}

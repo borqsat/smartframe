@@ -45,7 +45,11 @@ def method_not_allowed(res):  # workaround to support cross-domain request
     res.headers['Allow'] += ', OPTIONS'
     return request.app.default_error_handler(res)
 
-
+@appweb.route('/token/reportdata', method='POST', content_type='application/json')
+def doGetReportData():
+    return getReportData(request.json['token'])
+    
+   
 @appweb.route('/account/register', method='POST', content_type='application/json', login=False)
 def doRegister():
     """
@@ -623,8 +627,7 @@ def doGetGroupTestSessions(gid):
         return getTestSessionList(gid)
     else:
         return getTestCycleReport(gid, cid)
-
-
+ 
 if __name__ == '__main__':
     print 'WebServer Serving on 8080...'
     WSGIServer(("", 8080), appweb).serve_forever()
