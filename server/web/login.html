@@ -28,7 +28,7 @@
         <label for="password">Password</label>
         <input type="password" tabindex="2" id="password" name="password" onkeydown="if(event.keyCode==13){btnlogin.click()}">
 
-        <a tabindex="4" style="margin: 10px 0 0;" class="quiet right" href="#forgot">Forgot your password?</a>
+        <a tabindex="4" style="margin: 10px 0 0;" class="quiet right" href="#forgotpassword">Forgot your password?</a>
         <input type="button" tabindex="3" value="Log In" class="primary" id="btnlogin">
 
           <p class="quiet clear">
@@ -109,6 +109,35 @@
       </form>
     </div>
   </div>
+  
+  <div id="forgotpassword" class="account-page" style="display:none" >
+      <form novalidate=""  class="account-page">  
+            <div  class="account-content">
+                  <label for="verify_email">Verify Email<span style="color:red">*</span></label>
+                  <input type="email" onBlur="checkemail1()" id="verify_email" name="verify_email">
+                  <p><span id="mail1"></span></p>
+                  <h1><input type="button" tabindex="4" value="Send email" class="primary" id="btnSendEmailForgotPass"></h1>
+          </div>
+      </form>
+    </div>
+  </div>
+  <div id="updatepasswordbyemail" class="account-page" style="display:none" >
+      <form novalidate=""  class="account-page">  
+            <div  class="account-content">
+            <div  id="change_pass_panel">
+                <span id="txtwarning"></span>
+                  <span id="regwarning"></span>
+                  <label for="newpassword">New Password<span style="color:red">*</span></label>
+                  <input type="password" tabindex="2" id="newpassword" name="newpassword">
+                  <label for="confpassword">Confirm Password<span style="color:red">*</span></label>
+                  <input type="password" tabindex="3" id="confpassword" name="confpassword">
+                  <h1><input type="button" tabindex="4" value="Submit" class="primary" id="btnchnpass"></h1>
+            </div>
+          </div>
+      </form>
+    </div>
+  </div>
+  
   <div id="emailVerify-view" class="account-page" style="display:none" >
       <label id="emailVerify_link" >
         <h2>Please login your email to verify email  <a tabindex="4" style="height:100;align:bottom;border:1;color:red" class="center" href="">login in</a>
