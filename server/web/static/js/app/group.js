@@ -291,37 +291,38 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
     $cycle_panel.append($product_table);
 
     _appglobal.cyclelist = {};//new Array();
-    for(var s = 0; s < test_session.length;s++){
-        var cid = test_session[s].cid;
-        if (cid !== "" && cid !== "N/A"){
-            if (_appglobal.cyclelist[key] === undefined) {
-                _appglobal.cyclelist[key] = [];
-            }
-            _appglobal.cyclelist[key].push(cid);
-        }
-    }  
-
+    
+    _appglobal.cyclelist = {};//new Array();
     var sessions = [];
     for(var k = 0; k < test_session.length;k++){
         var cid = test_session[k].cid;
         var count = test_session[k].count;
         var starttime = test_session[k].starttime;
         var product = test_session[k].product;
-        //var revision = test_session[k].revision;
+        var key = "" ;
+        key = product + ":" + test_session[k].sessions[0].revision;
+        if (cid !== "" && cid !== "N/A"){
+            if (_appglobal.cyclelist[key] === undefined) {
+                _appglobal.cyclelist[key] = [];
+            }
+            _appglobal.cyclelist[key].push(cid);
+        }
         for (var i = 0 ; i < test_session[k].sessions.length; i++) {
             var session_item = test_session[k].sessions[i];
             session_item['cid'] = cid;    
             session_item['product'] = product;
             session_item['revision'] = session_item.revision;
             sessions.push(session_item);
+            //key = product + ":" + session_item.revision;
         }
+        
     }
-
+    
     sessions.sort(function(a,b) { return ( (a.status < b.status) || ((a.status == b.status) && (b.cid > a.cid))|| ((a.status == b.status) && (b.cid == a.cid) && (a.id < b.id)))?1:-1 ;})
 
     for(var t = 0; t < sessions.length; t++) {
         var value = sessions[t];
-        var key = value.id ;
+        //var key = value.id ;
         var sid = value.sid;
         var endtime = value.endtime;
         var key = value.product + ":" + value.revision;
@@ -711,14 +712,14 @@ function fillCommentDiv(gid, sid){
                         "<label class=\"checkbox\" for=\"endsession\">"+
                         "<span>Session ends here?</span><input id=\"endsession\" type=\"checkbox\">"+
                         "</label><br>"+
-                        "<input id=\"btnc\" onclick=\"submitUpdate('"+gid+"', '"+sid+"', 'clear')\" type=\"button\" class=\"pull-right\" value=\"Clear\"></input>"+
-                        "<input id=\"btn\" onclick=\"submitUpdate('"+gid+"', '"+sid+"', 'submit')\" type=\"button\" class=\"pull-right\" value=\"Commit\"></input>"+
+                        "<input id=\"btnc\" onclick=\"submitUpdate('clear')\" type=\"button\" class=\"pull-right\" value=\"Clear\"></input>"+
+                        "<input id=\"btn\" onclick=\"submitUpdate('submit')\" type=\"button\" class=\"pull-right\" value=\"Commit\"></input>"+
                       "</div>"+
                    "</div></form></div>";
     return commentDiv;
 }
 
-function submitUpdate(gid, sid, tag){
+function submitUpdate(tag){
     if (_appglobal.collectIDs['tids'].length === 0){
       alert("No case selected!!");
       _appglobal.collectIDs['tids'] = [];
@@ -755,7 +756,7 @@ function submitUpdate(gid, sid, tag){
       }
       clearCheckStatus();
 
-      invokeWebApiEx("/group/"+gid+"/test/"+sid+"/case/00000/update",
+      invokeWebApiEx("/group/"+_appglobal.collectIDs['gid']+"/test/"+_appglobal.collectIDs['sid']+"/case/00000/update",
                      prepareData({'comments':comResult}),
                      afterCommit);
     }
@@ -772,7 +773,7 @@ function submitUpdate(gid, sid, tag){
       clearCheckStatus();
 
       comResult['endsession'] = 0;
-      invokeWebApiEx("/group/"+gid+"/test/"+sid+"/case/00000/update",
+      invokeWebApiEx("/group/"+_appglobal.collectIDs['gid']+"/test/"+_appglobal.collectIDs['sid']+"/case/00000/update",
                  prepareData({'comments': comResult}),
                  afterCommit);
     }
@@ -1276,6 +1277,8 @@ var AppRouter = Backbone.Router.extend({
         _appglobal.gid = gid;
         _appglobal.sid = sid;
         _appglobal.collectIDs = {'tids': []};
+        _appglobal.collectIDs['gid'] = gid;
+        _appglobal.collectIDs['sid'] = sid;
         if(_appglobal.t1 !== undefined) clearInterval(_appglobal.t1);
         if(_appglobal.t2 !== undefined) clearTimeout(_appglobal.t2);
         showGroupInfo(gid);

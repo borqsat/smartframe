@@ -19,6 +19,17 @@ def userRegister(appid, user, pswd, info):
     else:
         return {'errors': rdata}
 
+def forgotPasswd(email):
+    ret1 = store.findUserByEmail(email)
+    if not ret1['uid'] is None:
+        rdata = {}
+        ret = store.createToken('03', ret1['uid'], {}, TOKEN_EXPIRES['03'])
+        rdata['token'] = ret['token']
+        rdata['uid'] = ret1['uid']
+        rdata['password'] = ret1['password']
+        return {'results': rdata}
+    else:
+        return {'errors': rdata}
 
 def userLogin(appid, user, pswd):
     uid = store.userExists(user, pswd)
