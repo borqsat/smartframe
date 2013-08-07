@@ -1013,7 +1013,7 @@ function createReport(data){
 }
 
 function showCommentInfo(data){
-    $('#show-title').html('<a style="text-align:center" href=\"javascript:void(0)\" onclick=\"toggle()\">Tap here to get more information</a><a style="text-align:right" href=\"javascript:createReport()\">Share report</a>');
+    $('#show-title').html('<a href=\"javascript:void(0)\" onclick=\"toggle()\">Tap here to get more information</a><a style="margin-left: 60%" href=\"javascript:createReport()\">Share report</a>');
     $('#show-title').append("<div style=\"display:none\" id=\"urldiv\"></div>");
     $('#article').html( "<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
     					"<b>Product:</b> The device platform and product information. <br />" + 
