@@ -72,7 +72,7 @@ def __sendForgotPasswdMail(receiver, passwd, token):
     msg = msg + 'Hi,%s,\r\n\r\n' % (receiver)
     msg = msg + 'This mail sent out by smartAT, do not reply to it directly.\r\n'
     msg = msg + 'Your password of account \"%s\" has been reset alreday.\r\n' % (receiver)
-    msg = msg + 'The new password :' + passwd
+    msg = msg + 'The new password: ' + passwd + ' \r\n'
     msg = msg + 'Please login SmartAT and change new one for your own.\r\n'
     msg = msg + '\r\n\r\n'
     msg = msg + 'Best Regards\r\n'
