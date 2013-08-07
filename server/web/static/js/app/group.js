@@ -712,14 +712,14 @@ function fillCommentDiv(gid, sid){
                         "<label class=\"checkbox\" for=\"endsession\">"+
                         "<span>Session ends here?</span><input id=\"endsession\" type=\"checkbox\">"+
                         "</label><br>"+
-                        "<input id=\"btnc\" onclick=\"submitUpdate('"+gid+"', '"+sid+"', 'clear')\" type=\"button\" class=\"pull-right\" value=\"Clear\"></input>"+
-                        "<input id=\"btn\" onclick=\"submitUpdate('"+gid+"', '"+sid+"', 'submit')\" type=\"button\" class=\"pull-right\" value=\"Commit\"></input>"+
+                        "<input id=\"btnc\" onclick=\"submitUpdate('clear')\" type=\"button\" class=\"pull-right\" value=\"Clear\"></input>"+
+                        "<input id=\"btn\" onclick=\"submitUpdate('submit')\" type=\"button\" class=\"pull-right\" value=\"Commit\"></input>"+
                       "</div>"+
                    "</div></form></div>";
     return commentDiv;
 }
 
-function submitUpdate(gid, sid, tag){
+function submitUpdate(tag){
     if (_appglobal.collectIDs['tids'].length === 0){
       alert("No case selected!!");
       _appglobal.collectIDs['tids'] = [];
@@ -756,7 +756,7 @@ function submitUpdate(gid, sid, tag){
       }
       clearCheckStatus();
 
-      invokeWebApiEx("/group/"+gid+"/test/"+sid+"/case/00000/update",
+      invokeWebApiEx("/group/"+_appglobal.collectIDs['gid']+"/test/"+_appglobal.collectIDs['sid']+"/case/00000/update",
                      prepareData({'comments':comResult}),
                      afterCommit);
     }
@@ -773,7 +773,7 @@ function submitUpdate(gid, sid, tag){
       clearCheckStatus();
 
       comResult['endsession'] = 0;
-      invokeWebApiEx("/group/"+gid+"/test/"+sid+"/case/00000/update",
+      invokeWebApiEx("/group/"+_appglobal.collectIDs['gid']+"/test/"+_appglobal.collectIDs['sid']+"/case/00000/update",
                  prepareData({'comments': comResult}),
                  afterCommit);
     }
@@ -1260,6 +1260,8 @@ var AppRouter = Backbone.Router.extend({
         _appglobal.gid = gid;
         _appglobal.sid = sid;
         _appglobal.collectIDs = {'tids': []};
+        _appglobal.collectIDs['gid'] = gid;
+        _appglobal.collectIDs['sid'] = sid;
         if(_appglobal.t1 !== undefined) clearInterval(_appglobal.t1);
         if(_appglobal.t2 !== undefined) clearTimeout(_appglobal.t2);
         showGroupInfo(gid);
