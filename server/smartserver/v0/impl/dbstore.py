@@ -831,10 +831,10 @@ class DataStore(object):
 
             if tmpBlockStart!='':
                 blockDur+=_deltaDataTime(tmpBlockEnd,tmpBlockStart)
-            #res1['totaldur']-=blockDur
-            #tmpR3['totaldur']-=blockDur
-            #print '+++++++++++++++'+ rdata3.count()
-            if rdata3.count() <= 0:
+            res1['totaldur']-=blockDur
+            tmpR3['totaldur']-=blockDur
+            
+            if tmpR3['failcount'] <= 0:
                 tmpR3['faildur'] = 0
             else:
                 tmpR3['faildur'] = _deltaDataTime(tmpFailTime, d['starttime']) - fblockDur
@@ -1099,6 +1099,7 @@ class DataStore(object):
                                                   'summary.error': errorCount,
                                                   'runtime': runtime,
                                                   'summary.total': total}})
+        return errorCount
 
     def updateTestCaseResult(self, gid, sid, tid, results):
 
@@ -1209,6 +1210,34 @@ class DataStore(object):
 
         return {'snaps': snaps, 'checksnap': checksnap}
 
+    def checkMailListAndContext(gid,sid,tid):
+        groupmembers = self._db['group_members']
+        grouptemp = groupmembers.find({'gid': gid})
+        uids=[]
+        emailList=[]
+        for tmpu in grouptemp:
+            uids.append(tmpu['uid']) 
+        users = self._db['users']
+        result=uesrs.find({'uid':{'$in':uids}, 'active':True})
+        for tmp in result:
+                emailList.append(tmp.info['email'])
+        
+        info={}  
+        testsessions = self._db['testsessions']
+        testresults = self._db['testresults']
+        deviceid=testsessions.find({'gid':gid,'sid':sid})[0]['deviceid']
+        starttime=testsessions.find({'gid':gid,'sid':sid})[0]['starttime']
+        issuetime=testresults.find({'gid':gid,'sid':sid,'tid':tid})[0]['starttime']
+        testcasename=testresults.find({'gid':gid,'sid':sid,'tid':tid})[0]['casename']
+        info['deviceid']=deviceid
+        info['starttime']=starttime
+        info['issuetime']=issuetime
+        info['testcasename']=testcasename
+
+        ret={}
+        ret['receiver']=emailList
+        ret['info']=info
+        return ret 
 
 def __getStore():
     mongo_uri = MONGODB_URI

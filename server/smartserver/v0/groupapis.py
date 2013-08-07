@@ -10,7 +10,7 @@ from gevent.pywsgi import WSGIServer
 from .impl.test import *
 from .impl.account import *
 from .impl.group import *
-from .sendmail import sendVerifyMail, sendInviteMail
+from .sendmail import *
 from .plugins import LoginPlugin, ContentTypePlugin
 
 from .. import tasks
@@ -412,8 +412,11 @@ def doUpdateCaseResult(gid, sid, tid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    result = updateCaseResult(gid, sid, tid, request.json)
-    tasks.ws_update_testsession_summary.delay(sid)
+    result = updateTestCaseResult(gid, sid, tid, request.json)
+    errorCount=tasks.ws_update_testsession_summary.delay(sid)
+    if errorCount == 1 and request.json['result'].lower() == 'error':
+        mailcontext=checkMailListAndContext(gid,sid,tid)
+        sendErrorMail(mailcontext)
     return result
 
 
