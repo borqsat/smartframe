@@ -985,7 +985,19 @@ function toggle(){
 
 function afterCreateReport(data){
     if (data['results']['token'] !== undefined){
-      alert(data['results']['token']);
+       $('#urldiv').append("<textarea id=\"urltext\" class=\"input-xxlarge\" readonly=\"readonly\">localhost:8080/report/"+data['results']['token']+"</textarea>");
+       $('#urldiv').dialog({
+                            title: "Link of the report:",
+                            height: 188,
+                            width: 565,
+                            resizable:false,
+                            modal: true,
+                            buttons:{
+                              "OK":function(){
+                                $('#urldiv').html('');
+                                $(this).dialog("close");
+                                }}
+                           });
     }
     else{
       alert(data['error']['msg']);
@@ -993,6 +1005,7 @@ function afterCreateReport(data){
 }
 
 function createReport(data){
+    $('#urldiv').html('');
     invokeWebApiEx("/report/savesnapshot", 
                    {"results":_appglobal.reportData},
                    afterCreateReport
@@ -1000,7 +1013,8 @@ function createReport(data){
 }
 
 function showCommentInfo(data){
-    $('#show-title').html('<a style="text-align:center" href=\"javascript:void(0)\" onclick=\"toggle()\">Tap here to get more information</a><a style="text-align:left" href=\"javascript:createReport()\">Share report</a>');
+    $('#show-title').html('<a style="text-align:center" href=\"javascript:void(0)\" onclick=\"toggle()\">Tap here to get more information</a><a style="text-align:right" href=\"javascript:createReport()\">Share report</a>');
+    $('#show-title').append("<div style=\"display:none\" id=\"urldiv\"></div>");
     $('#article').html( "<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
     					"<b>Product:</b> The device platform and product information. <br />" + 
     					"<b>Start Time:</b> The test start time. <br />" + 
