@@ -68,4 +68,3 @@ def sendErrorMail(context):
     msg = msg + 'SmartAT Team\r\n'
 
     __sendMail(context['receiver'],subject,msg)
-
