@@ -992,7 +992,7 @@ function afterCreateReport(data){
 }
 
 function createReport(data){
-    invokeWebApiEx("/account/register", 
+    invokeWebApiEx("/report/savesnapshot", 
                    {"results":_appglobal.reportData},
                    afterCreateReport
                    );

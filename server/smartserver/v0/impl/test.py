@@ -114,7 +114,7 @@ def getTestLiveSnaps(gid, sid, timestamp):
     imgBuffer = store.readTestLiveSnaps(gid, sid, timestamp)
     return imgBuffer
 
-def createReport(info):
+def saveReportData(info):
     appid = '02'
     uid = '0000000000'
     expires = 7*24*3600

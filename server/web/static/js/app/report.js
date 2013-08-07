@@ -8,9 +8,9 @@ function afterRequest(data){
 }
 
 function showReportInfo(token){
-    invokeWebApiEx("/token/reportdata",
-                   {"token" : token},
-                   afterRequest);
+    invokeWebApi("/report/getsnapshot",
+                {"token" : token},
+                afterRequest);
 }
 
 function toggle(){
@@ -254,7 +254,7 @@ function showDomainInfo(data){
 
 var AppRouter = Backbone.Router.extend({
     routes: {
-        "token/:token" : "showReportView"
+        "reportsnapshot/:token" : "showReportView"
     },
     showReportView: function(token){
         $('#report-div').show();

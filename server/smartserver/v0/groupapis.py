@@ -45,10 +45,14 @@ def method_not_allowed(res):  # workaround to support cross-domain request
     res.headers['Allow'] += ', OPTIONS'
     return request.app.default_error_handler(res)
 
-@appweb.route('/token/reportdata', method='POST', content_type='application/json')
+@appweb.route('/report/savesnapshot', method='POST', content_type='application/json', login=False)
+def doSaveReportData():
+    return saveReportData(request.json['results'])
+
+@appweb.route('/report/getsnapshot', method='GET')
 def doGetReportData():
-    return getReportData(request.json['token'])
-    
+    return getReportData(request.params['token'])
+
    
 @appweb.route('/account/register', method='POST', content_type='application/json', login=False)
 def doRegister():
@@ -64,17 +68,14 @@ def doRegister():
     @return: ok-{'results':1}
              error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
-    if request.json.get('results'):
-        return createReport(request.json['results'])
-    else:
-        appid = request.json['appid']
-        username = request.json['username']
-        password = request.json['password']
-        info = request.json['info']
-        ret = userRegister(appid, username, password, info)
-        if 'results' in ret:
-            sendVerifyMail(info['email'], username, ret['results']['token'])
-        return ret
+    appid = request.json['appid']
+    username = request.json['username']
+    password = request.json['password']
+    info = request.json['info']
+    ret = userRegister(appid, username, password, info)
+    if 'results' in ret:
+        sendVerifyMail(info['email'], username, ret['results']['token'])
+    return ret
 
 
 @appweb.route('/account/changepasswd', method='POST', content_type='application/json')
