@@ -185,6 +185,9 @@ function clearCheckStatus(){
     for (var i = 0; i < _appglobal.collectIDs['tids'].length; i++){
       $("div#cases_div input#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked', false);
     }
+    if ($("input#checkbox_selectAll") !== []){
+      $("input#checkbox_selectAll").attr('checked', false);
+    }
     _appglobal.collectIDs['tids'] = [];
 }
 
@@ -611,7 +614,7 @@ function keepCheckStatus(ids){
 function fillDetailTable(gid, sid, data, ids, tag) {
     var tablerows = '';
     var detail_table = $("#"+ids+" > tbody").html('');
-    $("#"+ids+" > thead > tr > th#selectAll").html('').append("<input type=\"checkbox\" onclick=\"javascript:selectAll('"+ids+"')\"></input>");
+    $("#"+ids+" > thead > tr > th#selectAll").html('').append("<input id=\"checkbox_selectAll\" type=\"checkbox\" onclick=\"javascript:selectAll('"+ids+"')\"></input>");
     var len = data.length;
     for (var i = 0; i < data.length; i++){
           var citem = data[i];
