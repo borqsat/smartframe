@@ -501,7 +501,7 @@ function createDetailTable(div, ids){
     var $div_detail = $("#"+div);
     var $tb = $('<table>').attr('id', ids).attr('class','table table-striped table-hover').attr('style','table-layout:fixed;word-wrap:break-word;');
     var $th = '<thead><tr>'+
-              '<th align="left" width="3%"></th>'+
+              '<th id="selectAll" align="left" width="3%"></th>'+
               '<th align="left" width="6%">Tid</th>'+
               '<th align="left" width="31%">Testcase</th>'+
               '<th align="left" width="17%">Start Time</th>'+
@@ -585,21 +585,32 @@ function collectID(ctid){
     }
 }
 
+function selectAll(ids){
+    var IDs = [];
+    for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
+       var results = $("#"+ids+" > tbody > tr")[i]['id'].split('.');
+       if(results[1] === 'error' || results[1] === 'fail'){
+          IDs.push(results[0]);
+       }
+    }
+    alert(IDs.length);
+}
+
 function fillDetailTable(gid, sid, data, ids, tag) {
     var tablerows = '';
     var detail_table = $("#"+ids+" > tbody").html('');
+    $("#"+ids+" > thead > tr > th#selectAll").append("<input type=\"checkbox\" onclick=\"javascript:selectAll('"+ids+"')\"></input>");
     var len = data.length;
     for (var i = 0; i < data.length; i++){
           var citem = data[i];
           var ctid = citem['tid'];
-          // Collect tids here for the feature of select-all/de-select-all.
           var ctime = citem['starttime'];
           var cname = citem['casename'];
           var cresult = citem['result'];
           var clog = citem['log'];
           var comResult = citem['comments'];
           if(tag !== 'total' && tag !== cresult) continue;
-          var trId = "tr_"+ctid;
+          var trId = ctid + "." + cresult;
           
           if(comResult !== undefined){
              if(comResult['endsession'] === 0)
