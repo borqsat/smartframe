@@ -586,20 +586,24 @@ function collectID(ctid){
 }
 
 function selectAll(ids){
-    var IDs = [];
     for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
        var results = $("#"+ids+" > tbody > tr")[i]['id'].split('.');
        if(results[1] === 'error' || results[1] === 'fail'){
-          IDs.push(results[0]);
+          collectID(results[0]);
+          if ($("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked') === undefined){
+            $("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', true);
+          }
+          else
+            {$("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', false);}
        }
     }
-    alert(IDs.length);
+    alert(_appglobal.collectIDs['tids']);
 }
 
 function fillDetailTable(gid, sid, data, ids, tag) {
     var tablerows = '';
     var detail_table = $("#"+ids+" > tbody").html('');
-    $("#"+ids+" > thead > tr > th#selectAll").append("<input type=\"checkbox\" onclick=\"javascript:selectAll('"+ids+"')\"></input>");
+    $("#"+ids+" > thead > tr > th#selectAll").html('').append("<input type=\"checkbox\" onclick=\"javascript:selectAll('"+ids+"')\"></input>");
     var len = data.length;
     for (var i = 0; i < data.length; i++){
           var citem = data[i];
