@@ -995,7 +995,7 @@ function showCommentInfo(data){
                         "<b>First Failure Uptime:</b> From the <b>Start Time</b> to first failure occurs. <br />");
     $("a#sharereport").unbind().bind('click', function(data){
                                                     return function(){
-                                                          var reportlink = window.location.protocol + "//" + window.location.host + "/report/" + data['results']['token'];
+                                                           var reportlink = window.location.protocol + "//" + window.location.host + "/smartserver/group.html#report/" + data['results']['token'];
                                                            $('#urldiv').append("<textarea id=\"urltext\" class=\"input-xxlarge\" readonly=\"readonly\">"+reportlink+"</textarea>");
                                                            $('#urldiv').dialog({
                                                                                 title: "Link of the report to share:",
@@ -1248,13 +1248,25 @@ function showDomainInfo(data){
     }
 }
 
+function showStaticReport(token){
+    invokeWebApi("/report/getsnapshot",
+                {"token" : token},
+                function(data){
+                     showCommentInfo(data);
+                     showCycleBaseInfo(data);
+                     showFailureSummaryInfo(data);
+                     showFailureDetailsInfo(data);
+                     showDomainInfo(data);
+                });
+}
 
 var AppRouter = Backbone.Router.extend({
     routes: {
         "group/:gid" : "showGroupView",
         "group/:gid/session/:sid" : "showSessionView",
         "group/:gid/report/:cid" : "showReportView",
-        "group/:gid/session/:sid/fail" : "showFailView"
+        "group/:gid/session/:sid/fail" : "showFailView",
+        "report/:token" : "showStaticReportView"
     },
     showGroupView: function(gid){
         checkLogIn();
@@ -1309,6 +1321,13 @@ var AppRouter = Backbone.Router.extend({
         if(_appglobal.t2 !== undefined) clearTimeout(_appglobal.t2);
         showGroupInfo(gid);
         showReportInfo(gid,cid);
+    },
+    showStaticReportView: function(token){ 
+        $('#group-div').hide();
+        $('#session-div').hide();
+        $('#session-name').hide();
+        $('#report-div').show();
+        showStaticReport(token);
     }
 });
 var index_router = new AppRouter;
