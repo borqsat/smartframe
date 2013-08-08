@@ -629,8 +629,10 @@ class DataStore(object):
         Use UTC time, if utcnow >= the expire time of a token, remove this token from db.
         '''
         print "Start validating token expire time"
-        for token in self._db['tokens'].find({}, {'_id': 0, 'token': 1, 'expires': 1}):
+        for token in self._db['tokens'].find({}, {'_id': 0, 'token': 1, 'expires': 1, 'info': 1}):
             if time.time() >= token['expires']:
+                self.deleteToken(token['token'])
+            if token.get('info') != None and token['info'].get('cid') != None and self._db['testsessions'].find({'cid': token['info']['cid']}).count() == 0:
                 self.deleteToken(token['token'])
 
     def getReportData(self, token):
@@ -638,7 +640,7 @@ class DataStore(object):
         if len(rdata) == 0:
             return {}
         else:
-            return {'results': rdata[0]['info']['results']}
+            return {'results': rdata[0]['info']['result']['results']}
 
     def createToken(self, appid, uid, info, expires):
         """
@@ -774,6 +776,13 @@ class DataStore(object):
                                         'revision': d['deviceinfo'].get('revision', '--')})
 
         return {'results': result.values()}
+
+    def saveReportData(self, cid, result):
+        appid = "05"
+        uid = "0000000000"
+        info = {'cid': cid, 'result': result}
+        expires = 24*3600*365
+        return self.createToken(appid, uid, info, expires)['token']
 
     def readTestReport(self, gid, cid):
         """
@@ -912,6 +921,8 @@ class DataStore(object):
         result['issuesummany'] = res2
         result['issuedetail'] = res3
         result['domain'] = res4
+        token = self.saveReportData(cid, {'results': result})
+        result['token'] = token
         return result
 
     def readTestSessionInfo(self, gid, sid):

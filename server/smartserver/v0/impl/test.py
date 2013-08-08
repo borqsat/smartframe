@@ -114,16 +114,6 @@ def getTestLiveSnaps(gid, sid, timestamp):
     imgBuffer = store.readTestLiveSnaps(gid, sid, timestamp)
     return imgBuffer
 
-def saveReportData(info):
-    appid = '02'
-    uid = '0000000000'
-    expires = 7*24*3600
-    rdata = store.createToken(appid, uid, info, expires)
-    if 'token' in rdata:
-        return {'results': {'token': rdata['token']}}
-    else:
-        return {'error': {'msg': 'Create report failed!'}}
-
 def getReportData(token):
     rdata = store.getReportData(token)
     if 'results' in rdata:

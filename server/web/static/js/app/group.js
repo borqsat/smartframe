@@ -981,28 +981,6 @@ function toggle(){
     }
 }
 
-function afterCreateReport(data){
-    var reportlink = window.location.protocol + "//" + window.location.host + "/report/" + data['results']['token'];
-    if (data['results']['token'] !== undefined){
-       $('#urldiv').append("<textarea id=\"urltext\" class=\"input-xxlarge\" readonly=\"readonly\">"+reportlink+"</textarea>");
-       $('#urldiv').dialog({
-                            title: "Link of the report to share:",
-                            height: 188,
-                            width: 565,
-                            resizable:false,
-                            modal: true,
-                            buttons:{
-                              "OK":function(){
-                                $('#urldiv').html('');
-                                $(this).dialog("close");
-                                }}
-                           });
-    }
-    else{
-      alert(data['error']['msg']);
-    }
-}
-
 function showCommentInfo(data){
     $('#show-title').html('<a href=\"javascript:void(0)\" onclick=\"toggle()\">Tap here to get more information</a><a id="sharereport" style="margin-left: 60%">Share report</a>');
     $('#show-title').append("<div style=\"display:none\" id=\"urldiv\"></div>");
@@ -1017,10 +995,21 @@ function showCommentInfo(data){
                         "<b>First Failure Uptime:</b> From the <b>Start Time</b> to first failure occurs. <br />");
     $("a#sharereport").unbind().bind('click', function(data){
                                                     return function(){
-                                                            $('#urldiv').html('');
-                                                            invokeWebApiEx("/report/savesnapshot", 
-                                                                          {"results": data},
-                                                                           afterCreateReport)};
+                                                          var reportlink = window.location.protocol + "//" + window.location.host + "/report/" + data['results']['token'];
+                                                           $('#urldiv').append("<textarea id=\"urltext\" class=\"input-xxlarge\" readonly=\"readonly\">"+reportlink+"</textarea>");
+                                                           $('#urldiv').dialog({
+                                                                                title: "Link of the report to share:",
+                                                                                height: 188,
+                                                                                width: 565,
+                                                                                resizable:false,
+                                                                                modal: true,
+                                                                                buttons:{
+                                                                                  "OK":function(){
+                                                                                    $('#urldiv').html('');
+                                                                                    $(this).dialog("close");
+                                                                                    }}
+                                                                               });
+                                                    };
                                               }(data));
 }
 
