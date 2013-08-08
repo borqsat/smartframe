@@ -434,7 +434,7 @@ def doUpdateCaseResult(gid, sid, tid):
             error-{'errors':{'code':value,'msg':(string)info}}
     """
     result = updateCaseResult(gid, sid, tid, request.json)
-    #tasks.ws_update_testsession_summary.delay(sid)
+    tasks.ws_update_testsession_summary.delay(sid)
     errorCount = checkErrorCount(sid)
     if errorCount == 1 and request.json['result'].lower() == 'error':
         mailcontext= checkMailListAndContext(gid,sid,tid)
