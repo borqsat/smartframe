@@ -37,10 +37,11 @@ function afterUpdateEmail(data) {
     }
 }
 
-function sendEmailForForgotPasswd(data,email) {
+function sendEmailForForgotPasswd(data) {
     var ret = data["errors"];
     if(ret !== undefined ) {
-        alert(ret["msg"]);
+        //alert(ret["msg"]);
+        alert('No this user or your email not activity before !');
     } else {
         alert('Sent new password to your email successful!')
         window.location = "login.html";
@@ -295,7 +296,7 @@ var AppRouter = Backbone.Router.extend({
                                  }else{
                                      invokeWebApiEx("/account/forgotpasswd",
                                                     prepareData({'email':email}),
-                                                    sendEmailForForgotPasswd(email));
+                                                    sendEmailForForgotPasswd);
                                  }
                                   
                })

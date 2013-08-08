@@ -584,6 +584,7 @@ class DataStore(object):
             newpassword = ''.join([choice(string.ascii_letters+string.digits) for i in range(8)])
             m = hashlib.md5()
             m.update(newpassword)
+            print 'newpassword===================='+newpassword
             users.update({'uid': rdata['uid']}, {'$set': {'password': m.hexdigest()}})
             return {'uid':rdata['uid'],'password':newpassword}
         else:
