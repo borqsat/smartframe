@@ -964,8 +964,6 @@ function showReportInfo(gid,cid){
     invokeWebApi('/group/'+gid+'/testsummary',
                 prepareData({'cid':cid}),
                 function(data) {
-                  _appglobal.reportData = data;
-                  //TODO: Use package closure to collect data
                   showCommentInfo(data);
                   showCycleBaseInfo(data);
                   showFailureSummaryInfo(data);
@@ -984,10 +982,11 @@ function toggle(){
 }
 
 function afterCreateReport(data){
+    var reportlink = window.location.protocol + "//" + window.location.host + "/report/" + data['results']['token'];
     if (data['results']['token'] !== undefined){
-       $('#urldiv').append("<textarea id=\"urltext\" class=\"input-xxlarge\" readonly=\"readonly\">localhost:8080/report/"+data['results']['token']+"</textarea>");
+       $('#urldiv').append("<textarea id=\"urltext\" class=\"input-xxlarge\" readonly=\"readonly\">"+reportlink+"</textarea>");
        $('#urldiv').dialog({
-                            title: "Link of the report:",
+                            title: "Link of the report to share:",
                             height: 188,
                             width: 565,
                             resizable:false,
@@ -1004,16 +1003,8 @@ function afterCreateReport(data){
     }
 }
 
-function createReport(data){
-    $('#urldiv').html('');
-    invokeWebApiEx("/report/savesnapshot", 
-                   {"results":_appglobal.reportData},
-                   afterCreateReport
-                   );
-}
-
 function showCommentInfo(data){
-    $('#show-title').html('<a href=\"javascript:void(0)\" onclick=\"toggle()\">Tap here to get more information</a><a style="margin-left: 60%" href=\"javascript:createReport()\">Share report</a>');
+    $('#show-title').html('<a href=\"javascript:void(0)\" onclick=\"toggle()\">Tap here to get more information</a><a id="sharereport" style="margin-left: 60%">Share report</a>');
     $('#show-title').append("<div style=\"display:none\" id=\"urldiv\"></div>");
     $('#article').html( "<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
     					"<b>Product:</b> The device platform and product information. <br />" + 
@@ -1024,7 +1015,13 @@ function showCommentInfo(data){
                         "<b>Critial Issues:</b> Phone hang, kernel reboot/panic, system crash, etc. <br />"+
                         "<b>Non-Critical Issues:</b> Application/process force close/ANR, core dump (native process crash), etc.<br />"+
                         "<b>First Failure Uptime:</b> From the <b>Start Time</b> to first failure occurs. <br />");
-
+    $("a#sharereport").unbind().bind('click', function(data){
+                                                    return function(){
+                                                            $('#urldiv').html('');
+                                                            invokeWebApiEx("/report/savesnapshot", 
+                                                                          {"results": data},
+                                                                           afterCreateReport)};
+                                              }(data));
 }
 
 function showCycleBaseInfo(data){
