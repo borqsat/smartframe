@@ -290,6 +290,7 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
     $product_table.append($tbody);
     $cycle_panel.append($product_table);
 
+    _appglobal.cyclelist = {};
     var sessions = [];
     for(var k = 0; k < test_session.length;k++){
         var cid = test_session[k].cid;

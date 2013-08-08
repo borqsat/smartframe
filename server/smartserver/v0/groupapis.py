@@ -433,10 +433,11 @@ def doUpdateCaseResult(gid, sid, tid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    result = updateTestCaseResult(gid, sid, tid, request.json)
-    errorCount=tasks.ws_update_testsession_summary.delay(sid)
+    result = updateCaseResult(gid, sid, tid, request.json)
+    #tasks.ws_update_testsession_summary.delay(sid)
+    errorCount = checkErrorCount(sid)
     if errorCount == 1 and request.json['result'].lower() == 'error':
-        mailcontext=checkMailListAndContext(gid,sid,tid)
+        mailcontext= checkMailListAndContext(gid,sid,tid)
         sendErrorMail(mailcontext)
     return result
 

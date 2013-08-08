@@ -16,6 +16,7 @@ def __sendMail(receiver,subject,message):
     msg['Subject'] = subject      
     msg['From'] = sender     
     msg['To'] = ';'.join(receiver) 
+    print receiver
     smtp = None
     try:
         smtp = smtplib.SMTP_SSL()
@@ -28,7 +29,7 @@ def __sendMail(receiver,subject,message):
 
 def sendVerifyMail(receiver, user, token):
     subject = 'Please active your email on SmartAT'
-
+    print '+++++'+receiver
     msg = 'Hi,%s,\r\n\r\n' % (user)
     msg = msg + 'This mail sent out by smartAT, do not reply to it directly.\r\n'
     msg = msg + 'Your account \"%s\" has been created alreday.\r\n' % (user)
@@ -38,7 +39,7 @@ def sendVerifyMail(receiver, user, token):
     msg = msg + 'Best Regards\r\n'
     msg = msg + 'SmartAT Team\r\n'
 
-    __sendMail(receiver,subject,msg)
+    __sendMail([receiver],subject,msg)
 
 def sendInviteMail(receiver, user, group, token):
     subject = 'Welcome to signup on SmartAT'
@@ -52,14 +53,28 @@ def sendInviteMail(receiver, user, group, token):
     msg = msg + 'Best Regards\r\n'
     msg = msg + 'SmartAT Team\r\n'
 
-    __sendMail(receiver,subject,msg)
+    __sendMail([receiver],subject,msg)
+
+def sendForgotPasswdMail(receiver, passwd, token):
+    subject = 'Reset your password on SmartAT'
+
+    msg = 'Hi,%s,\r\n\r\n' % (receiver)
+    msg = msg + 'This mail sent out by smartAT, do not reply to it directly.\r\n'
+    msg = msg + 'Your password of account \"%s\" has been reset alreday.\r\n' % (receiver)
+    msg = msg + 'The new password: ' + passwd + ' \r\n'
+    msg = msg + 'Please login SmartAT and change new one for your own.\r\n'
+    msg = msg + '\r\n\r\n'
+    msg = msg + 'Best Regards\r\n'
+    msg = msg + 'SmartAT Team\r\n'
+
+    __sendMail([receiver],subject,msg)
 
 def sendErrorMail(context):
     subject='Case Error'
 
     msg = 'Hi,\r\n\r\n'
     msg = msg + 'This mail sent out by smartAT, do not reply to it directly.\r\n'
-    msg = msg + 'Devices '+context['deviceid']+' happen error at '+ context['info']['issuetime']+  '.\r\n' 
+    msg = msg + 'Devices '+context['info']['deviceid']+' happen error at '+ context['info']['issuetime']+  '.\r\n' 
     msg = msg + 'Error case name is '+context['info']['testcasename'] +' .\r\n'
     msg = msg + 'This session starts time is '+context['info']['starttime'] +' .\r\n'
     msg = msg + 'please go to http://ats.borqs.com/smartserver/ to checked it, Thanks!\r\n' 

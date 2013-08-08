@@ -1226,7 +1226,7 @@ class DataStore(object):
 
         return {'snaps': snaps, 'checksnap': checksnap}
 
-    def checkMailListAndContext(gid,sid,tid):
+    def checkMailListAndContext(self,gid,sid,tid):
         groupmembers = self._db['group_members']
         grouptemp = groupmembers.find({'gid': gid})
         uids=[]
@@ -1234,26 +1234,37 @@ class DataStore(object):
         for tmpu in grouptemp:
             uids.append(tmpu['uid']) 
         users = self._db['users']
-        result=uesrs.find({'uid':{'$in':uids}, 'active':True})
+        result=users.find({'uid':{'$in':uids}, 'active':True})
         for tmp in result:
-                emailList.append(tmp.info['email'])
+            emailList.append(tmp['info']['email'])
         
         info={}  
         testsessions = self._db['testsessions']
         testresults = self._db['testresults']
-        deviceid=testsessions.find({'gid':gid,'sid':sid})[0]['deviceid']
-        starttime=testsessions.find({'gid':gid,'sid':sid})[0]['starttime']
-        issuetime=testresults.find({'gid':gid,'sid':sid,'tid':tid})[0]['starttime']
-        testcasename=testresults.find({'gid':gid,'sid':sid,'tid':tid})[0]['casename']
-        info['deviceid']=deviceid
-        info['starttime']=starttime
-        info['issuetime']=issuetime
-        info['testcasename']=testcasename
+        tmpsession=testsessions.find_one({'gid':gid,'sid':sid})
+        if tmpsession is not None:
+            info['deviceid']=tmpsession['deviceid']
+            info['starttime']=tmpsession['starttime']
+        else:
+            info['deviceid']='--'
+            info['starttime']='--'
+
+        tmpres=testresults.find_one({'gid':gid,'sid':sid,'tid':tid})
+        if tmpres is not None:
+            info['testcasename']=tmpres['testcasename']
+            info['issuetime']=tmpres['starttime']
+        else:
+            info['testcasename']='--'
+            info['issuetime']='--'
 
         ret={}
         ret['receiver']=emailList
         ret['info']=info
         return ret 
+
+    def checkErrorCount(self,sid):
+        errorCount = self._db['testresults'].find({'sid': sid, 'result': 'error'}).count()
+        return errorCount
 
 def __getStore():
     mongo_uri = MONGODB_URI
