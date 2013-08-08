@@ -600,7 +600,6 @@ function selectAll(ids){
             {$("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', false);}
        }
     }
-    alert(_appglobal.collectIDs['tids']);
 }
 
 function keepCheckStatus(ids){
