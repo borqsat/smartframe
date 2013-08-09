@@ -1149,6 +1149,22 @@ class DataStore(object):
         fkey = self.setfile(logfile)
         caseresult.update({'gid': gid, 'sid': sid, 'tid': int(
             tid)}, {'$set': {'log': fkey}})
+        
+    def writeUserAvatar(self, uid, info):
+        """
+        add avatar file in GridFS
+        update the corresponding upload avatar
+        """
+        fkey = self.setfile(info['uploaded_avatar'])
+        users = self._db['users']
+        data = {}
+        for key in info:
+            if key == "uploaded_avatar":
+                data['info.%s'%key] = fkey
+            else:
+                data['info.%s'%key] = "uploaded_avatar"
+        results = users.update({'uid': uid}, {'$set': data})
+        return results
 
     def writeTestSnapshot(self, gid, sid, tid, snapfile, stype):
         """
