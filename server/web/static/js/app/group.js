@@ -1000,19 +1000,7 @@ function showCommentInfo(data, tag){
       $("a#sharereport").unbind().bind('click', function(data){
                                                     return function(){
                                                            var reportlink = window.location.protocol + "//" + window.location.host + "/smartserver/group.html#report/" + data['results']['token'];
-                                                           $('#urldiv').append("<textarea id=\"urltext\" class=\"input-xxlarge\" readonly=\"readonly\">"+reportlink+"</textarea>");
-                                                           $('#urldiv').dialog({
-                                                                                title: "Link of the report to share:",
-                                                                                height: 188,
-                                                                                width: 565,
-                                                                                resizable:false,
-                                                                                modal: true,
-                                                                                buttons:{
-                                                                                  "OK":function(){
-                                                                                    $('#urldiv').html('');
-                                                                                    $(this).dialog("close");
-                                                                                    }}
-                                                                               });
+                                                           window.open(reportlink);
                                                     };
                                               }(data));
     }
