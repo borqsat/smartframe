@@ -41,6 +41,7 @@ def assets(filename):
 def root():
     return redirect("/smartserver/index.html")
 
+
 app.mount('/smartapi', v0)
 app.mount('/smart/0/api/', v0)
 
