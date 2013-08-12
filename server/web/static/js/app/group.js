@@ -981,9 +981,8 @@ function toggle(){
     }
 }
 
-function showCommentInfo(data){
-    $('#show-title').html('<a href=\"javascript:void(0)\" onclick=\"toggle()\">Tap here to get more information</a><a id="sharereport" style="margin-left: 60%">Share report</a>');
-    $('#show-title').append("<div style=\"display:none\" id=\"urldiv\"></div>");
+function showCommentInfo(data, tag){
+    $('#show-title').html('<a href=\"javascript:void(0)\" onclick=\"toggle()\">Tap here to get more information</a>');
     $('#article').html( "<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
     					"<b>Product:</b> The device platform and product information. <br />" + 
     					"<b>Start Time:</b> The test start time. <br />" + 
@@ -993,7 +992,9 @@ function showCommentInfo(data){
                         "<b>Critial Issues:</b> Phone hang, kernel reboot/panic, system crash, etc. <br />"+
                         "<b>Non-Critical Issues:</b> Application/process force close/ANR, core dump (native process crash), etc.<br />"+
                         "<b>First Failure Uptime:</b> From the <b>Start Time</b> to first failure occurs. <br />");
-    $("a#sharereport").unbind().bind('click', function(data){
+    if (tag !== "staticReport"){
+      $('#show-title').append("<a id=\"sharereport\" style=\"margin-left: 60%\">Share report</a><div style=\"display:none\" id=\"urldiv\"></div>");
+      $("a#sharereport").unbind().bind('click', function(data){
                                                     return function(){
                                                            var reportlink = window.location.protocol + "//" + window.location.host + "/smartserver/group.html#report/" + data['results']['token'];
                                                            $('#urldiv').append("<textarea id=\"urltext\" class=\"input-xxlarge\" readonly=\"readonly\">"+reportlink+"</textarea>");
@@ -1011,6 +1012,7 @@ function showCommentInfo(data){
                                                                                });
                                                     };
                                               }(data));
+    }
 }
 
 function showCycleBaseInfo(data){
@@ -1126,12 +1128,20 @@ function showFailureDetailsInfo(data,gid){
         var sid = data[i].sid;
         var deviceSerial = data[i].imei;
         if (deviceSerial ==="") deviceSerial = "N/A";
+        if (gid === "staticReport"){
+          var deviceLink = deviceSerial;
+          var failureLink = failureCount;
+        }
+        else{
+          var deviceLink = "<a href=\"#/group/"+gid+"/session/"+sid+"\">"+deviceSerial+"</a>";
+          var failureLink = "<a href=\"#/group/"+gid+"/session/"+sid+"/fail\">"+failureCount+"</a>";
+        }
         var $tr = "<tr>"+
                     (failureCount==0?"<td></td>":"<td onclick=showPic('pic_"+i.toString()+"'); id='tr_"+i.toString()+"'><img id='pic_"+i.toString()+"' src='static/img/spread.png'></img></td>")+        
-                    "<td><a href=\"#/group/"+gid+"/session/"+sid+"\">"+deviceSerial+"</a></td>"+
+                    "<td>"+deviceLink+"</td>"+
                     "<td>"+data[i].starttime+"</td>"+
                     "<td>"+data[i].endtime+"</td>"+ 
-                    (failureCount==0?"<td style='text-align:center'>"+0+"</td>":"<td style='text-align:center'><a href=\"#/group/"+gid+"/session/"+sid+"/fail\">"+failureCount+"</a></td>")+
+                    (failureCount==0?"<td style='text-align:center'>"+0+"</td>":"<td style='text-align:center'>"+failureLink+"</td>")+
                     "<td>"+setRunTime(data[i].faildur)+"</td>"+
                     "<td>"+setRunTime(data[i].totaldur)+"</td>"+
                     "</tr>";
@@ -1252,10 +1262,10 @@ function showStaticReport(token){
     invokeWebApi("/report/getsnapshot",
                 {"token" : token},
                 function(data){
-                     showCommentInfo(data);
+                     showCommentInfo(data, "staticReport");
                      showCycleBaseInfo(data);
                      showFailureSummaryInfo(data);
-                     showFailureDetailsInfo(data);
+                     showFailureDetailsInfo(data, "staticReport");
                      showDomainInfo(data);
                 });
 }
@@ -1326,6 +1336,9 @@ var AppRouter = Backbone.Router.extend({
         $('#group-div').hide();
         $('#session-div').hide();
         $('#session-name').hide();
+        $('#header').hide();
+        $('#board-header').hide();
+        $('#group-members-div').hide();
         $('#report-div').show();
         showStaticReport(token);
     }
