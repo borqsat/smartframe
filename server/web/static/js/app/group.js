@@ -572,16 +572,40 @@ function renderSnapshotDiv(gid, sid) {
     }
 }
 
-function collectID(ctid){
-    var key = _appglobal.collectIDs['tids'].indexOf(ctid);
-    if (key === -1){
-      _appglobal.collectIDs['tids'].push(ctid);
-    }
-    else if (key === 0){
-      _appglobal.collectIDs['tids'].splice(0, 1);
+function collectID(ctid, event){
+    if (event.shiftKey){
+      if (_appglobal.collectIDs['tids'].length === 0){
+        _appglobal.collectIDs['tids'].push(ctid);
+      }
+      else{
+        if (ctid > _appglobal.collectIDs['tids'][_appglobal.collectIDs['tids'].length - 1]){
+            alert("ctid > the last one");
+        }
+        else if (ctid < _appglobal.collectIDs['tids'][_appglobal.collectIDs['tids'].length - 1]){
+            alert("ctid < the last one");
+        }
+        else{
+            var key = _appglobal.collectIDs['tids'].indexOf(ctid);
+            if (key === 0){
+              _appglobal.collectIDs['tids'].splice(0, 1);
+            }
+            else{
+              _appglobal.collectIDs['tids'].splice(key, 1);
+            }
+        }
+      }
     }
     else{
-      _appglobal.collectIDs['tids'].splice(key, 1);
+      var key = _appglobal.collectIDs['tids'].indexOf(ctid);
+      if (key === -1){
+        _appglobal.collectIDs['tids'].push(ctid);
+      }
+      else if (key === 0){
+        _appglobal.collectIDs['tids'].splice(0, 1);
+      }
+      else{
+        _appglobal.collectIDs['tids'].splice(key, 1);
+      }
     }
 }
 
@@ -628,7 +652,7 @@ function fillDetailTable(gid, sid, data, ids, tag) {
           }
           if(cresult === 'fail'){
               tablerows += "<tr id=\""+trId+"\">"+
-                                        "<td><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID('"+ctid+"')\"></input></td>"+
+                                        "<td><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID('"+ctid+"', event)\"></input></td>"+
                                         "<td>"+ctid+"</td>"+    
                                         "<td>"+cname+"</td>"+              
                                         "<td>"+ctime+"</td>"+
@@ -641,7 +665,7 @@ function fillDetailTable(gid, sid, data, ids, tag) {
                                         "</td></tr>";                                                 
          } else if (cresult === 'error') {
                 tablerows += "<tr id=\""+trId+"\">"+
-                                     "<td><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID('"+ctid+"')\"></input></td>"+
+                                     "<td><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID('"+ctid+"', event)\"></input></td>"+
                                      "<td>"+ctid+"</td>"+
                                      "<td>"+cname+"</td>"+
                                      "<td>"+ctime+"</td>"+
