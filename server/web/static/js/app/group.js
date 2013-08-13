@@ -1000,6 +1000,7 @@ function showCommentInfo(data, tag){
       $("a#sharereport").unbind().bind('click', function(data){
                                                     return function(){
                                                            var reportlink = window.location.protocol + "//" + window.location.host + "/smartserver/group.html#report/" + data['results']['token'];
+                                                           alert("A link of this report will be sent to you by email!");
                                                            window.open(reportlink);
                                                     };
                                               }(data));
