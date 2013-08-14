@@ -703,7 +703,7 @@ function fillDetailTable(gid, sid, data, ids, tag) {
     keepCheckStatus(ids);
 
     if(!$('#comDiv').length) {
-        var comdiv = fillCommentDiv(gid, sid);
+        var comdiv = fillCommentDiv();
         $('#session-div').append(comdiv);
     }
 }
@@ -712,7 +712,7 @@ function showHint(ctid){$("#hint_"+ctid).slideDown('slow');}
 
 function hideHint(ctid){$("#hint_"+ctid).hide('slow');}
 
-function fillCommentDiv(gid, sid){
+function fillCommentDiv(){
     var commentDiv = "<div id=\"comDiv\" style=\"display:none\"><form class=\"form-inner\">"+
                        "<div class=\"row\">"+
                          "<div class=\"span4\">"+
@@ -774,35 +774,25 @@ function submitUpdate(tag){
       else{var sessionCom = " :: Yes";}
       var $hintInfo = comResult['commentinfo'];
       var $showComment = ""+comResult['caseresult']+" :: "+comResult['issuetype']+""+sessionCom+"";
-      for (var i = 0; i < _appglobal.collectIDs['tids'].length; i++){
-          $("span#span_"+_appglobal.collectIDs['tids'][i]).html("");
-          $("span#span_"+_appglobal.collectIDs['tids'][i]).append($showComment);
-          $("div#hint_"+_appglobal.collectIDs['tids'][i]).html("");
-          $("div#hint_"+_appglobal.collectIDs['tids'][i]).append($hintInfo);
-      }
-      clearCheckStatus();
-
-      invokeWebApiEx("/group/"+_appglobal.gid+"/test/"+_appglobal.sid+"/case/00000/update",
-                     prepareData({'comments':comResult}),
-                     afterCommit);
     }
     else if (tag === 'clear'){
       comResult['tids'] = _appglobal.collectIDs['tids'];
-      for (var i = 0; i < _appglobal.collectIDs['tids'].length; i++){
-          var $hintInfo = "";
-          var $showComment = "";
-          $("span#span_"+_appglobal.collectIDs['tids'][i]).html("");
-          $("span#span_"+_appglobal.collectIDs['tids'][i]).append($showComment);
-          $("div#hint_"+_appglobal.collectIDs['tids'][i]).html("");
-          $("div#hint_"+_appglobal.collectIDs['tids'][i]).append($hintInfo);
-      }
-      clearCheckStatus();
-
+      var $hintInfo = "";
+      var $showComment = "";
       comResult['endsession'] = 0;
-      invokeWebApiEx("/group/"+_appglobal.gid+"/test/"+_appglobal.sid+"/case/00000/update",
-                 prepareData({'comments': comResult}),
-                 afterCommit);
     }
+
+    for (var i = 0; i < _appglobal.collectIDs['tids'].length; i++){
+        $("span#span_"+_appglobal.collectIDs['tids'][i]).html("");
+        $("span#span_"+_appglobal.collectIDs['tids'][i]).append($showComment);
+        $("div#hint_"+_appglobal.collectIDs['tids'][i]).html("");
+        $("div#hint_"+_appglobal.collectIDs['tids'][i]).append($hintInfo);
+    }
+    clearCheckStatus();
+    invokeWebApiEx("/group/"+_appglobal.gid+"/test/"+_appglobal.sid+"/case/00000/update",
+               prepareData({'comments': comResult}),
+               afterCommit);
+
     $("#comDiv").dialog('close');
 }
 
