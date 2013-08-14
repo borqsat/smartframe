@@ -996,7 +996,7 @@ function showCommentInfo(data, tag){
                         "<b>Non-Critical Issues:</b> Application/process force close/ANR, core dump (native process crash), etc.<br />"+
                         "<b>First Failure Uptime:</b> From the <b>Start Time</b> to first failure occurs. <br />");
     if (tag !== "staticReport"){
-      $('#show-title').append("<a id=\"sharereport\" style=\"margin-left: 60%\">Share report</a><div style=\"display:none\" id=\"urldiv\"></div>");
+      $('#show-title').append("<a id=\"sharereport\" style=\"margin-left: 60%\">Share report</a>");
       $("a#sharereport").unbind().bind('click', function(data){
                                                     return function(){
                                                            var reportlink = window.location.protocol + "//" + window.location.host + "/smartserver/group.html#report/" + data['results']['token'];
