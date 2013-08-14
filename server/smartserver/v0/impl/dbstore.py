@@ -801,6 +801,7 @@ class DataStore(object):
         res2 = []
         res3 = []
         res4 = []
+        print "table 1 and table 3 start: %s" %(datetime.now())
         rdata = session.find({'gid': gid, 'cid': int(cid)})
         for d in rdata:
             sidList.append(d['sid'])
@@ -871,13 +872,13 @@ class DataStore(object):
             else:
                 tmpR3['faildur'] = _deltaDataTime(tmpFailTime, d['starttime']) - fblockDur
             res3.append(tmpR3)
-
+        print "table 2 start: %s" %(datetime.now())
         rdata2 = caseresult.group({'comments.issuetype': 1}, {'sid': {'$in': sidList}, 'comments.caseresult': {
             '$in': ['fail', 'Fail']}}, {'cnt': 0}, 'function(obj,prev) { prev.cnt+=1; }')
         for d in rdata2:
             res2.append(
                 {'issuetype': d['comments.issuetype'], 'count': d['cnt']})
-
+        print "table 4 start: %s" %(datetime.now())
         rdata4 = caseresult.group({'casename': 1}, {'sid': {'$in': sidList}}, {'totalcnt': 0, 'passcnt': 0, 'failcnt': 0, 'blockcnt': 0}, '''
           function(obj,prev){
             prev.totalcnt+=1;
@@ -921,8 +922,10 @@ class DataStore(object):
         result['issuesummany'] = res2
         result['issuedetail'] = res3
         result['domain'] = res4
+        print "save data start: %s" %(datetime.now())
         token = self.saveReportData(cid, {'results': result})
         result['token'] = token
+        print "job done at: %s" %(datetime.now())
         return result
 
     def readTestSessionInfo(self, gid, sid):
