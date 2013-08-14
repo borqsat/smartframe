@@ -474,7 +474,8 @@ def doUploadCaseFile(gid, sid, tid):
 
 
 @appweb.route('/group/<gid>/test/<sid>/update', method='POST', content_type='application/json')
-def doUpdateGroupTestSession(gid, sid):
+@appweb.route('/group/<gid>/test/<sid>/update/<type>', method='POST', content_type='application/json')
+def doUpdateGroupTestSession(gid, sid,types=None):
     """
     URL:/group/<gid>/test/<sid>/update
     TYPE:http/POST
@@ -491,7 +492,10 @@ def doUpdateGroupTestSession(gid, sid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    return updateTestSession(gid, sid, request.json)
+    if types == None:
+        return updateTestSession(gid, sid, request.json)
+    else:
+        return updateDeviceMemoryInfo(gid,sid,types,request.json)
 
 
 @appweb.route('/group/<gid>/test/<sid>/delete', method='GET')

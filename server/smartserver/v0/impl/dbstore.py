@@ -1115,7 +1115,6 @@ class DataStore(object):
                                                   'summary.error': errorCount,
                                                   'runtime': runtime,
                                                   'summary.total': total}})
-        return errorCount
 
     def updateTestCaseResult(self, gid, sid, tid, results):
 
@@ -1262,6 +1261,11 @@ class DataStore(object):
     def checkErrorCount(self,sid):
         errorCount = self._db['testresults'].find({'sid': sid, 'result': 'error'}).count()
         return errorCount
+     
+    def updateDeviceMemoryInfo(self,gid,sid,types,result):
+        result = {}
+        deviceinfo = self._db['testDeviceinfo']
+        deviceinfo.insert({'gid': gid, 'sid': sid, 'types':types, })
 
 def __getStore():
     mongo_uri = MONGODB_URI
