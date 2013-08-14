@@ -258,10 +258,17 @@ class DataStore(object):
         '''
         fs_collection = self._fsdb['fs.files']
         r_collection = self._db['testresults']
+        u_collection = self._db['users']
 
         fid_aset = set()
         fid_rset = set()
-
+        fid_uset = set()
+        
+        for u in u_collection.find():
+            user_info = u['info']
+            if 'uploaded_avatar' in user_info:
+                fid_uset.add(str(user_info['uploaded_avatar']))
+        
         print 'Begin to find dirty fs... ' + datetime.now().strftime(DATE_FORMAT_STR1)
         # Only consider files, created 3 days ago, could be dirty files
         for f in fs_collection.find(
@@ -283,7 +290,8 @@ class DataStore(object):
             if 'log' in record:
                 fid_rset.add(record['log'])
 
-        tmp_set = fid_aset - fid_rset
+        tmp_set = fid_aset - fid_rset - fid_uset
+
         if 'N/A' in tmp_set:
             tmp_set.remove('N/A')
             print 'NA is in dirty fs...'
@@ -1149,6 +1157,22 @@ class DataStore(object):
         fkey = self.setfile(logfile)
         caseresult.update({'gid': gid, 'sid': sid, 'tid': int(
             tid)}, {'$set': {'log': fkey}})
+        
+    def writeUserAvatar(self, uid, info):
+        """
+        add avatar file in GridFS
+        update the corresponding upload avatar
+        """
+        fkey = self.setfile(info['uploaded_avatar'])
+        users = self._db['users']
+        data = {}
+        for key in info:
+            if key == "uploaded_avatar":
+                data['info.%s'%key] = fkey
+            else:
+                data['info.%s'%key] = "uploaded_avatar"
+        results = users.update({'uid': uid}, {'$set': data})
+        return results
 
     def writeTestSnapshot(self, gid, sid, tid, snapfile, stype):
         """
