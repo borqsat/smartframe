@@ -121,7 +121,3 @@ def checkErrorCount(sid):
 def checkMailListAndContext(gid,sid,tid):
     context = store.checkMailListAndContext(gid,sid,tid)
     return context
-
-def updateDeviceMemoryInfo(gid,sid,types,result):
-    store.updateDeviceMemoryInfo(gid, sid,types,result)
-    return {'results':1}   
