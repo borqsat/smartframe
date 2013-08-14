@@ -1246,9 +1246,6 @@ class DataStore(object):
         info['deviceid']=tmpsession['deviceid']
         info['starttime']=tmpsession['starttime']
 
-        print 'gid==='+gid
-        print 'sid+++'+sid
-        print 'tid1111' + tid
         tmpres=testresults.find_one({'gid':gid,'sid':sid,'tid':tid})
         if tmpres is not None:
             info['testcasename']=tmpres['testcasename']
