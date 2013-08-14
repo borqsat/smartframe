@@ -290,9 +290,7 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
     $product_table.append($tbody);
     $cycle_panel.append($product_table);
 
-    _appglobal.cyclelist = {};//new Array();
-    
-    _appglobal.cyclelist = {};//new Array();
+    _appglobal.cyclelist = {};
     var sessions = [];
     for(var k = 0; k < test_session.length;k++){
         var cid = test_session[k].cid;
@@ -313,7 +311,6 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
             session_item['product'] = product;
             session_item['revision'] = session_item.revision;
             sessions.push(session_item);
-            //key = product + ":" + session_item.revision;
         }
         
     }

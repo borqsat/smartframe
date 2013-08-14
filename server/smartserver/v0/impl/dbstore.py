@@ -773,7 +773,7 @@ class DataStore(object):
                                         'status': d['status'],
                                         'runtime': d['runtime'],
                                         'deviceid': d['deviceid'],
-                                        'revision': d['deviceinfo'].get('revision', '--')})
+                                        'revision':d['deviceinfo'].get('revision', '--')})
 
         return {'results': result.values()}
 
@@ -860,14 +860,14 @@ class DataStore(object):
                                          'comments': d3['comments']['commentinfo']})
                     res1['failcnt'] += 1
                     tmpR3['failcount'] += 1
-                if 'comments.endsession' in d3 and d3['comments']['endsession']==1: break 
+                if d3['comments']['endsession']==1: break 
 
             if tmpBlockStart!='':
                 blockDur+=_deltaDataTime(tmpBlockEnd,tmpBlockStart)
             res1['totaldur']-=blockDur
             tmpR3['totaldur']-=blockDur
-
-            if rdata3.count() <= 0:
+            
+            if tmpR3['failcount'] <= 0:
                 tmpR3['faildur'] = 0
             else:
                 tmpR3['faildur'] = _deltaDataTime(tmpFailTime, d['starttime']) - fblockDur
@@ -1244,6 +1244,42 @@ class DataStore(object):
 
         return {'snaps': snaps, 'checksnap': checksnap}
 
+    def checkMailListAndContext(self,gid,sid,tid):
+        uids=[]
+        emailList=[]
+        groupmembers = self._db['group_members']
+        users = self._db['users']
+        grouptemp = groupmembers.find(spec={'gid': gid},fields={'uid':True,'_id': False})
+        for tmpu in grouptemp:
+            uids.append(tmpu['uid']) 
+        
+        result=users.find({'uid':{'$in':uids}, 'active':True})
+        for tmp in result:
+            emailList.append(tmp['info']['email'])
+        
+        info={}  
+        testsessions = self._db['testsessions']
+        testresults = self._db['testresults']
+        tmpsession=testsessions.find_one({'gid':gid,'sid':sid})
+        info['deviceid']=tmpsession['deviceid']
+        info['starttime']=tmpsession['starttime']
+
+        tmpres=testresults.find_one({'gid':gid,'sid':sid,'tid':tid})
+        if tmpres is not None:
+            info['testcasename']=tmpres['testcasename']
+            info['issuetime']=tmpres['starttime']
+        else:
+            info['testcasename']='--'
+            info['issuetime']='--'
+
+        ret={}
+        ret['receiver']=emailList
+        ret['info']=info
+        return ret 
+
+    def checkErrorCount(self,sid):
+        errorCount = self._db['testresults'].find({'sid': sid, 'result': 'error'}).count()
+        return errorCount
 
 def __getStore():
     mongo_uri = MONGODB_URI

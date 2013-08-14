@@ -10,7 +10,7 @@ from gevent.pywsgi import WSGIServer
 from .impl.test import *
 from .impl.account import *
 from .impl.group import *
-from .sendmail import sendVerifyMail, sendInviteMail, sendForgotPasswdMail
+from .sendmail import *
 from .plugins import LoginPlugin, ContentTypePlugin
 
 from .. import tasks
@@ -438,6 +438,9 @@ def doUpdateCaseResult(gid, sid, tid):
     """
     result = updateCaseResult(gid, sid, tid, request.json)
     tasks.ws_update_testsession_summary.delay(sid)
+    if 'result' in request.json and request.json['result'].lower() == 'error' and checkErrorCount(sid) == 1:
+        mailcontext= checkMailListAndContext(gid,sid,tid)
+        sendErrorMail(mailcontext)
     return result
 
 
@@ -492,7 +495,6 @@ def doUpdateGroupTestSession(gid, sid):
             error-{'errors':{'code':value,'msg':(string)info}}
     """
     return updateTestSession(gid, sid, request.json)
-
 
 @appweb.route('/group/<gid>/test/<sid>/delete', method='GET')
 def doDeleteGroupTestSession(uid, gid, sid):
