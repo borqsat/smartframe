@@ -492,7 +492,8 @@ class DataStore(object):
             group_members = self._db['group_members']
             group["members"] = [{'uid': m['uid'],
                                  'username': self.userInfo(m['uid'], False, False)['username'],
-                                 'role': m['role']}
+                                 'role': m['role'],
+                                 'info': self.userInfo(m['uid'], False, False)['info']}
                                 for m in group_members.find({'gid': gid})
                                 if self.userInfo(m['uid'], False, False) is not None]  # workaround. Why there are some data with invalid uid?
         del group["_id"]
