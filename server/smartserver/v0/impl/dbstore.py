@@ -562,6 +562,14 @@ class DataStore(object):
         users.update({'uid': uid}, {'$set': data})
         return results
 
+    def checkMailStatus(self, token):
+        for token in self._db['tokens'].find({'token': token}, {'_id': 0, 'uid': 1}):
+            for user in self._db['users'].find({'uid': token['uid']}, {'_id': 0, 'active': 1, 'info': 1}):
+                if user.get('active') == "true":
+                    return {'address': user['info']['email']}
+                else:
+                    return {}
+
     def userExists(self, username, password):
         users = self._db['users']
         if '@' in username:

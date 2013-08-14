@@ -45,10 +45,6 @@ def method_not_allowed(res):  # workaround to support cross-domain request
     res.headers['Allow'] += ', OPTIONS'
     return request.app.default_error_handler(res)
 
-@appweb.route('/report/getsnapshot', method='GET')
-def doGetReportData():
-    return getReportData(request.params['token'])
-
 @appweb.route('/account/register', method='POST', content_type='application/json', login=False)
 def doRegister():
     """
@@ -641,11 +637,35 @@ def doGetGroupTestSessions(gid):
     @return:ok-{'results':{'count':(int)count, 'sessions':[ {planname':(string)value,'starttime':(string)value, 'result':{'total':(int)value, 'pass':(int)value, 'fail':(int)value, 'error':(int)value}, 'runtime':(string)value},... ] }}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    cid = request.params.get('cid')
-    if cid is None:
-        return getTestSessionList(gid)
-    else:
-        return getTestCycleReport(gid, cid)
+    return getTestSessionList(gid)
+
+@appweb.route('/cycle/report', method='GET')
+def doHandleCycleReport():
+    """
+    URL:/report/getsnapshot
+    TYPE:http/GET
+
+    get the saved report data of a cycle
+
+    @type token:string
+    @param token:the access token
+    @rtype: JSON
+    @return:ok-{'results':{'count':(int)count, 'sessions':[ {planname':(string)value,'starttime':(string)value, 'result':{'total':(int)value, 'pass':(int)value, 'fail':(int)value, 'error':(int)value}, 'runtime':(string)value},... ] }}
+            error-{'errors':{'code':value,'msg':(string)info}}
+    """
+    mode = request.params['mode']
+    if mode == "generate":
+        return getTestCycleReport(request.params['gid'], request.params['cid'])
+    elif mode == "fetch":
+        return getReportData(request.params['token'])
+    elif mode == "share":
+        print request.params['token']
+        result = checkMailStatus(request.params['token'])
+        if 'address' in result:
+            #tasks.ws_send_mail_to_user(request.params.get('link'), result['address'])
+            return {'results': 'ok'}
+        else:
+            return {'results': 'error'}
 
 
 if __name__ == '__main__':

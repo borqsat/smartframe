@@ -961,8 +961,8 @@ function createSessionBaseInfo(data, gid, sid, blive) {
 }
 
 function showReportInfo(gid,cid){
-    invokeWebApi('/group/'+gid+'/testsummary',
-                prepareData({'cid':cid}),
+    invokeWebApi('/cycle/report',
+                prepareData({'cid': cid, 'gid': gid, 'mode': 'generate'}),
                 function(data) {
                   showCommentInfo(data);
                   showCycleBaseInfo(data);
@@ -981,6 +981,7 @@ function toggle(){
     }
 }
 
+
 function showCommentInfo(data, tag){
     $('#show-title').html('<a href=\"javascript:void(0)\" onclick=\"toggle()\">Tap here to get more information</a>');
     $('#article').html( "<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
@@ -997,8 +998,15 @@ function showCommentInfo(data, tag){
       $("a#sharereport").unbind().bind('click', function(data){
                                                     return function(){
                                                            var reportlink = window.location.protocol + "//" + window.location.host + "/smartserver/group.html#report/" + data['results']['token'];
-                                                           alert("A link of this report will be sent to you by email!");
-                                                           window.open(reportlink);
+                                                           invokeWebApi('/cycle/report', 
+                                                                        prepareData({'link': reportlink, 'mode': 'share'}),
+                                                                        function(data){
+                                                                          if (data['results'] === 'ok'){ alert("A link of this report will be sent to you by email shortly!");}
+                                                                          else if (data['results'] === 'error'){
+                                                                            alert("Your email address has not been verified, please share the link manually!");
+                                                                            window.open(reportlink);
+                                                                          }
+                                                                        });
                                                     };
                                               }(data));
     }
@@ -1248,8 +1256,8 @@ function showDomainInfo(data){
 }
 
 function showStaticReport(token){
-    invokeWebApi("/report/getsnapshot",
-                {"token" : token},
+    invokeWebApi("/cycle/report",
+                {'token' : token, 'mode': 'fetch'},
                 function(data){
                      showCommentInfo(data, "staticReport");
                      showCycleBaseInfo(data);
