@@ -435,8 +435,7 @@ def doUpdateCaseResult(gid, sid, tid):
     """
     result = updateCaseResult(gid, sid, tid, request.json)
     tasks.ws_update_testsession_summary.delay(sid)
-    errorCount = checkErrorCount(sid)
-    if errorCount == 1 and request.json['result'].lower() == 'error':
+    if 'result' in request.json and request.json['result'].lower() == 'error' and checkErrorCount(sid) == 1:
         mailcontext= checkMailListAndContext(gid,sid,tid)
         sendErrorMail(mailcontext)
     return result
