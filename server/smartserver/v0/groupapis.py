@@ -408,7 +408,7 @@ def doCreateCaseResult(gid, sid, tid):
     """
     tasks.ws_active_testsession.delay(sid)
     result = createCaseResult(gid, sid, tid, request.json['casename'], request.json['starttime'])
-    tasks.ws_update_testsession_summary(sid)
+    tasks.ws_update_testsession_summary.delay(sid)
     return result
 
 
@@ -642,16 +642,34 @@ def doGetGroupTestSessions(gid):
 @appweb.route('/cycle/report', method='GET')
 def doHandleCycleReport():
     """
-    URL:/report/getsnapshot
+    URL:/cycle/report
     TYPE:http/GET
 
-    get the saved report data of a cycle
+    Depend on the request mode, generate/fetch/share the report of a cycle
 
+    @mode: generate
+    @type gid:string
+    @param gid:the id of a group
+    @type cid:string
+    @param cid:the id of a cycle
+    @rtype: JSON
+    @return:ok-{'results':{'count':(int)count, 'sessions':[ {planname':(string)value,'starttime':(string)value, 'result':{'total':(int)value, 'pass':(int)value, 'fail':(int)value, 'error':(int)value}, 'runtime':(string)value},... ] }}
+            error-{'errors':{'code':value,'msg':(string)info}}
+
+    @mode: fetch
     @type token:string
     @param token:the access token
     @rtype: JSON
     @return:ok-{'results':{'count':(int)count, 'sessions':[ {planname':(string)value,'starttime':(string)value, 'result':{'total':(int)value, 'pass':(int)value, 'fail':(int)value, 'error':(int)value}, 'runtime':(string)value},... ] }}
             error-{'errors':{'code':value,'msg':(string)info}}
+
+    @mode: share
+    @type token:string
+    @param token:the access token
+    @rtype: JSON
+    @return:ok-{'results': 'ok'}
+            error-{'results': 'error'}
+
     """
     mode = request.params['mode']
     if mode == "generate":
@@ -659,10 +677,10 @@ def doHandleCycleReport():
     elif mode == "fetch":
         return getReportData(request.params['token'])
     elif mode == "share":
-        print request.params['token']
         result = checkMailStatus(request.params['token'])
         if 'address' in result:
-            #tasks.ws_send_mail_to_user(request.params.get('link'), result['address'])
+            tasks.ws_send_mail_to_user.delay(request.params.get('link'), result['address'])
+            #sendReportMail(request.params.get('link'), result['address'])
             return {'results': 'ok'}
         else:
             return {'results': 'error'}

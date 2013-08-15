@@ -23,9 +23,9 @@ def __sendMail(receiver,subject,message):
         smtp.connect('smtp.bizmail.yahoo.com')
         smtp.login(mailuser, mailpass)
         smtp.sendmail(sender, receiver, msg.as_string())
+        smtp.quit()
     except Exception, e:
         print e
-    smtp.quit()
 
 def sendVerifyMail(receiver, user, token):
     subject = 'Please active your email on SmartAT'
@@ -83,3 +83,6 @@ def sendErrorMail(context):
     msg = msg + 'SmartAT Team\r\n'
 
     __sendMail(context['receiver'],subject,msg)
+
+def sendReportMail(link, address):
+    __sendMail(address, 'Link of static report to share', link)
