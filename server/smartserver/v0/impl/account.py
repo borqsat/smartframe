@@ -80,6 +80,12 @@ def userChangePassword(uid, oldpswd, newpswd):
     else:
         return {'errors': rdata}
 
+def userUpdateAvatar(uid, info):
+    rdata = store.writeUserAvatar(uid, info)
+    if rdata['ok'] is not None:
+        return {'results': rdata}
+    else:
+        return {'errors': rdata}
 
 def userUpdateInfo(appid, uid, info):
     rdata = store.userUpdateInfo(uid, info)

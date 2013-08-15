@@ -83,7 +83,7 @@ var invokeWebApi = function(apiUrl,dataj,render,bprg) {
 /*
  * Http POST Request by Jquery Ajax
  */
-var invokeWebApiEx = function(apiUrl,datap,render) {
+var invokeWebApiEx = function(apiUrl,datap,render, formid) {
     var funok=function(data) {
         if(data['results'] === undefined) {
             if(data['errors'] !== undefined){
@@ -109,14 +109,20 @@ var invokeWebApiEx = function(apiUrl,datap,render) {
     options['url'] = apiBaseURL + apiUrl;
     options['async'] = false;
     options['type'] = 'POST';
-    options['data'] = JSON.stringify(datap);
-    options['contentType']= "application/json;";
     options['dataType'] = 'json';
     options['timeout'] = 15000;
     options['success'] = funok;
     options['error'] = funerror;
-      
-    $.ajax(options);
+    if (formid === undefined) {
+    	options['data'] = JSON.stringify(datap);
+    	options['contentType']= "application/json;";
+        $.ajax(options);
+    }
+    else{
+    	options['data'] = datap;
+    	options['contentType'] = "multipart/form-data;"
+    	$('#'+formid).ajaxSubmit(options);
+    }
 }
 
 function checkLogIn() {
