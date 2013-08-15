@@ -73,7 +73,7 @@ var invokeWebApi = function(apiUrl,dataj,render,bprg) {
     options['type'] = 'GET';
     options['data'] = dataj;
     options['dataType'] = 'json';
-    options['timeout'] = 25000;
+    options['timeout'] = 60000;
     options['success'] = funok;
     options['error'] = funerror;
 			
