@@ -994,17 +994,15 @@ function showReportInfo(gid,cid){
 }
 
 
-$('#show-title').bind("click",
-		function(){	
-			var articleID=document.getElementById("article");
-		    if (articleID.style.display=="none"){
-		        articleID.style.display="block";
-		    } else {
-		        articleID.style.display="none";
-		    }
-});
 
-
+function toggle(){	
+  	var articleID=document.getElementById("article");
+    if (articleID.style.display=="none"){
+        articleID.style.display="block";
+    } else {
+        articleID.style.display="none";
+    }
+}
 
 function showCommentInfo(data, tag){
     $('#show-title').html('<a href=\"javascript:void(0)\" onclick=\"toggle()\">Tap here to get more information</a>');
@@ -1013,10 +1011,10 @@ function showCommentInfo(data, tag){
     					"<b>Start Time:</b> The test start time. <br />" + 
     					"<b>End Time: </b>The test finish timestamp. Genericlly the value should be the ciritical issue happen time or the test stop time. 'N/A' means the test is ongoing. <br />" + 
     					"<b>Uptime:</b> Uptime = Endtime - StarTime . EndTime is the critical issue happen time or test stop time. <br />" + 
-                        "<b>Failures</b>= (critical issues) + (Non-Critical issues). <br />"+
-                        "<b>Critial Issues:</b> Phone hang, kernel reboot/panic, system crash, etc. <br />"+
-                        "<b>Non-Critical Issues:</b> Application/process force close/ANR, core dump (native process crash), etc.<br />"+
-                        "<b>First Failure Uptime:</b> From the <b>Start Time</b> to first failure occurs. <br />");
+              "<b>Failures</b>= (critical issues) + (Non-Critical issues). <br />"+
+              "<b>Critial Issues:</b> Phone hang, kernel reboot/panic, system crash, etc. <br />"+
+              "<b>Non-Critical Issues:</b> Application/process force close/ANR, core dump (native process crash), etc.<br />"+
+              "<b>First Failure Uptime:</b> From the <b>Start Time</b> to first failure occurs. <br />");
     if (tag !== "staticReport"){
       $('#show-title').append("<a id=\"sharereport\" style=\"margin-left: 60%\">Share report</a>");
       $("a#sharereport").unbind().bind('click', function(data){
