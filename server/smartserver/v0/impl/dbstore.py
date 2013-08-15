@@ -640,7 +640,7 @@ class DataStore(object):
         for token in self._db['tokens'].find({}, {'_id': 0, 'token': 1, 'expires': 1, 'info': 1}):
             if time.time() >= token['expires']:
                 self.deleteToken(token['token'])
-            if token.get('info') != None and token['info'].get('cid') != None and self._db['testsessions'].find({'cid': token['info']['cid']}).count() == 0:
+            if token.get('info') != None and token['info'].get('cid') != None and self._db['testsessions'].find({'cid': int(token['info']['cid'])}).count() == 0:
                 self.deleteToken(token['token'])
 
     def getReportData(self, token):
