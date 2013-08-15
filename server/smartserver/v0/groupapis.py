@@ -680,7 +680,6 @@ def doHandleCycleReport():
         result = checkMailStatus(request.params['token'])
         if 'address' in result:
             tasks.ws_send_mail_to_user.delay(request.params.get('link'), result['address'])
-            #sendReportMail(request.params.get('link'), result['address'])
             return {'results': 'ok'}
         else:
             return {'results': 'error'}

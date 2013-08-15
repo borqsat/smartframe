@@ -565,7 +565,7 @@ class DataStore(object):
     def checkMailStatus(self, token):
         for token in self._db['tokens'].find({'token': token}, {'_id': 0, 'uid': 1}):
             for user in self._db['users'].find({'uid': token['uid']}, {'_id': 0, 'active': 1, 'info': 1}):
-                if user.get('active') == "true":
+                if user.get('active') == True:
                     return {'address': user['info']['email']}
                 else:
                     return {}
