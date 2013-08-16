@@ -1,4 +1,20 @@
 function showGroupInfo(id) {
+	
+	  invokeWebApi('/account/info',
+				prepareData({}),
+				function(data){
+			    	data = data.results;
+			    	if(data === undefined) return;
+			    	
+			    	uploaded_avatar = data.info['uploaded_avatar'];
+			    	if(uploaded_avatar !== undefined){
+			    			path = storeBaseURL + "/snap/" + uploaded_avatar;
+			    	}else{
+			    			path = "http://storage.aliyun.com/wutong-data/system/1_S.jpg"
+			    	}
+			    	$("#small-avatar").attr("src",path);
+				});
+	
       invokeWebApi('/group/'+id+'/info',
                    prepareData({}),
                    function(data){
@@ -34,7 +50,6 @@ function showGroupInfo(id) {
                             	}
                             }else{
                             	path = "http://storage.aliyun.com/wutong-data/system/1_S.jpg"
-                            	console.log(path)
                             }
                             var role = o['rolename'];
                             if (role === 'member'){ role = ""};
