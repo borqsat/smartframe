@@ -258,10 +258,17 @@ class DataStore(object):
         '''
         fs_collection = self._fsdb['fs.files']
         r_collection = self._db['testresults']
+        u_collection = self._db['users']
 
         fid_aset = set()
         fid_rset = set()
-
+        fid_uset = set()
+        
+        for u in u_collection.find():
+            user_info = u['info']
+            if 'uploaded_avatar' in user_info:
+                fid_uset.add(str(user_info['uploaded_avatar']))
+        
         print 'Begin to find dirty fs... ' + datetime.now().strftime(DATE_FORMAT_STR1)
         # Only consider files, created 3 days ago, could be dirty files
         for f in fs_collection.find(
@@ -283,7 +290,8 @@ class DataStore(object):
             if 'log' in record:
                 fid_rset.add(record['log'])
 
-        tmp_set = fid_aset - fid_rset
+        tmp_set = fid_aset - fid_rset - fid_uset
+
         if 'N/A' in tmp_set:
             tmp_set.remove('N/A')
             print 'NA is in dirty fs...'
@@ -484,7 +492,8 @@ class DataStore(object):
             group_members = self._db['group_members']
             group["members"] = [{'uid': m['uid'],
                                  'username': self.userInfo(m['uid'], False, False)['username'],
-                                 'role': m['role']}
+                                 'role': m['role'],
+                                 'info': self.userInfo(m['uid'], False, False)['info']}
                                 for m in group_members.find({'gid': gid})
                                 if self.userInfo(m['uid'], False, False) is not None]  # workaround. Why there are some data with invalid uid?
         del group["_id"]
@@ -584,6 +593,7 @@ class DataStore(object):
             newpassword = ''.join([choice(string.ascii_letters+string.digits) for i in range(8)])
             m = hashlib.md5()
             m.update(newpassword)
+            print 'newpassword===================='+newpassword
             users.update({'uid': rdata['uid']}, {'$set': {'password': m.hexdigest()}})
             return {'uid':rdata['uid'],'password':newpassword}
         else:
@@ -763,7 +773,7 @@ class DataStore(object):
                                         'status': d['status'],
                                         'runtime': d['runtime'],
                                         'deviceid': d['deviceid'],
-                                        'revision': d['deviceinfo'].get('revision', '--')})
+                                        'revision':d['deviceinfo'].get('revision', '--')})
 
         return {'results': result.values()}
 
@@ -842,14 +852,14 @@ class DataStore(object):
                                          'comments': d3['comments']['commentinfo']})
                     res1['failcnt'] += 1
                     tmpR3['failcount'] += 1
-                if 'comments.endsession' in d3 and d3['comments']['endsession']==1: break 
+                if d3['comments']['endsession']==1: break 
 
             if tmpBlockStart!='':
                 blockDur+=_deltaDataTime(tmpBlockEnd,tmpBlockStart)
             res1['totaldur']-=blockDur
             tmpR3['totaldur']-=blockDur
-
-            if rdata3.count() <= 0:
+            
+            if tmpR3['failcount'] <= 0:
                 tmpR3['faildur'] = 0
             else:
                 tmpR3['faildur'] = _deltaDataTime(tmpFailTime, d['starttime']) - fblockDur
@@ -1148,6 +1158,22 @@ class DataStore(object):
         fkey = self.setfile(logfile)
         caseresult.update({'gid': gid, 'sid': sid, 'tid': int(
             tid)}, {'$set': {'log': fkey}})
+        
+    def writeUserAvatar(self, uid, info):
+        """
+        add avatar file in GridFS
+        update the corresponding upload avatar
+        """
+        fkey = self.setfile(info['uploaded_avatar'])
+        users = self._db['users']
+        data = {}
+        for key in info:
+            if key == "uploaded_avatar":
+                data['info.%s'%key] = fkey
+            else:
+                data['info.%s'%key] = "uploaded_avatar"
+        results = users.update({'uid': uid}, {'$set': data})
+        return results
 
     def writeTestSnapshot(self, gid, sid, tid, snapfile, stype):
         """
@@ -1224,6 +1250,42 @@ class DataStore(object):
 
         return {'snaps': snaps, 'checksnap': checksnap}
 
+    def checkMailListAndContext(self,gid,sid,tid):
+        uids=[]
+        emailList=[]
+        groupmembers = self._db['group_members']
+        users = self._db['users']
+        grouptemp = groupmembers.find(spec={'gid': gid},fields={'uid':True,'_id': False})
+        for tmpu in grouptemp:
+            uids.append(tmpu['uid']) 
+        
+        result=users.find({'uid':{'$in':uids}, 'active':True})
+        for tmp in result:
+            emailList.append(tmp['info']['email'])
+        
+        info={}  
+        testsessions = self._db['testsessions']
+        testresults = self._db['testresults']
+        tmpsession=testsessions.find_one({'gid':gid,'sid':sid})
+        info['deviceid']=tmpsession['deviceid']
+        info['starttime']=tmpsession['starttime']
+
+        tmpres=testresults.find_one({'gid':gid,'sid':sid,'tid':tid})
+        if tmpres is not None:
+            info['testcasename']=tmpres['testcasename']
+            info['issuetime']=tmpres['starttime']
+        else:
+            info['testcasename']='--'
+            info['issuetime']='--'
+
+        ret={}
+        ret['receiver']=emailList
+        ret['info']=info
+        return ret 
+
+    def checkErrorCount(self,sid):
+        errorCount = self._db['testresults'].find({'sid': sid, 'result': 'error'}).count()
+        return errorCount
 
 def __getStore():
     mongo_uri = MONGODB_URI

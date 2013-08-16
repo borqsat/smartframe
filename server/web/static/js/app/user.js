@@ -4,6 +4,46 @@ function showUserInfo(){
                    function(data){
                         data = data.results;
                         if(data === undefined) return;
+                        
+				    	var avatar = data.info['avatar'];
+				    	var default_avatar = data.info['default_avatar'];
+				    	var uploaded_avatar = data.info['uploaded_avatar'];
+				    	
+				    	switch (avatar)
+				    	{
+				    	case "default_avatar":
+				    		if (default_avatar !== undefined){
+				    			path = default_avatar;
+				    			if (uploaded_avatar !== undefined){
+				    				upload = storeBaseURL + "/snap/" + uploaded_avatar;
+				    				$("#upload_avatar").attr("src",upload);
+				    			}else{
+				    				$("#upload_avatar").attr("src",path);
+				    			}
+				    			$("#initial_hint").attr("src","static/css/images/display.png");
+				    			$("#upload_hint").attr("src","static/css/images/none.png");
+				    		}else{
+				    			alert("Can not get the default avatar!!!");
+				    			return;
+				    		}
+				    		break;
+				    	case "uploaded_avatar":
+				    		if (uploaded_avatar !== undefined) {
+				    			path = storeBaseURL + "/snap/" + uploaded_avatar;
+				    			$("#upload_avatar").attr("src",path);
+				    		}else{
+				    			alert("You haven't upload the avatar, so can not get it!!!");
+				    			return;
+				    		}
+				    		$("#initial_hint").attr("src","static/css/images/none.png");
+				    		$("#upload_hint").attr("src","static/css/images/display.png");
+				    		break;
+				    	default:
+				    		path = "http://storage.aliyun.com/wutong-data/system/1_L.jpg";
+				    	}
+			    		$("#profile-avatar").attr("src",path);
+			    		$("#small-avatar").attr("src",path);
+			    		$('#avatar_panel').css("display","none");
                         var $username = $('#user-name').html('');
                         $username.append('<p class=\"bottom bold\">'+data['username']+'</p>')
                         var $usergrp = $('#user-groups').html('');

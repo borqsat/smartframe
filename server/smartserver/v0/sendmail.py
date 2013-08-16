@@ -5,18 +5,32 @@ Internal APIs to implement sending invitation/verification email.
 '''
 
 import smtplib
+from email.MIMEText import MIMEText
 
-__all__ = ['sendVerifyMail', 'sendInviteMail', 'sendForgotPasswdMail']
-
-
-def __sendVerifyMail(receiver, user, token):
+def __sendMail(receiver,subject,message):
     sender = 'borqsat@borqs.com'
-    subject = 'Please active your email on SmartAT'
     mailuser = 'borqsat@borqs.com'
     mailpass = '!QAZ2wsx3edc'
 
-    msg = ("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n" % (sender, receiver, subject))
-    msg = msg + 'Hi,%s,\r\n\r\n' % (user)
+    msg = MIMEText(message,_subtype='plain',_charset='gb2312')      
+    msg['Subject'] = subject      
+    msg['From'] = sender     
+    msg['To'] = ';'.join(receiver) 
+    print receiver
+    smtp = None
+    try:
+        smtp = smtplib.SMTP_SSL()
+        smtp.connect('smtp.bizmail.yahoo.com')
+        smtp.login(mailuser, mailpass)
+        smtp.sendmail(sender, receiver, msg.as_string())
+    except Exception, e:
+        print e
+    smtp.quit()
+
+def sendVerifyMail(receiver, user, token):
+    subject = 'Please active your email on SmartAT'
+    print '+++++'+receiver
+    msg = 'Hi,%s,\r\n\r\n' % (user)
     msg = msg + 'This mail sent out by smartAT, do not reply to it directly.\r\n'
     msg = msg + 'Your account \"%s\" has been created alreday.\r\n' % (user)
     msg = msg + 'Please verify your email via the url as below.\r\n'
@@ -25,25 +39,12 @@ def __sendVerifyMail(receiver, user, token):
     msg = msg + 'Best Regards\r\n'
     msg = msg + 'SmartAT Team\r\n'
 
-    smtp = None
-    try:
-        smtp = smtplib.SMTP_SSL()
-        smtp.connect('smtp.bizmail.yahoo.com')
-        smtp.login(mailuser, mailpass)
-        smtp.sendmail(sender, receiver, msg)
-    except Exception, e:
-        print e
-    smtp.quit()
+    __sendMail([receiver],subject,msg)
 
-
-def __sendInviteMail(receiver, user, group, token):
-    sender = 'borqsat@borqs.com'
+def sendInviteMail(receiver, user, group, token):
     subject = 'Welcome to signup on SmartAT'
-    mailuser = 'borqsat@borqs.com'
-    mailpass = '!QAZ2wsx3edc'
 
-    msg = ("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n" % (sender, receiver, subject))
-    msg = msg + 'Hi,%s,\r\n\r\n' % (user)
+    msg = 'Hi,%s,\r\n\r\n' % (user)
     msg = msg + 'This mail sent out by smartAT, do not reply to it directly.\r\n'
     msg = msg + 'Your friend \"%s\" invite you to join group [%s].\r\n' % (user, group)
     msg = msg + 'You are welcome to signup your own account via the url below.\r\n'
@@ -52,24 +53,12 @@ def __sendInviteMail(receiver, user, group, token):
     msg = msg + 'Best Regards\r\n'
     msg = msg + 'SmartAT Team\r\n'
 
-    smtp = None
-    try:
-        smtp = smtplib.SMTP_SSL()
-        smtp.connect('smtp.bizmail.yahoo.com')
-        smtp.login(mailuser, mailpass)
-        smtp.sendmail(sender, receiver, msg)
-    except Exception, e:
-        print e
-    smtp.quit()
+    __sendMail([receiver],subject,msg)
 
-def __sendForgotPasswdMail(receiver, passwd, token):
-    sender = 'borqsat@borqs.com'
+def sendForgotPasswdMail(receiver, passwd, token):
     subject = 'Reset your password on SmartAT'
-    mailuser = 'borqsat@borqs.com'
-    mailpass = '!QAZ2wsx3edc'
 
-    msg = ("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n" % (sender, receiver, subject))
-    msg = msg + 'Hi,%s,\r\n\r\n' % (receiver)
+    msg = 'Hi,%s,\r\n\r\n' % (receiver)
     msg = msg + 'This mail sent out by smartAT, do not reply to it directly.\r\n'
     msg = msg + 'Your password of account \"%s\" has been reset alreday.\r\n' % (receiver)
     msg = msg + 'The new password: ' + passwd + ' \r\n'
@@ -78,16 +67,19 @@ def __sendForgotPasswdMail(receiver, passwd, token):
     msg = msg + 'Best Regards\r\n'
     msg = msg + 'SmartAT Team\r\n'
 
-    smtp = None
-    try:
-        smtp = smtplib.SMTP_SSL()
-        smtp.connect('smtp.bizmail.yahoo.com')
-        smtp.login(mailuser, mailpass)
-        smtp.sendmail(sender, receiver, msg)
-    except Exception, e:
-        print e
-    smtp.quit()
+    __sendMail([receiver],subject,msg)
 
-sendVerifyMail = __sendVerifyMail
-sendInviteMail = __sendInviteMail
-sendForgotPasswdMail = __sendForgotPasswdMail
+def sendErrorMail(context):
+    subject='Case Error'
+
+    msg = 'Hi,\r\n\r\n'
+    msg = msg + 'This mail sent out by smartAT, do not reply to it directly.\r\n'
+    msg = msg + 'Devices '+context['info']['deviceid']+' happen error at '+ context['info']['issuetime']+  '.\r\n' 
+    msg = msg + 'Error case name is '+context['info']['testcasename'] +' .\r\n'
+    msg = msg + 'This session starts time is '+context['info']['starttime'] +' .\r\n'
+    msg = msg + 'please go to http://ats.borqs.com/smartserver/ to checked it, Thanks!\r\n' 
+    msg = msg + '\r\n\r\n'
+    msg = msg + 'Best Regards\r\n'
+    msg = msg + 'SmartAT Team\r\n'
+
+    __sendMail(context['receiver'],subject,msg)

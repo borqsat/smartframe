@@ -15,16 +15,37 @@ function showGroupInfo(id) {
                               if(o['uid'] === userid)
                                   bAdmin = (o['rolename'] === 'owner') || (o['rolename'] === 'admin');                          
                           });
+                          
                           _appglobal.members = [];
                           $.each(members, function(i, o) {
                             _appglobal.members.push(o['username']);
                             var uid = o['uid'];
                             var role = o['rolename'];
-                            $groupprf.append('<li>' + o['username'] + '('+ o['rolename'] + ')'
+                            var info = o['info'];
+                            var path = ""
+                            if ('avatar' in info){
+                            	var avatar = info['avatar'];
+                            	if (avatar === "uploaded_avatar"){
+                            		path = storeBaseURL + "/snap/" + info[avatar];
+                            	}else if (avatar === "default_avatar"){
+                            		path = info[avatar];
+                            	}else{
+                            		path = "http://storage.aliyun.com/wutong-data/system/1_S.jpg"
+                            	}
+                            }else{
+                            	path = "http://storage.aliyun.com/wutong-data/system/1_S.jpg"
+                            	console.log(path)
+                            }
+                            var role = o['rolename'];
+                            if (role === 'member'){ role = ""};
+                            $groupprf.append('<div><img style="width:30px;height:30px" src="'+path+'"></img><span style="font-size:15px;">' 
+                            		         + o['username'] 
+                            				 + (role===''?'':'('+role+')')
                                              + '<a href="javascript:deletemembersById(\''+id+'\',\''+uid+'\',\' '+role+'\')">' 
-                                             + (bAdmin && o['rolename'] !== 'owner'? '[X]':'')+'</a></li>')
+                                             + (bAdmin && o['rolename'] !== 'owner'? '[X]':'')+'</a></span></div>')
                           })
                     })
+                                        
       $('#dialog-user')
                       .dialog({
                           resizable:false,
@@ -293,9 +314,7 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
     $product_table.append($tbody);
     $cycle_panel.append($product_table);
 
-    _appglobal.cyclelist = {};//new Array();
-    
-    _appglobal.cyclelist = {};//new Array();
+    _appglobal.cyclelist = {};
     var sessions = [];
     for(var k = 0; k < test_session.length;k++){
         var cid = test_session[k].cid;
@@ -316,7 +335,6 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
             session_item['product'] = product;
             session_item['revision'] = session_item.revision;
             sessions.push(session_item);
-            //key = product + ":" + session_item.revision;
         }
         
     }
