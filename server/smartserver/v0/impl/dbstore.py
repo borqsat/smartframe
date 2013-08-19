@@ -646,20 +646,14 @@ class DataStore(object):
         Use UTC time, if utcnow >= the expire time of a token, remove this token from db.
         '''
         print "Start validating token expire time"
-        for token in self._db['tokens'].find({}, {'_id': 0, 'token': 1, 'expires': 1, 'info': 1}):
+        for token in self._db['tokens'].find({}, {'_id': 0, 'token': 1, 'expires': 1, 'reportdata': 1}):
             if time.time() >= token['expires']:
                 self.deleteToken(token['token'])
-            if token.get('info') != None and token['info'].get('cid') != None and self._db['testsessions'].find({'cid': int(token['info']['cid'])}).count() == 0:
+            if token['reportdata'].has_key('cid') and self._db['testsessions'].find({'cid': int(token['reportdata']['cid'])}).count() == 0:
                 self.deleteToken(token['token'])
 
-    def getReportData(self, token):
-        rdata = list(self._db['tokens'].find({'token': token}))
-        if len(rdata) == 0:
-            return {}
-        else:
-            return rdata[0]['info']['result']['results']
 
-    def createToken(self, appid, uid, info, expires):
+    def createToken(self, appid, uid, info, expires, reportdata={}):
         """
         write a user account record in database
         """
@@ -668,7 +662,8 @@ class DataStore(object):
         m.update(str(uuid.uuid1()))
         token = m.hexdigest()
         tokens.insert({'appid': appid, 'uid': uid,
-                      'info': info, 'token': token, 'expires': (time.time() + expires)})
+                      'info': info, 'token': token, 
+                      'expires': (time.time() + expires), 'reportdata': reportdata})
         return {'token': token, 'uid': uid}
 
     def deleteToken(self, token):
@@ -794,12 +789,19 @@ class DataStore(object):
 
         return {'results': result.values()}
 
+    def getReportData(self, token):
+        rdata = list(self._db['tokens'].find({'token': token}))
+        if len(rdata) == 0:
+            return {}
+        else:
+            return rdata[0]['reportdata']['result']['results']
+
     def saveReportData(self, cid, result):
         appid = "05"
         uid = "0000000000"
-        info = {'cid': cid, 'result': result}
+        reportdata = {'cid': cid, 'result': result}
         expires = 24*3600*365
-        return self.createToken(appid, uid, info, expires)['token']
+        return self.createToken(appid, uid, {}, expires, reportdata)['token']
 
     def readTestReport(self, gid, cid):
         """
