@@ -129,8 +129,8 @@ def getReportData(token):
     else:
         return {'error': {'msg': 'Invalid request or the report has expired!'}}
 
-def checkMailStatus(token):
-    address = store.checkMailStatus(token)
+def getUserMailAddress(token):
+    address = store.getUserMailAddress(token)
     if address:
         return address
     else:
