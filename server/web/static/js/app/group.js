@@ -1021,14 +1021,14 @@ function showReportInfo(gid,cid){
                 },true);
 }
 
-function toggle(){
-    var articleID=document.getElementById("article");
-    if (articleID.style.display=="none"){
+$("#show-title").bind("click",function(){
+	var articleID=document.getElementById("article");
+	if (articleID.style.display=="none"){
         articleID.style.display="block";
     } else {
         articleID.style.display="none";
     }
-}
+});
 
 function showCommentInfo(){
 
