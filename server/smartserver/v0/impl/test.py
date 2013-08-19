@@ -135,3 +135,13 @@ def getUserMailAddress(token):
         return address
     else:
         return ''
+
+def checkReportTokenStatus(reporttoken):
+    if store.checkReportTokenStatus(reporttoken):
+        return 1
+    else:
+        return 0
+
+def updateReportTokenExpires(token):
+    store.updateReportTokenExpires(token)
+

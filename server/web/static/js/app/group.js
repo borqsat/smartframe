@@ -1044,12 +1044,15 @@ function showCommentInfo(data, tag){
                                                     return function(){
                                                            var reportlink = window.location.protocol + "//" + window.location.host + "/smartserver/group.html#report/" + data['results']['token'];
                                                            invokeWebApi('/cycle/report', 
-                                                                        prepareData({'link': reportlink, 'mode': 'share'}),
+                                                                        prepareData({'link': reportlink, 'reporttoken': data['results']['token'], 'mode': 'share'}),
                                                                         function(data){
                                                                           if (data['results'] === 'ok'){ alert("A link of this report will be sent to you by email shortly!");}
                                                                           else if (data['results'] === 'error'){
                                                                             alert("Your email address has not been verified, please share the link manually!");
                                                                             window.open(reportlink);
+                                                                          }
+                                                                          else if (data['results'] === 'badtoken'){
+                                                                            alert("This report has expired, please refresh this page!");
                                                                           }
                                                                         });
                                                     };

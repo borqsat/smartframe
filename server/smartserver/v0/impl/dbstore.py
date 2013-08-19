@@ -622,6 +622,16 @@ class DataStore(object):
         results['users'] = lists
         return results
 
+    def checkReportTokenStatus(token):
+        if self._db['tokens'].find({'token': token}).count() != 0:
+            return 1
+        else:
+            return 0 
+
+    def updateReportTokenExpires(token):
+        # If a report has been shared, update it's expires to 365*24*3600(31536000)
+        self._db['tokens'].update({'token': token}, {'$inc': {'expires': 31536000}})
+
     # TODO cache policy...
     @cm.region("local", "user_id")
     def validToken(self, token):
@@ -800,7 +810,8 @@ class DataStore(object):
         appid = "05"
         uid = "0000000000"
         reportdata = {'cid': cid, 'result': result}
-        expires = 24*3600*365
+        # By default, set the expires of a token to 1800 secs.
+        expires = 1800
         return self.createToken(appid, uid, {}, expires, reportdata)['token']
 
     def readTestReport(self, gid, cid):
