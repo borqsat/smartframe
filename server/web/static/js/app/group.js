@@ -6,14 +6,22 @@ function showGroupInfo(id) {
 			    	data = data.results;
 			    	if(data === undefined) return;
 			    	
-			    	uploaded_avatar = data.info['uploaded_avatar'];
-			    	if(uploaded_avatar !== undefined){
-			    			path = storeBaseURL + "/snap/" + uploaded_avatar;
-			    	}else{
-			    			path = "http://storage.aliyun.com/wutong-data/system/1_S.jpg"
+			    	var avatar = data.info['avatar'];
+			    	var uploaded_avatar = data.info['uploaded_avatar'];
+			    	var avatar_path = ""
+			    	switch(avatar)
+			    	{
+			    	case "default_avatar":
+			    		avatar_path = "http://storage.aliyun.com/wutong-data/system/1_S.jpg"
+			    		break;
+			    	case "uploaded_avatar":
+			    		avatar_path = storeBaseURL + "/snap/" + uploaded_avatar;
+			    		break;
+			    	default:
+			    		avatar_path = "http://storage.aliyun.com/wutong-data/system/1_S.jpg"
 			    	}
-			    	$("#small-avatar").attr("src",path);
-				});
+			    	$("#small-avatar").attr("src",avatar_path);
+	  });
 	
       invokeWebApi('/group/'+id+'/info',
                    prepareData({}),
@@ -39,18 +47,14 @@ function showGroupInfo(id) {
                             var role = o['rolename'];
                             var info = o['info'];
                             var path = ""
-                            if ('avatar' in info){
-                            	var avatar = info['avatar'];
-                            	if (avatar === "uploaded_avatar"){
-                            		path = storeBaseURL + "/snap/" + info[avatar];
-                            	}else if (avatar === "default_avatar"){
-                            		path = info[avatar];
-                            	}else{
-                            		path = "http://storage.aliyun.com/wutong-data/system/1_S.jpg"
-                            	}
+                            var avatar = info['avatar'];
+                            if (avatar === "uploaded_avatar"){
+                            	path = storeBaseURL + "/snap/" + info[avatar];
+                            }else if (avatar === "default_avatar"){
+                            	path = info[avatar];
                             }else{
                             	path = "http://storage.aliyun.com/wutong-data/system/1_S.jpg"
-                            }
+                            	}
                             var role = o['rolename'];
                             if (role === 'member'){ role = ""};
                             $groupprf.append('<div><img style="width:30px;height:30px" src="'+path+'"></img><span style="font-size:15px;">' 
@@ -59,8 +63,8 @@ function showGroupInfo(id) {
                                              + '<a href="javascript:deletemembersById(\''+id+'\',\''+uid+'\',\' '+role+'\')">' 
                                              + (bAdmin && o['rolename'] !== 'owner'? '[X]':'')+'</a></span></div>')
                           })
-                    })
-                                        
+                          
+                    })          
       $('#dialog-user')
                       .dialog({
                           resizable:false,
