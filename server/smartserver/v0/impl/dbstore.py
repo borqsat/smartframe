@@ -788,6 +788,7 @@ class DataStore(object):
                 'starttime':'--',
                 'endtime':'--',
                 'failcnt':0,
+                'buildid':'--',
                 'totaldur':0
                 }
         res2 = []
@@ -800,7 +801,10 @@ class DataStore(object):
                 d['endtime'] = d['failtime']
 
             res1['product'] = d['deviceinfo']['product']
-            res1['buildid'] = d['deviceinfo']['revision']
+            if 'revision' in d['deviceinfo']:
+                res1['buildid'] = d['deviceinfo']['revision']
+            else:
+                res1['buildid'] ='--'
             res1['count'] += 1
             if res1['starttime'] == '--' or _compareDateTime(res1['starttime'], d['starttime']):
                 res1['starttime'] = d['starttime']
