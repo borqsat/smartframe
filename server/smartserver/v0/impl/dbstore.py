@@ -747,12 +747,10 @@ class DataStore(object):
                                         'livecount': 0,
                                         'starttime': '--',
                                         'endtime': '--',
-                                        'product': '--',
                                         'sessions': []})
 
             current = result.get(cid)
             current['count'] += 1
-            current['product'] = d['deviceinfo'].get('product', '--')
 
             if current['starttime'] == '--' or _compareDateTime(current['starttime'], d['starttime']):
                 current['starttime'] = d['starttime']
@@ -773,7 +771,8 @@ class DataStore(object):
                                         'status': d['status'],
                                         'runtime': d['runtime'],
                                         'deviceid': d['deviceid'],
-                                        'revision':d['deviceinfo'].get('revision', '--')})
+                                        'revision':d['deviceinfo'].get('revision', '--'),
+                                        'product':d['deviceinfo'].get('product', '--')})
 
         return {'results': result.values()}
 
