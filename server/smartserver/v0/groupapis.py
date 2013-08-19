@@ -680,6 +680,7 @@ def doHandleCycleReport():
     @rtype: JSON
     @return:ok-{'results': 'ok'}
             error-{'results': 'error'}
+            bad -{'results': 'badtoken'}
 
     """
     mode = request.params['mode']
@@ -688,15 +689,10 @@ def doHandleCycleReport():
     elif mode == "fetch":
         return getReportData(request.params['token'])
     elif mode == "share":
-        if not checkReportTokenStatus(request.params['reporttoken']):
-            return {'results': 'badtoken'}
-        address = getUserMailAddress(request.params['token'])
-        if address:
-            updateReportTokenExpires(request.params['reporttoken'])
-            tasks.ws_send_mail_to_user.delay(request.params.get('link'), address)
-            return {'results': 'ok'}
-        else:
-            return {'results': 'error'}
+        result = shareReportData(request.params['reporttoken'], request.params['token'])
+        if result['results'] == "ok":
+            tasks.ws_send_mail_to_user.delay(request.params['link'], result['address'])
+        return result
 
 
 if __name__ == '__main__':

@@ -129,19 +129,12 @@ def getReportData(token):
     else:
         return {'error': {'msg': 'Invalid request or the report has expired!'}}
 
-def getUserMailAddress(token):
-    address = store.getUserMailAddress(token)
+def shareReportData(reporttoken, usertoken):
+    if not store.checkReportTokenStatus(reporttoken):
+        return {'results': 'badtoken'}
+    address = store.getUserMailAddress(usertoken)
     if address:
-        return address
+        store.updateReportTokenExpires(reporttoken)
+        return {'results': 'ok', 'address': address}
     else:
-        return ''
-
-def checkReportTokenStatus(reporttoken):
-    if store.checkReportTokenStatus(reporttoken):
-        return 1
-    else:
-        return 0
-
-def updateReportTokenExpires(token):
-    store.updateReportTokenExpires(token)
-
+        return {'results': 'error'}
