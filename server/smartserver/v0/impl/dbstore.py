@@ -622,13 +622,13 @@ class DataStore(object):
         results['users'] = lists
         return results
 
-    def checkReportTokenStatus(token):
+    def checkReportTokenStatus(self, token):
         if self._db['tokens'].find({'token': token}).count() != 0:
             return 1
         else:
             return 0 
 
-    def updateReportTokenExpires(token):
+    def updateReportTokenExpires(self, token):
         # If a report has been shared, update it's expires to 365*24*3600(31536000)
         self._db['tokens'].update({'token': token}, {'$inc': {'expires': 31536000}})
 
