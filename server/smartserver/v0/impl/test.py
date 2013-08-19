@@ -123,15 +123,15 @@ def checkMailListAndContext(gid,sid,tid):
     return context
 
 def getReportData(token):
-    rdata = store.getReportData(token)
-    if 'results' in rdata:
-        return {'results': rdata['results']}
+    result = store.getReportData(token)
+    if result:
+        return {'results': result}
     else:
         return {'error': {'msg': 'Invalid request or the report has expired!'}}
 
 def checkMailStatus(token):
-    rdata = store.checkMailStatus(token)
-    if 'address' in rdata:
-        return {'address': rdata['address']}
+    address = store.checkMailStatus(token)
+    if address:
+        return address
     else:
-        return {}
+        return ''

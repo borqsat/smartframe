@@ -575,9 +575,9 @@ class DataStore(object):
         for token in self._db['tokens'].find({'token': token}, {'_id': 0, 'uid': 1}):
             for user in self._db['users'].find({'uid': token['uid']}, {'_id': 0, 'active': 1, 'info': 1}):
                 if user.get('active') == True:
-                    return {'address': user['info']['email']}
+                    return user['info']['email']
                 else:
-                    return {}
+                    return ''
 
     def userExists(self, username, password):
         users = self._db['users']
@@ -657,7 +657,7 @@ class DataStore(object):
         if len(rdata) == 0:
             return {}
         else:
-            return {'results': rdata[0]['info']['result']['results']}
+            return rdata[0]['info']['result']['results']
 
     def createToken(self, appid, uid, info, expires):
         """

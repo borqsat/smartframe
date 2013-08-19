@@ -688,9 +688,9 @@ def doHandleCycleReport():
     elif mode == "fetch":
         return getReportData(request.params['token'])
     elif mode == "share":
-        result = checkMailStatus(request.params['token'])
-        if 'address' in result:
-            tasks.ws_send_mail_to_user.delay(request.params.get('link'), result['address'])
+        address = checkMailStatus(request.params['token'])
+        if address:
+            tasks.ws_send_mail_to_user.delay(request.params.get('link'), address)
             return {'results': 'ok'}
         else:
             return {'results': 'error'}
