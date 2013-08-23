@@ -113,3 +113,11 @@ def getTestCaseSnap(fid):
 def getTestLiveSnaps(gid, sid, timestamp):
     imgBuffer = store.readTestLiveSnaps(gid, sid, timestamp)
     return imgBuffer
+
+def checkErrorCount(sid):
+    errorCount = store.checkErrorCount(sid)
+    return errorCount
+
+def checkMailListAndContext(gid,sid,tid):
+    context = store.checkMailListAndContext(gid,sid,tid)
+    return context

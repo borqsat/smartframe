@@ -1,3 +1,131 @@
+$('#change_avatar').bind("click",
+		function(){
+		    var panel=document.getElementById("avatar_panel");
+		    if (panel.style.display=="none"){
+		    	panel.style.display="block";
+		    } else {
+		    	panel.style.display="none";
+		    }
+});
+
+$('#close_panel').bind("click",
+		function(){	
+			$('#avatar_panel').css("display","none");
+});
+
+$("#initial_div").bind("click", function(){
+    var info = {"avatar":"default_avatar", "default_avatar":"http://storage.aliyun.com/wutong-data/system/1_L.jpg"};
+    invokeWebApiEx("/account/update",
+                   prepareData({
+                	   "info":info,
+                	   }),
+                   afterChangeToIniteAvatar);
+});
+
+function afterChangeToIniteAvatar(){
+    $("#profile-avatar").attr("src","http://storage.aliyun.com/wutong-data/system/1_L.jpg");
+	$("#small-avatar").attr("src","http://storage.aliyun.com/wutong-data/system/1_S.jpg");
+	$("#initial_hint").attr("src","static/css/images/display.png");
+	$("#upload_hint").attr("src","static/css/images/none.png");
+	$('#avatar_panel').css("display","none");
+}
+
+$("#upload_div").bind("click", function(){
+	  invokeWebApi('/account/info',
+				prepareData({}),
+				function(data){
+			    	data = data.results;
+			    	if(data === undefined) return;
+			    	
+			    	uploaded_avatar = data.info['uploaded_avatar'];
+			    	if(uploaded_avatar !== undefined){
+			    			path = storeBaseURL + "/snap/" + uploaded_avatar;
+			    	}else{
+			    			alert("You haven't upload the avatar, so can not get it!!!")
+			    			return;
+			    	}
+			    	$("#profile-avatar").attr("src",path);
+			    	$("#small-avatar").attr("src",path);
+			    	$("#upload_avatar").attr("src",path);
+			    	$("#upload_hint").attr("src","static/css/images/display.png");
+			    	$("#initial_hint").attr("src","static/css/images/none.png");
+			    	$('#avatar_panel').css("display","none");
+				});
+	  info = {}
+	  info['avatar'] = "uploaded_avatar";
+	  invokeWebApiEx("/account/update",
+			  		prepareData({"info":info}),
+			  		function(data){
+		  				var ret = data['errors'];
+		  				if (ret !== undefined){
+		  					alert(ret['msg'])
+		  				}
+	  				});
+});
+
+$('#upload_file').bind("change",
+		function(){
+					
+                    invokeWebApiEx("/account/update",
+                                   prepareData({}),
+                                   aferUploadAvatar,
+                                  "avatarForm");
+});
+
+function aferUploadAvatar(data){
+	var ret = data['errors'];
+	if(ret !== undefined) {
+		alert(ret["msg"]);
+	} else {
+		  invokeWebApi('/account/info',
+					prepareData({}),
+					function(data){
+				    	data = data.results;
+				    	if(data === undefined) return;
+				    	
+				    	var avatar = data.info['avatar'];
+				    	var default_avatar = data.info['default_avatar'];
+				    	var uploaded_avatar = data.info['uploaded_avatar'];
+				    	
+				    	switch (avatar)
+				    	{
+				    	case "default_avatar":
+				    		if (default_avatar !== undefined){
+				    			path = default_avatar;
+				    			if (uploaded_avatar !== undefined){
+				    				upload = storeBaseURL + "/snap/" + uploaded_avatar;
+				    				$("#upload_avatar").attr("src",upload);
+				    			}else{
+				    				$("#upload_avatar").attr("src",path);
+				    			}
+				    			$("#initial_hint").attr("src","static/css/images/display.png");
+				    			$("#upload_hint").attr("src","static/css/images/none.png");
+				    		}else{
+				    			alert("Can not get the default avatar!!!");
+				    			return;
+				    		}
+				    		break;
+				    	case "uploaded_avatar":
+				    		if (uploaded_avatar !== undefined) {
+				    			path = storeBaseURL + "/snap/" + uploaded_avatar;
+				    			$("#upload_avatar").attr("src",path);
+				    		}else{
+				    			alert("You haven't upload the avatar, so can not get it!!!");
+				    			return;
+				    		}
+				    		$("#initial_hint").attr("src","static/css/images/none.png");
+				    		$("#upload_hint").attr("src","static/css/images/display.png");
+				    		break;
+				    	default:
+				    		path = "http://storage.aliyun.com/wutong-data/system/1_L.jpg";
+				    	}
+			    		$("#profile-avatar").attr("src",path);
+			    		$("#small-avatar").attr("src",path);
+			    		$('#avatar_panel').css("display","none");
+					});
+		}
+};
+
 function afterlogin(data) {
     ret = data['results'];
     if (ret !== undefined && ret['token'] !== undefined) {

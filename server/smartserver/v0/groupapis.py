@@ -10,7 +10,7 @@ from gevent.pywsgi import WSGIServer
 from .impl.test import *
 from .impl.account import *
 from .impl.group import *
-from .sendmail import sendVerifyMail, sendInviteMail, sendForgotPasswdMail
+from .sendmail import *
 from .plugins import LoginPlugin, ContentTypePlugin
 
 from .. import tasks
@@ -106,9 +106,7 @@ def doChangePassword(uid):
     """
     return userChangePassword(uid, request.json['oldpassword'], request.json['newpassword'])
 
-
-
-@appweb.route('/account/update', method='POST', content_type='application/json')
+@appweb.route('/account/update', method='POST', content_type=['application/json','multipart/form-data'])
 def doUpdateUserInfo(uid):
     """
     URL:/account/update
@@ -124,11 +122,24 @@ def doUpdateUserInfo(uid):
     @return: ok-{'results':1}
              error-{'errors':{'code':(string)code,'msg':(string)info}}
     """
-    appid = request.json['appid']
-    info = request.json['info']
-    ret = userUpdateInfo(appid, uid, info)
-    if 'results' in ret and 'email' in ret['results']:
-        sendVerifyMail(ret['results']['email'], ret['results']['username'], ret['results']['token'])
+
+    if 'multipart/form-data' in request.content_type:
+        data = request.files.get('data')
+        ext = (data.filename).split('.')[-1]
+        avatar = data.file
+#         filesize = data.file.read()
+#         if (len(filesize) > 4194304):
+#             return {'errors': {'msg': 'Current support picture size less than 4MB!!!'}}
+        if ext not in ('png','jpg','jpeg'):
+            return {'errors': {'msg': 'Current support picture type .jpg/.png/.jpeg!!!'}}
+        else:
+            ret = userUpdateAvatar(uid, {"avatar":"uploaded_avatar","uploaded_avatar":avatar})
+    else:
+        appid = request.json['appid']
+        info = request.json['info']
+        ret = userUpdateInfo(appid, uid, info)
+        if 'results' in ret and 'email' in ret['results']:
+            sendVerifyMail(ret['results']['email'], ret['results']['username'], ret['results']['token'])
     return ret
 
 
@@ -435,6 +446,9 @@ def doUpdateCaseResult(gid, sid, tid):
     """
     result = updateCaseResult(gid, sid, tid, request.json)
     tasks.ws_update_testsession_summary.delay(sid)
+    if 'result' in request.json and request.json['result'].lower() == 'error' and checkErrorCount(sid) == 1:
+        mailcontext= checkMailListAndContext(gid,sid,tid)
+        sendErrorMail(mailcontext)
     return result
 
 
@@ -489,7 +503,6 @@ def doUpdateGroupTestSession(gid, sid):
             error-{'errors':{'code':value,'msg':(string)info}}
     """
     return updateTestSession(gid, sid, request.json)
-
 
 @appweb.route('/group/<gid>/test/<sid>/delete', method='GET')
 def doDeleteGroupTestSession(uid, gid, sid):

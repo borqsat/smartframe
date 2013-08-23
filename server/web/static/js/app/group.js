@@ -1,4 +1,28 @@
 function showGroupInfo(id) {
+	
+	  invokeWebApi('/account/info',
+				prepareData({}),
+				function(data){
+			    	data = data.results;
+			    	if(data === undefined) return;
+			    	
+			    	var avatar = data.info['avatar'];
+			    	var uploaded_avatar = data.info['uploaded_avatar'];
+			    	var avatar_path = ""
+			    	switch(avatar)
+			    	{
+			    	case "default_avatar":
+			    		avatar_path = "http://storage.aliyun.com/wutong-data/system/1_S.jpg"
+			    		break;
+			    	case "uploaded_avatar":
+			    		avatar_path = storeBaseURL + "/snap/" + uploaded_avatar;
+			    		break;
+			    	default:
+			    		avatar_path = "http://storage.aliyun.com/wutong-data/system/1_S.jpg"
+			    	}
+			    	$("#small-avatar").attr("src",avatar_path);
+	  });
+	
       invokeWebApi('/group/'+id+'/info',
                    prepareData({}),
                    function(data){
@@ -15,16 +39,32 @@ function showGroupInfo(id) {
                               if(o['uid'] === userid)
                                   bAdmin = (o['rolename'] === 'owner') || (o['rolename'] === 'admin');                          
                           });
+                          
                           _appglobal.members = [];
                           $.each(members, function(i, o) {
                             _appglobal.members.push(o['username']);
                             var uid = o['uid'];
                             var role = o['rolename'];
-                            $groupprf.append('<li>' + o['username'] + '('+ o['rolename'] + ')'
+                            var info = o['info'];
+                            var path = ""
+                            var avatar = info['avatar'];
+                            if (avatar === "uploaded_avatar"){
+                            	path = storeBaseURL + "/snap/" + info[avatar];
+                            }else if (avatar === "default_avatar"){
+                            	path = info[avatar];
+                            }else{
+                            	path = "http://storage.aliyun.com/wutong-data/system/1_S.jpg"
+                            	}
+                            var role = o['rolename'];
+                            if (role === 'member'){ role = ""};
+                            $groupprf.append('<div><img style="width:30px;height:30px" src="'+path+'"></img><span style="font-size:15px;">' 
+                            		         + o['username'] 
+                            				 + (role===''?'':'('+role+')')
                                              + '<a href="javascript:deletemembersById(\''+id+'\',\''+uid+'\',\' '+role+'\')">' 
-                                             + (bAdmin && o['rolename'] !== 'owner'? '[X]':'')+'</a></li>')
+                                             + (bAdmin && o['rolename'] !== 'owner'? '[X]':'')+'</a></span></div>')
                           })
-                    })
+                          
+                    })          
       $('#dialog-user')
                       .dialog({
                           resizable:false,
@@ -185,6 +225,9 @@ function clearCheckStatus(){
     for (var i = 0; i < _appglobal.collectIDs['tids'].length; i++){
       $("div#cases_div input#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked', false);
     }
+    if ($("input#checkbox_selectAll") !== []){
+      $("input#checkbox_selectAll").attr('checked', false);
+    }
     _appglobal.collectIDs['tids'] = [];
 }
 
@@ -290,17 +333,16 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
     $product_table.append($tbody);
     $cycle_panel.append($product_table);
 
-    _appglobal.cyclelist = {};//new Array();
-    
-    _appglobal.cyclelist = {};//new Array();
+    _appglobal.cyclelist = {};
     var sessions = [];
     for(var k = 0; k < test_session.length;k++){
         var cid = test_session[k].cid;
         var count = test_session[k].count;
         var starttime = test_session[k].starttime;
-        var product = test_session[k].product;
+        var product = test_session[k].sessions[0].product;
+        var revision = test_session[k].sessions[0].revision
         var key = "" ;
-        key = product + ":" + test_session[k].sessions[0].revision;
+        key = product + ":" + revision;
         if (cid !== "" && cid !== "N/A"){
             if (_appglobal.cyclelist[key] === undefined) {
                 _appglobal.cyclelist[key] = [];
@@ -310,10 +352,9 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
         for (var i = 0 ; i < test_session[k].sessions.length; i++) {
             var session_item = test_session[k].sessions[i];
             session_item['cid'] = cid;    
-            session_item['product'] = product;
+            session_item['product'] = session_item.product;
             session_item['revision'] = session_item.revision;
             sessions.push(session_item);
-            //key = product + ":" + session_item.revision;
         }
         
     }
@@ -371,7 +412,7 @@ function renderTestSessionDiv_cyclelist(div_id, test_session){
         var livecount = test_session[k].livecount;
         var starttime = test_session[k].starttime;
         var endtime = test_session[k].endtime;
-        var product = test_session[k].product;
+        var product = test_session[k].sessions[0].product;
         var revision = test_session[k].sessions[0].revision;
         if (cid !== "" && cid !== "N/A") {
             $tr = "<tr>"+
@@ -501,7 +542,7 @@ function createDetailTable(div, ids){
     var $div_detail = $("#"+div);
     var $tb = $('<table>').attr('id', ids).attr('class','table table-striped table-hover').attr('style','table-layout:fixed;word-wrap:break-word;');
     var $th = '<thead><tr>'+
-              '<th align="left" width="3%"></th>'+
+              '<th id="selectAll" align="left" width="3%"></th>'+
               '<th align="left" width="6%">Tid</th>'+
               '<th align="left" width="31%">Testcase</th>'+
               '<th align="left" width="17%">Start Time</th>'+
@@ -585,6 +626,20 @@ function collecter(tid){
     }
 }
 
+function selectAll(ids){
+    for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
+       var results = $("#"+ids+" > tbody > tr")[i]['id'].split('.');
+       if(results[1] === 'error' || results[1] === 'fail'){
+          collecter(results[0]);
+          if ($("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked') === undefined){
+            $("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', true);
+          }
+          else
+            {$("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', false);}
+       }
+    }
+}
+
 function collectinBetween(ids, max, min){
     for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
       var results = $("#"+ids+" > tbody > tr")[i]['id'].split('.');
@@ -628,6 +683,7 @@ function keepCheckStatus(ids){
 function fillDetailTable(gid, sid, data, ids, tag) {
     var tablerows = '';
     var detail_table = $("#"+ids+" > tbody").html('');
+    $("#"+ids+" > thead > tr > th#selectAll").html('').append("<input id=\"checkbox_selectAll\" type=\"checkbox\" onclick=\"javascript:selectAll('"+ids+"')\"></input>");
     var len = data.length;
     for (var i = 0; i < data.length; i++){
           var citem = data[i];
@@ -717,7 +773,7 @@ function fillDetailTable(gid, sid, data, ids, tag) {
     keepCheckStatus(ids);
 
     if(!$('#comDiv').length) {
-        var comdiv = fillCommentDiv(gid, sid);
+        var comdiv = fillCommentDiv();
         $('#session-div').append(comdiv);
     }
 }
@@ -726,7 +782,7 @@ function showHint(ctid){$("#hint_"+ctid).slideDown('slow');}
 
 function hideHint(ctid){$("#hint_"+ctid).hide('slow');}
 
-function fillCommentDiv(gid, sid){
+function fillCommentDiv(){
     var commentDiv = "<div id=\"comDiv\" style=\"display:none\"><form class=\"form-inner\">"+
                        "<div class=\"row\">"+
                          "<div class=\"span4\">"+
@@ -788,35 +844,25 @@ function submitUpdate(tag){
       else{var sessionCom = " :: Yes";}
       var $hintInfo = comResult['commentinfo'];
       var $showComment = ""+comResult['caseresult']+" :: "+comResult['issuetype']+""+sessionCom+"";
-      for (var i = 0; i < _appglobal.collectIDs['tids'].length; i++){
-          $("span#span_"+_appglobal.collectIDs['tids'][i]).html("");
-          $("span#span_"+_appglobal.collectIDs['tids'][i]).append($showComment);
-          $("div#hint_"+_appglobal.collectIDs['tids'][i]).html("");
-          $("div#hint_"+_appglobal.collectIDs['tids'][i]).append($hintInfo);
-      }
-      clearCheckStatus();
-
-      invokeWebApiEx("/group/"+_appglobal.gid+"/test/"+_appglobal.sid+"/case/00000/update",
-                     prepareData({'comments':comResult}),
-                     afterCommit);
     }
     else if (tag === 'clear'){
       comResult['tids'] = _appglobal.collectIDs['tids'];
-      for (var i = 0; i < _appglobal.collectIDs['tids'].length; i++){
-          var $hintInfo = "";
-          var $showComment = "";
-          $("span#span_"+_appglobal.collectIDs['tids'][i]).html("");
-          $("span#span_"+_appglobal.collectIDs['tids'][i]).append($showComment);
-          $("div#hint_"+_appglobal.collectIDs['tids'][i]).html("");
-          $("div#hint_"+_appglobal.collectIDs['tids'][i]).append($hintInfo);
-      }
-      clearCheckStatus();
-
+      var $hintInfo = "";
+      var $showComment = "";
       comResult['endsession'] = 0;
-      invokeWebApiEx("/group/"+_appglobal.gid+"/test/"+_appglobal.sid+"/case/00000/update",
-                 prepareData({'comments': comResult}),
-                 afterCommit);
     }
+
+    for (var i = 0; i < _appglobal.collectIDs['tids'].length; i++){
+        $("span#span_"+_appglobal.collectIDs['tids'][i]).html("");
+        $("span#span_"+_appglobal.collectIDs['tids'][i]).append($showComment);
+        $("div#hint_"+_appglobal.collectIDs['tids'][i]).html("");
+        $("div#hint_"+_appglobal.collectIDs['tids'][i]).append($hintInfo);
+    }
+    clearCheckStatus();
+    invokeWebApiEx("/group/"+_appglobal.gid+"/test/"+_appglobal.sid+"/case/00000/update",
+               prepareData({'comments': comResult}),
+               afterCommit);
+
     $("#comDiv").dialog('close');
 }
 
