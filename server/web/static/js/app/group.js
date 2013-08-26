@@ -627,16 +627,26 @@ function collectID(ctid){
 }
 
 function selectAll(ids){
-    for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
-       var results = $("#"+ids+" > tbody > tr")[i]['id'].split('.');
-       if(results[1] === 'error' || results[1] === 'fail'){
-          collectID(results[0]);
-          if ($("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked') === undefined){
-            $("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', true);
-          }
-          else
-            {$("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', false);}
-       }
+    if ($("#"+ids+" input#checkbox_selectAll").attr("checked") !== undefined){
+        for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
+           var results = $("#"+ids+" > tbody > tr")[i]['id'].split('.');
+           if(results[1] === 'error' || results[1] === 'fail'){
+              var key = _appglobal.collectIDs['tids'].indexOf(results[0]);
+              if (key === -1){
+                  _appglobal.collectIDs['tids'].push(results[0]);
+                  $("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', true);
+              }
+           }
+        }
+    }
+    else{
+        _appglobal.collectIDs['tids'] = [];
+        for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
+           var results = $("#"+ids+" > tbody > tr")[i]['id'].split('.');
+           if(results[1] === 'error' || results[1] === 'fail'){
+              $("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', false);
+           }
+        }
     }
 }
 
