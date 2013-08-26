@@ -45,7 +45,6 @@ def method_not_allowed(res):  # workaround to support cross-domain request
     res.headers['Allow'] += ', OPTIONS'
     return request.app.default_error_handler(res)
 
-
 @appweb.route('/account/register', method='POST', content_type='application/json', login=False)
 def doRegister():
     """
@@ -420,7 +419,7 @@ def doCreateCaseResult(gid, sid, tid):
     """
     tasks.ws_active_testsession.delay(sid)
     result = createCaseResult(gid, sid, tid, request.json['casename'], request.json['starttime'])
-    tasks.ws_update_testsession_summary(sid)
+    tasks.ws_update_testsession_summary.delay(sid)
     return result
 
 
@@ -649,11 +648,51 @@ def doGetGroupTestSessions(gid):
     @return:ok-{'results':{'count':(int)count, 'sessions':[ {planname':(string)value,'starttime':(string)value, 'result':{'total':(int)value, 'pass':(int)value, 'fail':(int)value, 'error':(int)value}, 'runtime':(string)value},... ] }}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    cid = request.params.get('cid')
-    if cid is None:
-        return getTestSessionList(gid)
-    else:
-        return getTestCycleReport(gid, cid)
+    return getTestSessionList(gid)
+
+@appweb.route('/cycle/report', method='GET')
+def doHandleCycleReport():
+    """
+    URL:/cycle/report
+    TYPE:http/GET
+
+    Depend on the request mode, generate/fetch/share the report of a cycle
+
+    @mode: generate
+    @type gid:string
+    @param gid:the id of a group
+    @type cid:string
+    @param cid:the id of a cycle
+    @rtype: JSON
+    @return:ok-{'results':{'count':(int)count, 'sessions':[ {planname':(string)value,'starttime':(string)value, 'result':{'total':(int)value, 'pass':(int)value, 'fail':(int)value, 'error':(int)value}, 'runtime':(string)value},... ] }}
+            error-{'errors':{'code':value,'msg':(string)info}}
+
+    @mode: fetch
+    @type token:string
+    @param token:the access token, report token
+    @rtype: JSON
+    @return:ok-{'results':{'count':(int)count, 'sessions':[ {planname':(string)value,'starttime':(string)value, 'result':{'total':(int)value, 'pass':(int)value, 'fail':(int)value, 'error':(int)value}, 'runtime':(string)value},... ] }}
+            error-{'errors':{'code':value,'msg':(string)info}}
+
+    @mode: share
+    @type token:string
+    @param token:the access token, user token
+    @rtype: JSON
+    @return:ok-{'results': 'ok'}
+            error-{'results': 'error'}
+            bad -{'results': 'badtoken'}
+
+    """
+    mode = request.params['mode']
+    if mode == "generate":
+        return getTestCycleReport(request.params['gid'], request.params['cid'])
+    elif mode == "fetch":
+        return getReportData(request.params['token'])
+    elif mode == "share":
+        result = shareReportData(request.params['reporttoken'], request.params['token'])
+        if result['results'] == "ok":
+            tasks.ws_send_mail_to_user.delay(request.params['link'], result['address'])
+        return result
 
 
 if __name__ == '__main__':

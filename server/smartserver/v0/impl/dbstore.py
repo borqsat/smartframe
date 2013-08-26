@@ -571,6 +571,14 @@ class DataStore(object):
         users.update({'uid': uid}, {'$set': data})
         return results
 
+    def getUserMailAddress(self, token):
+        for token in self._db['tokens'].find({'token': token}, {'_id': 0, 'uid': 1}):
+            for user in self._db['users'].find({'uid': token['uid']}, {'_id': 0, 'active': 1, 'info': 1}):
+                if user.get('active') == True:
+                    return user['info']['email']
+                else:
+                    return ''
+
     def userExists(self, username, password):
         users = self._db['users']
         if '@' in username:
@@ -614,6 +622,16 @@ class DataStore(object):
         results['users'] = lists
         return results
 
+    def checkReportTokenStatus(self, token):
+        if self._db['tokens'].find({'token': token}).count() != 0:
+            return 1
+        else:
+            return 0 
+
+    def updateReportTokenExpires(self, token):
+        # If a report has been shared, update it's expires to 365*24*3600(31536000)
+        self._db['tokens'].update({'token': token}, {'$inc': {'expires': 31536000}})
+
     # TODO cache policy...
     @cm.region("local", "user_id")
     def validToken(self, token):
@@ -638,11 +656,14 @@ class DataStore(object):
         Use UTC time, if utcnow >= the expire time of a token, remove this token from db.
         '''
         print "Start validating token expire time"
-        for token in self._db['tokens'].find({}, {'_id': 0, 'token': 1, 'expires': 1}):
+        for token in self._db['tokens'].find({}, {'_id': 0, 'token': 1, 'expires': 1, 'reportdata': 1}):
             if time.time() >= token['expires']:
                 self.deleteToken(token['token'])
+            if token.has_key('reportdata') and token['reportdata'].has_key('cid') and self._db['testsessions'].find({'cid': int(token['reportdata']['cid'])}).count() == 0:
+                self.deleteToken(token['token'])
 
-    def createToken(self, appid, uid, info, expires):
+
+    def createToken(self, appid, uid, info, expires, reportdata={}):
         """
         write a user account record in database
         """
@@ -651,7 +672,8 @@ class DataStore(object):
         m.update(str(uuid.uuid1()))
         token = m.hexdigest()
         tokens.insert({'appid': appid, 'uid': uid,
-                      'info': info, 'token': token, 'expires': (time.time() + expires)})
+                      'info': info, 'token': token, 
+                      'expires': (time.time() + expires), 'reportdata': reportdata})
         return {'token': token, 'uid': uid}
 
     def deleteToken(self, token):
@@ -776,6 +798,21 @@ class DataStore(object):
 
         return {'results': result.values()}
 
+    def getReportData(self, token):
+        rdata = list(self._db['tokens'].find({'token': token}))
+        if len(rdata) == 0:
+            return {}
+        else:
+            return rdata[0]['reportdata']['result']['results']
+
+    def saveReportData(self, cid, result):
+        appid = "05"
+        uid = "0000000000"
+        reportdata = {'cid': cid, 'result': result}
+        # By default, set the expires of a token to 1800 secs.
+        expires = 1800
+        return self.createToken(appid, uid, {}, expires, reportdata)['token']
+
     def readTestReport(self, gid, cid):
         """
         give a cycle report data
@@ -794,6 +831,7 @@ class DataStore(object):
         res2 = []
         res3 = []
         res4 = []
+
         rdata = session.find({'gid': gid, 'cid': int(cid)})
         for d in rdata:
             sidList.append(d['sid'])
@@ -917,6 +955,8 @@ class DataStore(object):
         result['issuesummany'] = res2
         result['issuedetail'] = res3
         result['domain'] = res4
+        token = self.saveReportData(cid, {'results': result})
+        result['token'] = token
         return result
 
     def readTestSessionInfo(self, gid, sid):

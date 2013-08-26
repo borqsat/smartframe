@@ -1051,10 +1051,10 @@ function createSessionBaseInfo(data, gid, sid, blive) {
 }
 
 function showReportInfo(gid,cid){
-    invokeWebApi('/group/'+gid+'/testsummary',
-                prepareData({'cid':cid}),
+    invokeWebApi('/cycle/report',
+                prepareData({'cid': cid, 'gid': gid, 'mode': 'generate'}),
                 function(data) {
-                  showCommentInfo();
+                  showCommentInfo(data);
                   showCycleBaseInfo(data);
                   showFailureSummaryInfo(data);
                   showFailureDetailsInfo(data,gid);
@@ -1062,8 +1062,10 @@ function showReportInfo(gid,cid){
                 },true);
 }
 
-function toggle(){
-    var articleID=document.getElementById("article");
+
+
+function toggle(){	
+  	var articleID=document.getElementById("article");
     if (articleID.style.display=="none"){
         articleID.style.display="block";
     } else {
@@ -1071,19 +1073,37 @@ function toggle(){
     }
 }
 
-function showCommentInfo(){
-
-    $('#show-title').html('<a style="text-align:center" href=\"javascript:void(0)\">Tap here to get more information</a><br />');
+function showCommentInfo(data, tag){
+    $('#show-title').html('<a href=\"javascript:void(0)\" onclick=\"toggle()\">Tap here to get more information</a>');
     $('#article').html( "<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
     					"<b>Product:</b> The device platform and product information. <br />" + 
     					"<b>Start Time:</b> The test start time. <br />" + 
     					"<b>End Time: </b>The test finish timestamp. Genericlly the value should be the ciritical issue happen time or the test stop time. 'N/A' means the test is ongoing. <br />" + 
     					"<b>Uptime:</b> Uptime = Endtime - StarTime . EndTime is the critical issue happen time or test stop time. <br />" + 
-                        "<b>Failures</b>= (critical issues) + (Non-Critical issues). <br />"+
-                        "<b>Critial Issues:</b> Phone hang, kernel reboot/panic, system crash, etc. <br />"+
-                        "<b>Non-Critical Issues:</b> Application/process force close/ANR, core dump (native process crash), etc.<br />"+
-                        "<b>First Failure Uptime:</b> From the <b>Start Time</b> to first failure occurs. <br />");
-
+              "<b>Failures</b>= (critical issues) + (Non-Critical issues). <br />"+
+              "<b>Critial Issues:</b> Phone hang, kernel reboot/panic, system crash, etc. <br />"+
+              "<b>Non-Critical Issues:</b> Application/process force close/ANR, core dump (native process crash), etc.<br />"+
+              "<b>First Failure Uptime:</b> From the <b>Start Time</b> to first failure occurs. <br />");
+    if (tag !== "staticReport"){
+      $('#show-title').append("<a id=\"sharereport\" style=\"margin-left: 60%\">Share report</a>");
+      $("a#sharereport").unbind().bind('click', function(data){
+                                                    return function(){
+                                                           var reportlink = window.location.protocol + "//" + window.location.host + "/smartserver/group.html#report/" + data['results']['token'];
+                                                           invokeWebApi('/cycle/report', 
+                                                                        prepareData({'link': reportlink, 'reporttoken': data['results']['token'], 'mode': 'share'}),
+                                                                        function(data){
+                                                                          if (data['results'] === 'ok'){ alert("A link of this report will be sent to you by email shortly!");}
+                                                                          else if (data['results'] === 'error'){
+                                                                            alert("Your email address has not been verified, please share the link manually!");
+                                                                            window.open(reportlink);
+                                                                          }
+                                                                          else if (data['results'] === 'badtoken'){
+                                                                            alert("This report has expired, please refresh this page!");
+                                                                          }
+                                                                        });
+                                                    };
+                                              }(data));
+    }
 }
 
 function showCycleBaseInfo(data){
@@ -1199,12 +1219,20 @@ function showFailureDetailsInfo(data,gid){
         var sid = data[i].sid;
         var deviceSerial = data[i].imei;
         if (deviceSerial ==="") deviceSerial = "N/A";
+        if (gid === "staticReport"){
+          var deviceLink = deviceSerial;
+          var failureLink = failureCount;
+        }
+        else{
+          var deviceLink = "<a href=\"#/group/"+gid+"/session/"+sid+"\">"+deviceSerial+"</a>";
+          var failureLink = "<a href=\"#/group/"+gid+"/session/"+sid+"/fail\">"+failureCount+"</a>";
+        }
         var $tr = "<tr>"+
                     (failureCount==0?"<td></td>":"<td onclick=showPic('pic_"+i.toString()+"'); id='tr_"+i.toString()+"'><img id='pic_"+i.toString()+"' src='static/img/spread.png'></img></td>")+        
-                    "<td><a href=\"#/group/"+gid+"/session/"+sid+"\">"+deviceSerial+"</a></td>"+
+                    "<td>"+deviceLink+"</td>"+
                     "<td>"+data[i].starttime+"</td>"+
                     "<td>"+data[i].endtime+"</td>"+ 
-                    (failureCount==0?"<td style='text-align:center'>"+0+"</td>":"<td style='text-align:center'><a href=\"#/group/"+gid+"/session/"+sid+"/fail\">"+failureCount+"</a></td>")+
+                    (failureCount==0?"<td style='text-align:center'>"+0+"</td>":"<td style='text-align:center'>"+failureLink+"</td>")+
                     "<td>"+setRunTime(data[i].faildur)+"</td>"+
                     "<td>"+setRunTime(data[i].totaldur)+"</td>"+
                     "</tr>";
@@ -1321,13 +1349,25 @@ function showDomainInfo(data){
     }
 }
 
+function showStaticReport(token){
+    invokeWebApi("/cycle/report",
+                {'token' : token, 'mode': 'fetch'},
+                function(data){
+                     showCommentInfo(data, "staticReport");
+                     showCycleBaseInfo(data);
+                     showFailureSummaryInfo(data);
+                     showFailureDetailsInfo(data, "staticReport");
+                     showDomainInfo(data);
+                });
+}
 
 var AppRouter = Backbone.Router.extend({
     routes: {
         "group/:gid" : "showGroupView",
         "group/:gid/session/:sid" : "showSessionView",
         "group/:gid/report/:cid" : "showReportView",
-        "group/:gid/session/:sid/fail" : "showFailView"
+        "group/:gid/session/:sid/fail" : "showFailView",
+        "report/:token" : "showStaticReportView"
     },
     showGroupView: function(gid){
         checkLogIn();
@@ -1381,6 +1421,16 @@ var AppRouter = Backbone.Router.extend({
         if(_appglobal.t2 !== undefined) clearTimeout(_appglobal.t2);
         showGroupInfo(gid);
         showReportInfo(gid,cid);
+    },
+    showStaticReportView: function(token){ 
+        $('#group-div').hide();
+        $('#session-div').hide();
+        $('#session-name').hide();
+        $('#header').hide();
+        $('#board-header').hide();
+        $('#group-members-div').hide();
+        $('#report-div').show();
+        showStaticReport(token);
     }
 });
 var index_router = new AppRouter;

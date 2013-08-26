@@ -83,3 +83,15 @@ def sendErrorMail(context):
     msg = msg + 'SmartAT Team\r\n'
 
     __sendMail(context['receiver'],subject,msg)
+
+def sendReportMail(link, address):
+    subject = 'Link of static report to share'
+
+    msg = 'Following is the link of the report you just checked, \r\n'
+    msg = msg + 'You can share it with the others and no need to login to SmartServer.\r\n\r\n\r\n'
+    msg = msg + link
+    msg = msg + '\r\n\r\n\r\n\r\n'
+    msg = msg + 'Best Regards\r\n'
+    msg = msg + 'SmartAT Team\r\n'
+
+    __sendMail([address], subject, msg)
