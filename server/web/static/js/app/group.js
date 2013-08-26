@@ -613,19 +613,6 @@ function renderSnapshotDiv(gid, sid) {
     }
 }
 
-function collecter(tid){
-    var key = _appglobal.collectIDs['tids'].indexOf(tid);
-    if (key === -1){
-      _appglobal.collectIDs['tids'].push(tid);
-    }
-    else if (key === 0){
-      _appglobal.collectIDs['tids'].splice(0, 1);
-    }
-    else{
-      _appglobal.collectIDs['tids'].splice(key, 1);
-    }
-}
-
 function selectAll(ids){
     if ($("#"+ids+" input#checkbox_selectAll").attr("checked") !== undefined){
         for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
@@ -655,14 +642,26 @@ function collectinBetween(ids, max, min){
       var results = $("#"+ids+" > tbody > tr")[i]['id'].split('.');
       if (min < results[0] && results[0] < max){
          if(results[1] === 'error' || results[1] === 'fail'){
-            collecter(results[0]);
-            if ($("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked') === undefined){
+            var key = _appglobal.collectIDs['tids'].indexOf(results[0]);
+            if (key === -1){
+              _appglobal.collectIDs['tids'].push(results[0]);
               $("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', true);
             }
-            else
-              {$("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', false);}
          }
       }
+    }
+}
+
+function collecter(tid){
+    var key = _appglobal.collectIDs['tids'].indexOf(tid);
+    if (key === -1){
+      _appglobal.collectIDs['tids'].push(tid);
+    }
+    else if (key === 0){
+      _appglobal.collectIDs['tids'].splice(0, 1);
+    }
+    else{
+      _appglobal.collectIDs['tids'].splice(key, 1);
     }
 }
 
