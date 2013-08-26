@@ -45,41 +45,22 @@ def method_not_allowed(res):  # workaround to support cross-domain request
     res.headers['Allow'] += ', OPTIONS'
     return request.app.default_error_handler(res)
 
-
-'''
-For all the apis following,
-the request data format is like this,
-    @type data:JSON
-    @param data:{'action': '<action>', 'data':{<data>}}
-
-the return data format is like this,
-    @rtype: JSON
-    @return: ok-{'results':'ok', 'data':{<data>}, 'msg': ''}
-             error-{'results':'error', 'data':{'code':(string)code}, 'msg': '(string)info'}
-'''
-
 @appweb.route('/account', method='POST', content_type='application/json', login=False)
 def accountBasicActionBeforeLogin():
     """
     URL:/account
     TYPE:http/POST
-
-    register a new account to server-side
-    @request  'action': 'register', 
-              'data':{'username':(string)username, 'password':(string)password, 'appid':(string)appid,'info':{'email':(string), 'telephone':(string)telephone, 'company':(string)company}}
-    @return    ok-'data':{}
-
-    forgot password and send a verify info to server-side
-    @request  'action': 'forgotpasswd'
-              'data':{'email':(string)mailaddress}
-    @return
-    @return:   ok-'data':{}
-
-    Get access token by username and password
-    @request  'action': 'login'
-              'data': {'appid':(int)appid, 'username':(string)username, 'password':(string)password}
-    @return
-    @return: ok-'data':{'token':(string)value}
+    @type data:JSON
+    @param data:{'subc': '', 'data':{}}
+    @rtype: JSON
+    @return: ok-{'results':'ok', 'data':{}, 'msg': ''}
+             error-{'results':'error', 'data':{'code':(string)code}, 'msg': '(string)info'}
+    ---------------------------------------------------------------------------------------
+    |support|subc          |data
+    |       |register      |{'username':(string)username, 'password':(string)password, 'appid':(string)appid,'info':{'email':(string), 'telephone':(string)telephone, 'company':(string)company}
+    |       |forgotpasswd  |{'email':(string)mailaddress}
+    |       |login         |{'appid':(int)appid, 'username':(string)username, 'password':(string)password}
+    ---------------------------------------------------------------------------------------
     """
     return doAccountBasicActionBeforeLogin(request.json)
 
@@ -88,26 +69,18 @@ def accountBasicActionAfterLogin():
     """
     URL:/user/<uid>
     TYPE:http/POST
-
-    update user password
-    @request  'action': 'changepasswd'
-              'data':{'token':(string)token,'oldpassword':(string)oldpassword, 'newpassword':(string)newpassword }
-    @return    ok-'data':{}
-    
-    update the info of user
-    @request  'action': 'update'
-              'data': {'token':(string)token,'info':{'email':(string), 'telephone':(string)telephone, 'company':(string)company}}
-    @return    ok-'data':{}
-
-    Invite user to smartServer
-    @request  'action': 'invite'
-              'data': {'token':(string)token, 'email':(string)email}
-    @return    ok-'data':{}
-
-    Logout user from smartserver
-    @request  'action': 'logout'
-              'data': {'token':(string)token}
-    @return    ok-'data':{}
+    @type data:JSON
+    @param data:{'subc': '', 'data':{}}
+    @rtype: JSON
+    @return: ok-{'results':'ok', 'data':{}, 'msg': ''}
+             error-{'results':'error', 'data':{'code':(string)code}, 'msg': '(string)info'}
+    ----------------------------------------------------------------------------------------
+    |support|subc          |data
+    |       |changepasswd  |{'token':(string)token,'oldpassword':(string)oldpassword, 'newpassword':(string)newpassword }
+    |       |update        |{'token':(string)token,'info':{'email':(string), 'telephone':(string)telephone, 'company':(string)company}}
+    |       |invite        |{'token':(string)token, 'email':(string)email}
+    |       |logout        |{'token':(string)token}
+    -----------------------------------------------------------------------------------------
     """
     return doAccountBasicActionAfterLogin(uid, request.json)
 
@@ -116,16 +89,16 @@ def accountGetAction():
     """
     URL:/account
     TYPE:http/GET
-
-    Get account list
-    @request  'action': 'list'
-              'data':{}
-    @return    ok-'data':{'count':(int)value, 'users':[{'uid':(string)uid,'username':(string)username},{'uid':(string)uid,'username':(string)username}]}
-
-    Get information of user
-    @request  'action': 'info'
-              'data':{}
-    @return: ok-'data': {'username':(string)username,'inGroups':[{'gid':gid1,'groupname':(string)name1},{'gid':gid2,'groupname':(string)name2},...],'info':{'email':(string)email, 'telephone':(string)telephone, 'company':(string)company}}
+    @type data:JSON
+    @param data:{'subc': '', 'data':{}}
+    @rtype: JSON
+    @return: ok-{'results':'ok', 'data':{}, 'msg': ''}
+             error-{'results':'error', 'data':{}, 'msg': '(string)info'}
+    ----------------------------------------------------------------------------------------
+    |support|subc          |data  |return data 
+    |       |list          |null  |{'count':(int)value, 'users':[{'uid':(string)uid,'username':(string)username},{'uid':(string)uid,'username':(string)username}]}}
+    |       |info          |null  |{'username':(string)username,'inGroups':[{'gid':gid1,'groupname':(string)name1},{'gid':gid2,'groupname':(string)name2},...],'info':{'email':(string)email, 'telephone':(string)telephone, 'company':(string)company}}
+    -----------------------------------------------------------------------------------------
     """
     return doAccountGetAction(uid, request.params)
 

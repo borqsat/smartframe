@@ -63,12 +63,14 @@ class DataStore(object):
         self._fs = gridfs.GridFS(self._fsdb, collection="fs")
         self._mc = mem
 
-    def doFind(self, collection, spec, fields):
+    def doFind(self, collection, spec, fields={}):
         return list(self._db[collection].find(spec, fields))
         
     def doInsert(self, collection, doc):
         self._db[collection].insert(doc)
 
+    def doFind_and_Modify(self, collection, query, update):
+        return self._db[collection].find_and_modify(query, update, new=True, upsert=True)
 
 def __getStore():
     mongo_uri = MONGODB_URI
