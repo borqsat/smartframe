@@ -1062,18 +1062,8 @@ function showReportInfo(gid,cid){
                 },true);
 }
 
-function toggle(){
-    var articleID=document.getElementById("article");
-    if (articleID.style.display=="none"){
-        articleID.style.display="block";
-    } else {
-        articleID.style.display="none";
-    }
-}
-
 function showCommentInfo(){
-
-    $('#show-title').html('<a style="text-align:center" href=\"javascript:void(0)\">Tap here to get more information</a><br />');
+    $('#show-title').html('<a id="tapComments" style="text-align:center">Tap here to get more information</a><br />');
     $('#article').html( "<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
     					"<b>Product:</b> The device platform and product information. <br />" + 
     					"<b>Start Time:</b> The test start time. <br />" + 
@@ -1084,6 +1074,14 @@ function showCommentInfo(){
                         "<b>Non-Critical Issues:</b> Application/process force close/ANR, core dump (native process crash), etc.<br />"+
                         "<b>First Failure Uptime:</b> From the <b>Start Time</b> to first failure occurs. <br />");
 
+    $("#tapComments").bind("click", function(){
+        var articleID=document.getElementById("article");
+        if (articleID.style.display=="none"){
+            articleID.style.display="block";
+        } else {
+            articleID.style.display="none";
+        }
+    });
 }
 
 function showCycleBaseInfo(data){
