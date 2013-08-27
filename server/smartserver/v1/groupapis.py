@@ -70,25 +70,53 @@ def doRegister():
     return ret
 
 
-@appweb.route('/account/forgotpasswd', method='POST', content_type='application/json', login=False)
+# @appweb.route('/account/forgotpasswd', method='POST', content_type='application/json', login=False)
+# def doForgotpasswd():
+#     """
+#     URL:/account/forgotpasswd
+#     TYPE:http/POST
+# 
+#     forgot password and send a verify info to server-side
+# 
+#     @type data:JSON
+#     @param data:{'username':(string)username, 'password':(string)password, 'appid':(string)appid,'info':{'email':(string), 'telephone':(string)telephone, 'company':(string)company}}
+#     @rtype: JSON
+#     @return: ok-{'results':1}
+#              error-{'errors':{'code':(string)code,'msg':(string)info}}
+#     """
+#     email = request.json['email']
+#     ret = forgotPasswd(email)
+#     if 'results' in ret:
+#         sendForgotPasswdMail(email, ret['results']['password'], ret['results']['token'])
+#     return ret
+
+
+
+@appweb.route('/account', method='POST', content_type='application/json', login=False)
 def doForgotpasswd():
     """
-    URL:/account/forgotpasswd
+    URL:/account
     TYPE:http/POST
 
     forgot password and send a verify info to server-side
 
     @type data:JSON
-    @param data:{'username':(string)username, 'password':(string)password, 'appid':(string)appid,'info':{'email':(string), 'telephone':(string)telephone, 'company':(string)company}}
+    @param data:{'subc': '', 'data':{}}
     @rtype: JSON
-    @return: ok-{'results':1}
-             error-{'errors':{'code':(string)code,'msg':(string)info}}
+    @return: ok-{'results':'ok', 'data':{}, 'msg': ''}
+             error-{'results':'error', 'data':{'code':(string)code}, 'msg': '(string)info'}
+    ---------------------------------------------------------------------------------------
+    |support|subc          |data
+    |       |register      |{'username':(string)username, 'password':(string)password, 'appid':(string)appid,'info':{'email':(string), 'telephone':(string)telephone, 'company':(string)company}
+    |       |forgotpasswd  |{'email':(string)mailaddress}
+    |       |login         |{'appid':(int)appid, 'username':(string)username, 'password':(string)password}
+    ---------------------------------------------------------------------------------------
     """
-    email = request.json['email']
-    ret = forgotPasswd(email)
-    if 'results' in ret:
-        sendForgotPasswdMail(email, ret['results']['password'], ret['results']['token'])
-    return ret
+    return doAccountBasicActionBeforeLogin(request.json)
+
+
+
+
 
 @appweb.route('/account/changepasswd', method='POST', content_type='application/json')
 def doChangePassword(uid):

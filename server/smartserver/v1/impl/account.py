@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from dbstore import store
+from business import *
 
 TOKEN_EXPIRES = {'01': 30*24*3600,
                  '02': 7*24*3600,
@@ -19,21 +20,53 @@ def userRegister(appid, user, pswd, info):
     else:
         return {'errors': rdata}
 
-def forgotPasswd(email):
-    ret1 = store.findUserByEmail(email)
-    #if not ret1['uid'] is None:
-    if not ret1 is None:
-        if 'uid' in ret1:
-            rdata = {}
-            ret = store.createToken('03', ret1['uid'], {}, TOKEN_EXPIRES['03'])
-            rdata['token'] = ret['token']
-            rdata['uid'] = ret1['uid']
-            rdata['password'] = ret1['password']
-            return {'results': rdata}
-        else:
-            return {'errors': {'code': '04', 'msg': 'Invalid or unverified email!'}}
-    else:
-        return {'errors': {'code': '04', 'msg': 'Invalid or unverified email!'}}
+# def forgotPasswd(email):
+#     ret1 = store.findUserByEmail(email)
+#     #if not ret1['uid'] is None:
+#     if not ret1 is None:
+#         if 'uid' in ret1:
+#             rdata = {}
+#             ret = store.createToken('03', ret1['uid'], {}, TOKEN_EXPIRES['03'])
+#             rdata['token'] = ret['token']
+#             rdata['uid'] = ret1['uid']
+#             rdata['password'] = ret1['password']
+#             return {'results': rdata}
+#         else:
+#             return {'errors': {'code': '04', 'msg': 'Invalid or unverified email!'}}
+#     else:
+#         return {'errors': {'code': '04', 'msg': 'Invalid or unverified email!'}}
+    
+    
+def doAccountBasicActionBeforeLogin(data):
+    
+    action = data['action']
+    actionDic = {'register' : doAccountRegister(data['data']),
+                 'login' : doAccountLogin(data['data']),
+                 'forgotpasswd' : doAccountForgotPassword(data['data'])
+                 }
+     
+    result = lambda action: actionDic[action]
+    
+    ret = result(action)
+    if action == 'forgotpasswd' and 'results' in ret:
+        sendForgotPasswdMail(data['data']['email'], ret['results']['password'], ret['results']['token'])
+        
+    return ret
+    
+#     if data['action'] == 'register':
+#         return doAccountRegister(data['data'])
+#     if data['action'] == 'login':
+#         return doAccountLogin(data['data'])
+#     if data['action'] == 'forgotpasswd':
+#         ret = doAccountForgotPassword(data['data'])
+#         if 'results' in ret:
+#             sendForgotPasswdMail(data['data']['email'], ret['results']['password'], ret['results']['token'])
+#         return ret
+    
+    
+    
+    
+    
 
 def userLogin(appid, user, pswd):
     uid = store.userExists(user, pswd)
