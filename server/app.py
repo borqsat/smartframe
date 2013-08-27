@@ -10,8 +10,7 @@ from bottle import Bottle, static_file, redirect
 import os
 
 from smartserver.config import WEB_HOST, WEB_PORT  # import db configuration and arguments
-from smartserver.api import v0
-
+from smartserver.api import v1
 
 # Below code is to fix known log issue because of mismatch on gevent and gunicorn
 # http://stackoverflow.com/questions/9444405/gunicorn-and-websockets
@@ -42,8 +41,8 @@ def root():
     return redirect("/smartserver/index.html")
 
 
-app.mount('/smartapi', v0)
-app.mount('/smart/0/api/', v0)
+app.mount('/smartapi', v1)
+app.mount('/smart/0/api/', v1)
 
 
 def main():

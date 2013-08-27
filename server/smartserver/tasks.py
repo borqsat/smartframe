@@ -3,7 +3,7 @@
 
 from __future__ import absolute_import
 from .worker import worker as w
-from .v0.impl.dbstore import store
+from .v1.impl.dbstore import store
 
 
 @w.task(ignore_result=True)

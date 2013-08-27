@@ -583,6 +583,28 @@ class DataStore(object):
             return rdata['uid']
         else:
             return None
+        
+        
+        
+        
+    def doFind(self, collection, spec, fields):
+        return list(self._db[collection].find(spec, fields))
+        
+    def doFindOne(self, collection, spec, fields):
+        return self._db[collection].find_one(spec, fields)
+    
+    def doUpdate(self, collection, spec, fields):
+        return self._db[collection].update(spec, fields)
+    
+    def doInsert(self, collection, spec):
+        return self._db[collection].insert(spec)
+    
+    
+    
+    
+    
+    
+    
             
     def findUserByEmail(self, email):
         users = self._db['users']
