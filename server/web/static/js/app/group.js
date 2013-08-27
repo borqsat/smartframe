@@ -236,17 +236,17 @@ function viewLatest(){
     $('#tabhistory').removeClass('active');
     $('#live_cases_div').show();
     $('#cases_div').hide();
+    _appglobal.t1 = setInterval("pollSessionStatus(\""+_appglobal.gid+"\",\""+_appglobal.sid+"\")", 20000);
     clearCheckStatus();
-    _appglobal.collectIDs['farthernode'] = 'live_cases_div';
 }
 
 function viewHistory(){
+    clearInterval(_appglobal.t1);  
     $('#tablatest').removeClass('active');
     $('#tabhistory').addClass('active');
     $('#live_cases_div').hide();
     $('#cases_div').show();
     clearCheckStatus();
-    _appglobal.collectIDs['farthernode'] = 'cases_div';    
 }
 
 function clearTab() {
@@ -692,7 +692,7 @@ function keepCheckStatus(ids){
 }
 
 function freezeTablehead(ids){
-    $("#board").bind("mousewheel", function(){
+    $("#board").unbind().bind("mousewheel", function(){
       if (document.getElementById(ids).getBoundingClientRect().top < 37){
         $("#"+ids+" > thead").attr("style", "position:fixed; width:"+$("#"+ids+" > tbody").width()+"px;top:0px;");
       }
@@ -966,6 +966,16 @@ function initScreenInfo(data) {
     _appglobal.screensize = {'width':wd, 'height':ht}
 }
 
+function viewLatestTab(gid, sid){
+    viewLatest();
+    showLiveSessionCases(gid, sid);
+}
+
+function viewHistoryTab(gid, sid){
+    viewHistory();
+    showHistorySessionCases(gid, sid);
+}
+
 function showSessionInfo(gid,sid) {
     invokeWebApi('/group/'+gid+'/test/'+sid+'/summary',
                   prepareData({}),
@@ -975,17 +985,14 @@ function showSessionInfo(gid,sid) {
                         initScreenInfo(data);
                         if(data['results']['endtime'] === 'N/A') {
                             $('#tabs_session').show();
-                            viewLatest();
                             createSessionBaseInfo(data, gid, sid, true);
+                            viewLatestTab(gid, sid);
                             $('#tabhistory').unbind().bind('click', function() {
-                                viewHistory();
+                                viewHistoryTab(gid, sid);
                             });
                             $('#tablatest').unbind().bind('click', function() {
-                                viewLatest();
+                                viewLatestTab(gid, sid);
                             });
-                            showHistorySessionCases(gid, sid);
-                            showLiveSessionCases(gid, sid);
-                            _appglobal.t1 = setInterval("pollSessionStatus(\""+gid+"\",\""+sid+"\")", 20000);
                         }
                         else {
                             clearTab();
