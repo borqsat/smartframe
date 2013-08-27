@@ -613,10 +613,49 @@ function renderSnapshotDiv(gid, sid) {
     }
 }
 
-function collectID(ctid){
-    var key = _appglobal.collectIDs['tids'].indexOf(ctid);
+function selectAll(ids){
+    if ($("#"+ids+" input#checkbox_selectAll").attr("checked") !== undefined){
+        for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
+           var results = $("#"+ids+" > tbody > tr")[i]['id'].split('.');
+           if(results[1] === 'error' || results[1] === 'fail'){
+              var key = _appglobal.collectIDs['tids'].indexOf(results[0]);
+              if (key === -1){
+                  _appglobal.collectIDs['tids'].push(results[0]);
+                  $("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', true);
+              }
+           }
+        }
+    }
+    else{
+        _appglobal.collectIDs['tids'] = [];
+        for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
+           var results = $("#"+ids+" > tbody > tr")[i]['id'].split('.');
+           if(results[1] === 'error' || results[1] === 'fail'){
+              $("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', false);
+           }
+        }
+    }
+}
+
+function collectinBetween(ids, max, min){
+    for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
+      var results = $("#"+ids+" > tbody > tr")[i]['id'].split('.');
+      if (min < results[0] && results[0] < max){
+         if(results[1] === 'error' || results[1] === 'fail'){
+            var key = _appglobal.collectIDs['tids'].indexOf(results[0]);
+            if (key === -1){
+              _appglobal.collectIDs['tids'].push(results[0]);
+              $("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', true);
+            }
+         }
+      }
+    }
+}
+
+function collecter(tid){
+    var key = _appglobal.collectIDs['tids'].indexOf(tid);
     if (key === -1){
-      _appglobal.collectIDs['tids'].push(ctid);
+      _appglobal.collectIDs['tids'].push(tid);
     }
     else if (key === 0){
       _appglobal.collectIDs['tids'].splice(0, 1);
@@ -626,18 +665,20 @@ function collectID(ctid){
     }
 }
 
-function selectAll(ids){
-    for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
-       var results = $("#"+ids+" > tbody > tr")[i]['id'].split('.');
-       if(results[1] === 'error' || results[1] === 'fail'){
-          collectID(results[0]);
-          if ($("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked') === undefined){
-            $("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', true);
-          }
-          else
-            {$("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', false);}
-       }
+function collectID(event, ctid, ids){
+    if (event.shiftKey){
+      if (_appglobal.collectIDs['tids'].length === 0){
+        _appglobal.collectIDs['tids'].push(ctid);
+      }
+      else{
+        var lastID = _appglobal.collectIDs['tids'][_appglobal.collectIDs['tids'].length - 1];
+        collecter(ctid);
+        if (ctid !== lastID){
+          collectinBetween(ids, Math.max(ctid, lastID), Math.min(ctid, lastID));
+        }
+      }
     }
+    else{collecter(ctid);}
 }
 
 function keepCheckStatus(ids){
@@ -684,7 +725,7 @@ function fillDetailTable(gid, sid, data, ids, tag) {
           }
           if(cresult === 'fail'){
               tablerows += "<tr id=\""+trId+"\">"+
-                                        "<td><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID('"+ctid+"')\"></input></td>"+
+                                        "<td><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID(event, '"+ctid+"', '"+ids+"')\"></input></td>"+
                                         "<td>"+ctid+"</td>"+    
                                         "<td>"+cname+"</td>"+              
                                         "<td>"+ctime+"</td>"+
@@ -697,7 +738,7 @@ function fillDetailTable(gid, sid, data, ids, tag) {
                                         "</td></tr>";                                                 
          } else if (cresult === 'error') {
                 tablerows += "<tr id=\""+trId+"\">"+
-                                     "<td><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID('"+ctid+"')\"></input></td>"+
+                                     "<td><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID(event, '"+ctid+"', '"+ids+"')\"></input></td>"+
                                      "<td>"+ctid+"</td>"+
                                      "<td>"+cname+"</td>"+
                                      "<td>"+ctime+"</td>"+
@@ -1021,14 +1062,14 @@ function showReportInfo(gid,cid){
                 },true);
 }
 
-$("#show-title").bind("click",function(){
-	var articleID=document.getElementById("article");
-	if (articleID.style.display=="none"){
+function toggle(){
+    var articleID=document.getElementById("article");
+    if (articleID.style.display=="none"){
         articleID.style.display="block";
     } else {
         articleID.style.display="none";
     }
-});
+}
 
 function showCommentInfo(){
 
