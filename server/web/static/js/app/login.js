@@ -137,9 +137,9 @@ function afterlogin(data) {
 }
 
 function afterRegister(data) {
-    var ret = data["errors"];
-    if(ret !== undefined ) {
-        alert(ret["msg"]);
+    var ret = data["results"];
+    if(ret !== 'ok' ) {
+        alert(data["msg"]);
     } else {
         alert("Register account successfully!");
         window.location = "login.html";
@@ -284,8 +284,8 @@ var AppRouter = Backbone.Router.extend({
                                       return;
                                   }
                                   $.cookie('password', password, { expires: 7 });
-                                  invokeWebApiEx("/account/login", 
-                                                  {"username": username, "password": hex_md5(password), "appid":"02"},
+                                  invokeWebApiEx("/account", 
+                                                  {"action": "login", "data":{"username": username, "password": hex_md5(password), "appid":"02"}},
                                                   afterlogin);
                              })
           $('#btndownload').bind('click',function(){window.open('static/runner.tar.gz')})
@@ -309,13 +309,15 @@ var AppRouter = Backbone.Router.extend({
                                      $('#regwarning').html('<p class="error">The email, username, password can\'t be null.</p>');
                                      return;
                                  }
-                                 invokeWebApiEx("/account/register",
+                                 invokeWebApiEx("/account",
                                                 { 
+                                                "action": "register",
+                                                "data":{
                                                 "username":username,
                                                 "password":password,
                                                 "appid":"01",
                                                 "info":{"email":email, "phone":phone, "company":company}
-                                                },
+                                                }},
                                                 afterRegister
                                   );
                })
