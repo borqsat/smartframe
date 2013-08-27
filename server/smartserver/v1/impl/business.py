@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from dbstore import store
+from ..sendmail import sendForgotPasswdMail
 from random import choice
 import string
 import hashlib
