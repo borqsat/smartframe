@@ -693,22 +693,22 @@ function keepCheckStatus(ids){
 
 function freezeTablehead(ids){
     $("#board").unbind().bind("mousewheel", function(){
-      if (document.getElementById(ids).getBoundingClientRect().top < 37){
+      if ($(window).scrollTop() >= $("#"+ids+"").offset().top){
         $("#"+ids+" > thead").attr("style", "position:fixed; width:924px;top:0px;");
         $("#"+ids+" > thead > tr > th").attr("style", "border-left-style:hidden;");
       }
-      if (document.getElementById(ids).getBoundingClientRect().top > 37){
+      else{
         $("#"+ids+" > thead").attr("style", "position:relative;");
         $("#"+ids+" > thead > tr > th").attr("style", "border-left-style:none;");
       }
     });
 
     window.onscroll = function(){
-      if (document.getElementById(ids).getBoundingClientRect().top < 37){
+      if ($(window).scrollTop() >= $("#"+ids+"").offset().top){
         $("#"+ids+" > thead").attr("style", "position:fixed; width:924px;top:0px;");
         $("#"+ids+" > thead > tr > th").attr("style", "border-left-style:hidden;");
       }
-      if (document.getElementById(ids).getBoundingClientRect().top > 37){
+      else{
         $("#"+ids+" > thead").attr("style", "position:relative;");
         $("#"+ids+" > thead > tr > th").attr("style", "border-left-style:none;");
       }
