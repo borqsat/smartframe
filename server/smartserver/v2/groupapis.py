@@ -8,7 +8,6 @@ from gevent.pywsgi import WSGIServer
 
 from .impl.test import *
 from .impl.account import *
-from .impl.group import *
 from .sendmail import *
 
 appweb = Bottle()

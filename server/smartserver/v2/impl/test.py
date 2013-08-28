@@ -3,21 +3,6 @@
 from account import *
 
 def accountWithOutUid(data):
-	
-    # action = data['subc']
-    # actionDic = {'register' : accountRegister(data['data']),
-    #              'login' : accountLogin(data['data']),
-    #              'forgotpasswd' : accountForgotPasswd(data['data'])
-    #              }
-     
-    # result = lambda action: actionDic[action]
-    
-    # ret = result(action)
-    # if action == 'forgotpasswd' and 'results' in ret:
-    #     sendForgotPasswdMail(data['data']['email'], ret['results']['password'], ret['results']['token'])
-        
-    # return ret
-
     
 	if data['subc'] == 'register':
 		return accountRegister(data['data'])
