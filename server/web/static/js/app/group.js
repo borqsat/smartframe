@@ -543,14 +543,14 @@ function createDetailTable(div, ids){
     var $tbf = $('<table>').attr('id', ids).attr('class','table table-striped table-hover').attr('style','table-layout:fixed;word-wrap:break-word;margin-bottom:0px;');
     var $tb = $('<table>').attr('id', ids).attr('class','table table-striped table-hover').attr('style','table-layout:fixed;word-wrap:break-word;');
     var $th = '<thead><tr>'+
-              '<th id="selectAll" align="left" width="3%"></th>'+
-              '<th align="left" width="6%">Tid</th>'+
-              '<th align="left" width="31%">Testcase</th>'+
-              '<th align="left" width="17%">Start Time</th>'+
-              '<th align="left" width="7%">Result</th>'+
-              '<th align="left" width="5%">Log</th>'+
-              '<th align="left" width="7%">Image</th>'+
-              '<th align="left" width="24%"><a href="javascript:showComment()">Comments</th>'+
+              '<th id="selectAll" style="width:3%"></th>'+
+              '<th style="width:6%">Tid</th>'+
+              '<th style="width:31%">Testcase</th>'+
+              '<th style="width:17%">Start Time</th>'+
+              '<th style="width:7%">Result</th>'+
+              '<th style="width:5%">Log</th>'+
+              '<th style="width:7%">Image</th>'+
+              '<th style="width:24%"><a href="javascript:showComment()">Comments</th>'+
               '</tr></thead>';
     var $tbody = '<tbody></tbody>';
     $tbf.append($th);
@@ -618,7 +618,7 @@ function renderSnapshotDiv(gid, sid) {
 function selectAll(ids){
     if ($("#"+ids+" input#checkbox_selectAll").attr("checked") !== undefined){
         for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
-           var results = $("#"+ids+" > tbody > tr")[i]['id'].split('.');
+           var results = $("#"+ids+" > tbody > tr")[i]['id'].split('_');
            if(results[1] === 'error' || results[1] === 'fail'){
               var key = _appglobal.collectIDs['tids'].indexOf(results[0]);
               if (key === -1){
@@ -631,7 +631,7 @@ function selectAll(ids){
     else{
         _appglobal.collectIDs['tids'] = [];
         for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
-           var results = $("#"+ids+" > tbody > tr")[i]['id'].split('.');
+           var results = $("#"+ids+" > tbody > tr")[i]['id'].split('_');
            if(results[1] === 'error' || results[1] === 'fail'){
               $("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', false);
            }
@@ -641,7 +641,7 @@ function selectAll(ids){
 
 function collectinBetween(ids, max, min){
     for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
-      var results = $("#"+ids+" > tbody > tr")[i]['id'].split('.');
+      var results = $("#"+ids+" > tbody > tr")[i]['id'].split('_');
       if (min < results[0] && results[0] < max){
          if(results[1] === 'error' || results[1] === 'fail'){
             var key = _appglobal.collectIDs['tids'].indexOf(results[0]);
@@ -694,23 +694,31 @@ function keepCheckStatus(ids){
 function freezeTablehead(ids){
     $("#board").unbind().bind("mousewheel", function(){
       if ($(window).scrollTop() >= $("#"+ids+"").offset().top){
-        $("#"+ids+" > thead").attr("style", "position:fixed; width:924px;top:0px;");
-        $("#"+ids+" > thead > tr > th").attr("style", "border-left-style:hidden;");
+        $("#"+ids+" > thead").attr("style", "top:0px;position:fixed;");
+        id = $("#"+ids+" > tbody > tr")[0].id;
+        len = $("#"+id+" td").length;
+        for (var i=0; i < len ; i++){
+           wid = $("#"+id+" td:eq("+i+")").width() + 1;
+           $("#"+ids+" > thead > tr > th:eq("+i+")").width(wid + "px");
+        }
       }
       else{
         $("#"+ids+" > thead").attr("style", "position:relative;");
-        $("#"+ids+" > thead > tr > th").attr("style", "border-left-style:none;");
       }
     });
 
     window.onscroll = function(){
       if ($(window).scrollTop() >= $("#"+ids+"").offset().top){
-        $("#"+ids+" > thead").attr("style", "position:fixed; width:924px;top:0px;");
-        $("#"+ids+" > thead > tr > th").attr("style", "border-left-style:hidden;");
+        $("#"+ids+" > thead").attr("style", "top:0px;position:fixed;");
+        id = $("#"+ids+" > tbody > tr")[0].id;
+        len = $("#"+id+" td").length;
+        for (var i=0; i < len ; i++){
+           wid = $("#"+id+" td:eq("+i+")").width() + 1;
+           $("#"+ids+" > thead > tr > th:eq("+i+")").width(wid + "px");
+        }
       }
       else{
         $("#"+ids+" > thead").attr("style", "position:relative;");
-        $("#"+ids+" > thead > tr > th").attr("style", "border-left-style:none;");
       }
     };
 }
@@ -729,7 +737,7 @@ function fillDetailTable(gid, sid, data, ids, tag) {
           var clog = citem['log'];
           var comResult = citem['comments'];
           if(tag !== 'total' && tag !== cresult) continue;
-          var trId = ctid + "." + cresult;
+          var trId = ctid + "_" + cresult;
           
           if(comResult !== undefined){
              if(comResult['endsession'] === 0)
