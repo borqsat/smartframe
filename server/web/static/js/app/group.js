@@ -694,19 +694,23 @@ function keepCheckStatus(ids){
 function freezeTablehead(ids){
     $("#board").unbind().bind("mousewheel", function(){
       if (document.getElementById(ids).getBoundingClientRect().top < 37){
-        $("#"+ids+" > thead").attr("style", "position:fixed; width:924px;top:0px;margin-left:-2px;");
+        $("#"+ids+" > thead").attr("style", "position:fixed; width:924px;top:0px;");
+        $("#"+ids+" > thead > tr > th").attr("style", "border-left-style:hidden;");
       }
       if (document.getElementById(ids).getBoundingClientRect().top > 37){
         $("#"+ids+" > thead").attr("style", "position:relative;");
+        $("#"+ids+" > thead > tr > th").attr("style", "border-left-style:none;");
       }
     });
 
     window.onscroll = function(){
       if (document.getElementById(ids).getBoundingClientRect().top < 37){
-        $("#"+ids+" > thead").attr("style", "position:fixed; width:924px;top:0px;margin-left:-2px;");
+        $("#"+ids+" > thead").attr("style", "position:fixed; width:924px;top:0px;");
+        $("#"+ids+" > thead > tr > th").attr("style", "border-left-style:hidden;");
       }
       if (document.getElementById(ids).getBoundingClientRect().top > 37){
         $("#"+ids+" > thead").attr("style", "position:relative;");
+        $("#"+ids+" > thead > tr > th").attr("style", "border-left-style:none;");
       }
     };
 }
