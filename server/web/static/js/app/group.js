@@ -693,9 +693,9 @@ function keepCheckStatus(ids){
 
 function setWidth(ids){
     id = $("#"+ids+" > tbody > tr")[0].id;
-    for (var i=0; i < $("#"+id+" td").length; i++){
-       $("#"+ids+" > thead > tr > th:eq("+i+")").width(($("#"+id+" td:eq("+i+")").width() + 1) + "px");
-    }
+    $("#"+ids+" > thead > tr > th").each(function(index){
+      $("#"+ids+" > thead > tr > th").eq(index).attr("style", "width:"+($("#"+id+" td:eq("+index+")").width() + 1)+"px");
+    });
 }
 
 function freezeTablehead(ids){
