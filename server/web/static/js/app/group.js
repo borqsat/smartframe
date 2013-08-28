@@ -694,7 +694,7 @@ function keepCheckStatus(ids){
 function freezeTablehead(ids){
     $("#board").unbind().bind("mousewheel", function(){
       if (document.getElementById(ids).getBoundingClientRect().top < 37){
-        $("#"+ids+" > thead").attr("style", "position:fixed; width:924px;top:0px;");
+        $("#"+ids+" > thead").attr("style", "position:fixed; width:924px;top:0px;margin-left:-2px;");
       }
       if (document.getElementById(ids).getBoundingClientRect().top > 37){
         $("#"+ids+" > thead").attr("style", "position:relative;");
@@ -703,7 +703,7 @@ function freezeTablehead(ids){
 
     window.onscroll = function(){
       if (document.getElementById(ids).getBoundingClientRect().top < 37){
-        $("#"+ids+" > thead").attr("style", "position:fixed; width:924px;top:0px;");
+        $("#"+ids+" > thead").attr("style", "position:fixed; width:924px;top:0px;margin-left:-2px;");
       }
       if (document.getElementById(ids).getBoundingClientRect().top > 37){
         $("#"+ids+" > thead").attr("style", "position:relative;");
