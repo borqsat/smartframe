@@ -693,10 +693,8 @@ function keepCheckStatus(ids){
 
 function setWidth(ids){
     id = $("#"+ids+" > tbody > tr")[0].id;
-    len = $("#"+id+" td").length;
-    for (var i=0; i < len ; i++){
-       wid = $("#"+id+" td:eq("+i+")").width() + 1;
-       $("#"+ids+" > thead > tr > th:eq("+i+")").width(wid + "px");
+    for (var i=0; i < $("#"+id+" td").length; i++){
+       $("#"+ids+" > thead > tr > th:eq("+i+")").width(($("#"+id+" td:eq("+i+")").width() + 1) + "px");
     }
 }
 
@@ -710,7 +708,6 @@ function freezeTablehead(ids){
         $("#"+ids+" > thead").attr("style", "position:relative;");
       }
     });
-
     window.onscroll = function(){
       if ($(window).scrollTop() >= $("#"+ids+"").offset().top){
         $("#"+ids+" > thead").attr("style", "top:0px;position:fixed;");
@@ -720,7 +717,6 @@ function freezeTablehead(ids){
         $("#"+ids+" > thead").attr("style", "position:relative;");
       }
     };
-
     window.onresize = function(){
       if ($("#"+ids+" > thead").attr("style").indexOf("fixed") !== -1){
         setWidth(ids);
