@@ -701,7 +701,7 @@ function setWidth(ids){
 function freezeTablehead(ids){
     $("#board").unbind().bind("mousewheel", function(){
       if ($(window).scrollTop() >= $("#"+ids+"").offset().top){
-        $("#"+ids+" > thead").attr("style", "top:0px;position:fixed;margin-left:-1px;");
+        $("#"+ids+" > thead").attr("style", "top:0px;position:fixed;word-break:break-all;margin-left:-1px;");
         setWidth(ids);
       }
       else{
@@ -710,7 +710,7 @@ function freezeTablehead(ids){
     });
     window.onscroll = function(){
       if ($(window).scrollTop() >= $("#"+ids+"").offset().top){
-        $("#"+ids+" > thead").attr("style", "top:0px;position:fixed;margin-left:-1px;");
+        $("#"+ids+" > thead").attr("style", "top:0px;position:fixed;word-break:break-all;margin-left:-1px;");
         setWidth(ids);
       }
       else{
@@ -760,55 +760,55 @@ function fillDetailTable(gid, sid, data, ids, tag) {
           }
           if(cresult === 'fail'){
               tablerows += "<tr id=\""+trId+"\">"+
-                                        "<td width=\"3%\"><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID(event, '"+ctid+"', '"+ids+"')\"></input></td>"+
-                                        "<td width=\"6%\">"+ctid+"</td>"+    
-                                        "<td width=\"31%\">"+cname+"</td>"+              
-                                        "<td width=\"17%\">"+ctime+"</td>"+
-                                        "<td width=\"7%\"><font color=\"red\">"+cresult+"<font></td>"+
-                                        "<td width=\"5%\"><a href=\""+storeBaseURL+"/log/"+clog+"\">log</a></td>"+
-                                        "<td width=\"7%\"><a href=\"javascript:showHistoryDiv('"+gid+"','"+sid+"','"+ctid+"');\">image</a></td>"+
-                                        "<td width=\"24%\">"+                                      
+                                        "<td style=\"width:3%\"><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID(event, '"+ctid+"', '"+ids+"')\"></input></td>"+
+                                        "<td style=\"width:6%\">"+ctid+"</td>"+    
+                                        "<td style=\"width:31%\">"+cname+"</td>"+              
+                                        "<td style=\"width:17%\">"+ctime+"</td>"+
+                                        "<td style=\"width:7%\"><font color=\"red\">"+cresult+"<font></td>"+
+                                        "<td style=\"width:5%\"><a href=\""+storeBaseURL+"/log/"+clog+"\">log</a></td>"+
+                                        "<td style=\"width:7%\"><a href=\"javascript:showHistoryDiv('"+gid+"','"+sid+"','"+ctid+"');\">image</a></td>"+
+                                        "<td style=\"width:24%\">"+                                      
                                         "<span id=\"span_"+ctid+"\" onmouseover=\"showHint('"+ctid+"')\" onmouseout=\"hideHint('"+ctid+"')\">"+showComment+"</span>"+
                                         "<br><div id=\"hint_"+ctid+"\" style=\"display:none\">"+hintInfo+"</div>"+
                                         "</td></tr>";                                                 
          } else if (cresult === 'error') {
                 tablerows += "<tr id=\""+trId+"\">"+
-                                     "<td width=\"3%\"><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID(event, '"+ctid+"', '"+ids+"')\"></input></td>"+
-                                     "<td width=\"6%\">"+ctid+"</td>"+
-                                     "<td width=\"31%\">"+cname+"</td>"+
-                                     "<td width=\"17%\">"+ctime+"</td>"+
-                                     "<td width=\"7%\"><font color=\"red\">"+cresult+"<font></td>"+
-                                     "<td width=\"5%\"></td>"+
-                                     "<td width=\"7%\"></td>"+
-                                     "<td width=\"24%\">"+
+                                     "<td style=\"width:3%\"><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID(event, '"+ctid+"', '"+ids+"')\"></input></td>"+
+                                     "<td style=\"width:6%\">"+ctid+"</td>"+
+                                     "<td style=\"width:31%\">"+cname+"</td>"+
+                                     "<td style=\"width:17%\">"+ctime+"</td>"+
+                                     "<td style=\"width:7%\"><font color=\"red\">"+cresult+"<font></td>"+
+                                     "<td style=\"width:5%\"></td>"+
+                                     "<td style=\"width:7%\"></td>"+
+                                     "<td style=\"width:24%\">"+
                                      "<span id=\"span_"+ctid+"\" onmouseover=\"showHint('"+ctid+"')\" onmouseout=\"hideHint('"+ctid+"')\">"+showComment+"</span>"+
                                      "<br><div id=\"hint_"+ctid+"\" style=\"display:none\">"+hintInfo+"</div>"+
                                      "</td></tr>";
          } else if (cresult === 'running' || cresult === 'pass'){
                  if (cresult == 'running'){
                     tablerows += "<tr id=\""+trId+"\">"+
-                                        "<td width=\"3%\"></td>"+
-                                        "<td width=\"6%\">"+ctid+"</td>"+
-                                        "<td width=\"31%\">"+cname+"</td>"+
-                                        "<td width=\"17%\">"+ctime+"</td>"+
-                                        "<td width=\"7%\">N/A</td>"+
-                                        "<td width=\"5%\"></td>"+
-                                        "<td width=\"7%\"></td>"+
-                                        "<td width=\"24%\">"+
+                                        "<td style=\"width:3%\"></td>"+
+                                        "<td style=\"width:6%\">"+ctid+"</td>"+
+                                        "<td style=\"width:31%\">"+cname+"</td>"+
+                                        "<td style=\"width:17%\">"+ctime+"</td>"+
+                                        "<td style=\"width:7%\">N/A</td>"+
+                                        "<td style=\"width:5%\"></td>"+
+                                        "<td style=\"width:7%\"></td>"+
+                                        "<td style=\"width:24%\">"+
                                         "<span id=\"span_"+ctid+"\" onmouseover=\"showHint('"+ctid+"')\" onmouseout=\"hideHint('"+ctid+"')\">"+showComment+"</span>"+
                                         "<br><div id=\"hint_"+ctid+"\" style=\"display:none\">"+hintInfo+"</div>"+
                                         "</td>"+
                                         "</tr>";     
                  } else {    
                     tablerows += "<tr id=\""+trId+"\">"+
-                                        "<td width=\"3%\"></td>"+
-                                        "<td width=\"6%\">"+ctid+"</td>"+
-                                        "<td width=\"31%\">"+cname+"</td>"+
-                                        "<td width=\"17%\">"+ctime+"</td>"+
-                                        "<td width=\"7%\">"+cresult+"</td>"+
-                                        "<td width=\"5%\"></td>"+
-                                        "<td width=\"7%\"></td>"+
-                                        "<td width=\"24%\"></td>"+
+                                        "<td style=\"width:3%\"></td>"+
+                                        "<td style=\"width:6%\">"+ctid+"</td>"+
+                                        "<td style=\"width:31%\">"+cname+"</td>"+
+                                        "<td style=\"width:17%\">"+ctime+"</td>"+
+                                        "<td style=\"width:7%\">"+cresult+"</td>"+
+                                        "<td style=\"width:5%\"></td>"+
+                                        "<td style=\"width:7%\"></td>"+
+                                        "<td style=\"width:24%\"></td>"+
                                         "</tr>";
                  }    
           }
