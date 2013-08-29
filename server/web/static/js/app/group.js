@@ -236,6 +236,7 @@ function viewLatest(){
     $('#tabhistory').removeClass('active');
     $('#live_cases_div').show();
     $('#cases_div').hide();
+    clearInterval(_appglobal.t1);
     _appglobal.t1 = setInterval("pollSessionStatus(\""+_appglobal.gid+"\",\""+_appglobal.sid+"\")", 20000);
     clearCheckStatus();
 }
