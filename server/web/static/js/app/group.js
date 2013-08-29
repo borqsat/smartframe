@@ -694,14 +694,14 @@ function keepCheckStatus(ids){
 function setWidth(ids){
     id = $("#"+ids+" > tbody > tr")[0].id;
     $("#"+ids+" > thead > tr > th").each(function(index){
-      $("#"+ids+" > thead > tr > th").eq(index).attr("style", "width:"+($("#"+id+" td:eq("+index+")").width() + 1)+"px");
+      $("#"+ids+" > thead > tr > th").eq(index).attr("style", "width:"+($("#"+id+" td:eq("+index+")").width() + 0.85)+"px");
     });
 }
 
 function freezeTablehead(ids){
     $("#board").unbind().bind("mousewheel", function(){
       if ($(window).scrollTop() >= $("#"+ids+"").offset().top){
-        $("#"+ids+" > thead").attr("style", "top:0px;position:fixed;");
+        $("#"+ids+" > thead").attr("style", "top:0px;position:fixed;margin-left:-1px;");
         setWidth(ids);
       }
       else{
@@ -710,7 +710,7 @@ function freezeTablehead(ids){
     });
     window.onscroll = function(){
       if ($(window).scrollTop() >= $("#"+ids+"").offset().top){
-        $("#"+ids+" > thead").attr("style", "top:0px;position:fixed;");
+        $("#"+ids+" > thead").attr("style", "top:0px;position:fixed;margin-left:-1px;");
         setWidth(ids);
       }
       else{
