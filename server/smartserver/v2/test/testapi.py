@@ -39,5 +39,5 @@ def testAccountWithUidAPI():
 
 
 if __name__ == "__main__":
-	testAccountWithOutUidAPI()
-    testAccountWithUidAPI()
+    testAccountWithOutUidAPI()
+    testAccountWithUidAPI
