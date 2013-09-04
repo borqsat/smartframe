@@ -694,6 +694,28 @@ class DataStore(object):
             self.clearCache(str('sid:' + sid + ':snaptime'))
 
         session.update({'gid': gid, 'sid': sid}, {'$set': result})
+        
+    def updateXmlResult(self, gid, sid, value):
+        try:
+            import xml.etree.cElementTree as ET
+        except ImportError:
+            import xml.etree.ElementTree as ET
+        root = ET.parse(value).getroot()
+        for testcase in root.iter('testcase'):
+            caseId = testcase.attrib['order']
+            casename = ''.join([testcase.attrib['component'],'.',testcase.attrib['id'].split('_')[0]])
+            for resultInfo in testcase.iter('result_info'):
+                tmpTime = lambda t: time.strftime(DATE_FORMAT_STR, time.strptime(resultInfo.find(t).text,DATE_FORMAT_STR1))
+                starttime = tmpTime('start')
+                endtime = tmpTime('end')
+                result = resultInfo.find('actual_result').text.lower()
+            caseresult = self._db['testresults']
+            caseresult.insert({'gid': gid, 'sid': sid, 'tid': int(caseId),
+                               'casename': casename, 'log': 'N/A', 
+                               'starttime': starttime, 
+                               'endtime': endtime,
+                               'traceinfo': 'N/A', 'result': result,  'snapshots': []})
+        self.updateTestsessionSummary(sid)
 
     def deleteTestSession(self, gid, sid):
         """

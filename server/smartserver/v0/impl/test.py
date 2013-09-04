@@ -11,6 +11,10 @@ def updateTestSession(gid, sid, value):
     store.updateTestSession(gid, sid, value)
     return {'results':1}     
 
+def updateXMLTestResult(gid, sid, value):
+    store.updateXmlResult(gid, sid, value)
+    return {'results':1}
+
 def deleteTestSession(uid, gid, sid):
     from .group import isGroupAdmin
     if not isGroupAdmin(uid, gid):
