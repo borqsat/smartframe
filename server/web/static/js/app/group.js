@@ -541,7 +541,7 @@ function renderCaseSnaps(gid, sid, tid){
 
 function createDetailTable(div, ids){
     var $div_detail = $("#"+div);
-    var $tbf = $('<table>').attr('id', ids).attr('class','table table-striped table-hover').attr('style','table-layout:fixed;word-wrap:break-word;margin-bottom:0px;');
+    var $tbf = $('<table>').attr('id', ids).attr('class','table table-striped table-hover').attr('style','table-layout:fixed;word-wrap:break-word;margin-bottom:0px;position:relative;');
     var $tb = $('<table>').attr('id', ids).attr('class','table table-striped table-hover').attr('style','table-layout:fixed;word-wrap:break-word;');
     var $th = '<thead><tr>'+
               '<th id="selectAll" width="3%"></th>'+
@@ -702,29 +702,19 @@ function setWidth(ids){
 }
 
 function freezeTablehead(ids){
-    $("#board").unbind().bind("mousewheel", function(){
-      if ($(window).scrollTop() >= $("#"+ids+"").offset().top){
-        $("#"+ids+" > thead").attr("style", "top:0px;position:fixed;word-break:break-all;margin-left:-1px;");
-        setWidth(ids);
-      }
-      else{
-        $("#"+ids+" > thead").attr("style", "position:relative;");
-      }
-    });
     window.onscroll = function(){
-      if ($(window).scrollTop() >= $("#"+ids+"").offset().top){
-        $("#"+ids+" > thead").attr("style", "top:0px;position:fixed;word-break:break-all;margin-left:-1px;");
-        setWidth(ids);
+      if ($(window).scrollTop() >= ($("#"+ids+" > tbody").offset().top + $("#"+ids+" > thead").height()) & $("#"+ids+"").attr("style").indexOf("position:fixed") === -1){
+        $("#"+ids+"").attr("style", "top:0px;position:fixed;word-break:break-all;margin-left:-1px; width:"+$("#"+ids+" > tbody > tr").width()+"px;");
       }
-      else{
-        $("#"+ids+" > thead").attr("style", "position:relative;");
+      else if ($(window).scrollTop() < ($("#"+ids+" > tbody").offset().top + $("#"+ids+" > thead").height()) & $("#"+ids+"").attr("style").indexOf("position:fixed") !== -1){
+        $("#"+ids+"").attr("style", "table-layout:fixed;word-wrap:break-word;margin-bottom:0px;position:relative;");
       }
     };
     window.onresize = function(){
-      if ($("#"+ids+" > thead").attr("style").indexOf("fixed") !== -1){
-        setWidth(ids);
+      if ($("#"+ids+"").attr("style").indexOf("position:fixed") !== -1){
+        $("#"+ids+"").attr("style", "top:0px;position:fixed;word-break:break-all;margin-left:-1px; width:"+$("#"+ids+" > tbody > tr").width()+"px;");
       }
-    }
+    };
 }
 
 function fillDetailTable(gid, sid, data, ids, tag) {
