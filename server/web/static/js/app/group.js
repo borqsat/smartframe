@@ -692,15 +692,6 @@ function keepCheckStatus(ids){
     }
 }
 
-function setWidth(ids){
-    id = $("#"+ids+" > tbody > tr")[0].id;
-    len = $("#"+id+" td").length;
-    for (var i=0; i < len ; i++){
-       wid = $("#"+id+" td:eq("+i+")").width() + 1;
-       $("#"+ids+" > thead > tr > th:eq("+i+")").width(wid + "px");
-    }
-}
-
 function freezeTablehead(ids){
     window.onscroll = function(){
       if ($(window).scrollTop() >= ($("#"+ids+" > tbody").offset().top + $("#"+ids+" > thead").height()) & $("#"+ids+"").attr("style").indexOf("position:fixed") === -1){
