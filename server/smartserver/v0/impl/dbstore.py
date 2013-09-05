@@ -97,6 +97,9 @@ class DataStore(object):
         # TODO Why to use the format...
         return date.strftime(DATE_FORMAT_STR)
 
+    def convert_to_diff_time_format(self, convertTime, currentFormat, toFormat):
+        return time.strftime(toFormat, time.strptime(convertTime,currentFormat))
+
     def validate_session_endtime(self):
         '''
         If a "N/A" session has not been updated for 60mins, set a reasonable endtime to it,
@@ -705,9 +708,8 @@ class DataStore(object):
             caseId = testcase.attrib['order']
             casename = ''.join([testcase.attrib['component'],'.',testcase.attrib['id'].split('_')[0]])
             for resultInfo in testcase.iter('result_info'):
-                tmpTime = lambda t: time.strftime(DATE_FORMAT_STR, time.strptime(resultInfo.find(t).text,DATE_FORMAT_STR1))
-                starttime = tmpTime('start')
-                endtime = tmpTime('end')
+                starttime = self.convert_to_diff_time_format(resultInfo.find('start').text,DATE_FORMAT_STR1,DATE_FORMAT_STR)
+                endtime = self.convert_to_diff_time_format(resultInfo.find('end').text,DATE_FORMAT_STR1,DATE_FORMAT_STR)
                 result = resultInfo.find('actual_result').text.lower()
             caseresult = self._db['testresults']
             caseresult.insert({'gid': gid, 'sid': sid, 'tid': int(caseId),
