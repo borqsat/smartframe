@@ -97,6 +97,9 @@ class DataStore(object):
         # TODO Why to use the format...
         return date.strftime(DATE_FORMAT_STR)
 
+    def convert_to_diff_time_format(self, convertTime, currentFormat, toFormat):
+        return time.strftime(toFormat, time.strptime(convertTime,currentFormat))
+
     def validate_session_endtime(self):
         '''
         If a "N/A" session has not been updated for 60mins, set a reasonable endtime to it,
@@ -694,6 +697,27 @@ class DataStore(object):
             self.clearCache(str('sid:' + sid + ':snaptime'))
 
         session.update({'gid': gid, 'sid': sid}, {'$set': result})
+        
+    def updateXmlResult(self, gid, sid, value):
+        try:
+            import xml.etree.cElementTree as ET
+        except ImportError:
+            import xml.etree.ElementTree as ET
+        root = ET.parse(value).getroot()
+        for testcase in root.iter('testcase'):
+            caseId = testcase.attrib['order']
+            casename = ''.join([testcase.attrib['component'],'.',testcase.attrib['id'].split('_')[0]])
+            for resultInfo in testcase.iter('result_info'):
+                starttime = self.convert_to_diff_time_format(resultInfo.find('start').text,DATE_FORMAT_STR1,DATE_FORMAT_STR)
+                endtime = self.convert_to_diff_time_format(resultInfo.find('end').text,DATE_FORMAT_STR1,DATE_FORMAT_STR)
+                result = resultInfo.find('actual_result').text.lower()
+            caseresult = self._db['testresults']
+            caseresult.insert({'gid': gid, 'sid': sid, 'tid': int(caseId),
+                               'casename': casename, 'log': 'N/A', 
+                               'starttime': starttime, 
+                               'endtime': endtime,
+                               'traceinfo': 'N/A', 'result': result,  'snapshots': []})
+        self.updateTestsessionSummary(sid)
 
     def deleteTestSession(self, gid, sid):
         """
