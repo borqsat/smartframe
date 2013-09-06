@@ -1130,14 +1130,14 @@ class DataStore(object):
         '''
         #TODO: This func. can be optimized.
 
-        passCount = store._db['testresults'].find({'sid': sid, 'result': 'pass'}).count()
-        failCount = store._db['testresults'].find({'sid': sid, 'result': 'fail'}).count()
-        errorCount = store._db['testresults'].find({'sid': sid, 'result': 'error'}).count()
-        total = store._db['testresults'].find({'sid': sid}, {'result': 1}).count()
+        passCount = self._db['testresults'].find({'sid': sid, 'result': 'pass'}).count()
+        failCount = self._db['testresults'].find({'sid': sid, 'result': 'fail'}).count()
+        errorCount = self._db['testresults'].find({'sid': sid, 'result': 'error'}).count()
+        total = self._db['testresults'].find({'sid': sid}, {'result': 1}).count()
 
         tids = self._db['testresults'].find({'sid': sid}, {'_id': 0, 'tid': 1}).distinct('tid')
-        minStartTime = self.convert_to_datetime(store._db['testresults'].find_one({'sid': sid, 'tid': tids[-1]}, {'starttime': 1})['starttime'])
-        case = store._db['testresults'].find_one({'sid': sid, 'tid': tids[0]}, {'starttime': 1, 'endtime': 1})
+        minStartTime = self.convert_to_datetime(self._db['testresults'].find_one({'sid': sid, 'tid': tids[-1]}, {'starttime': 1})['starttime'])
+        case = self._db['testresults'].find_one({'sid': sid, 'tid': tids[0]}, {'starttime': 1, 'endtime': 1})
         maxEndTime = self.convert_to_datetime(case['starttime'] if case['endtime'] == 'N/A' else case['endtime'])
 
         if maxEndTime and minStartTime:
