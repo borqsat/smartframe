@@ -622,16 +622,6 @@ class DataStore(object):
         results['users'] = lists
         return results
 
-    def checkReportTokenStatus(self, token):
-        if self._db['tokens'].find({'token': token}).count() != 0:
-            return 1
-        else:
-            return 0 
-
-    def updateReportTokenExpires(self, token):
-        # If a report has been shared, update it's expires to 365*24*3600(31536000)
-        self._db['tokens'].update({'token': token}, {'$inc': {'expires': 31536000}})
-
     # TODO cache policy...
     @cm.region("local", "user_id")
     def validToken(self, token):
@@ -799,21 +789,6 @@ class DataStore(object):
 
         return {'results': result.values()}
 
-    def getReportData(self, token):
-        rdata = list(self._db['tokens'].find({'token': token}))
-        if len(rdata) == 0:
-            return {}
-        else:
-            return rdata[0]['reportdata']['result']['results']
-
-    def saveReportData(self, cid, result):
-        appid = "05"
-        uid = "0000000000"
-        reportdata = {'cid': cid, 'result': result}
-        # By default, set the expires of a token to 1800 secs.
-        expires = 1800
-        return self.createToken(appid, uid, {}, expires, reportdata)['token']
-
     def readTestReport(self, gid, cid):
         """
         give a cycle report data
@@ -952,8 +927,6 @@ class DataStore(object):
         result['issuesummany'] = res2
         result['issuedetail'] = res3
         result['domain'] = res4
-        token = self.saveReportData(cid, {'results': result})
-        result['token'] = token
         return result
 
     def readTestSessionInfo(self, gid, sid):

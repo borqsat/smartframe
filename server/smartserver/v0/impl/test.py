@@ -122,19 +122,9 @@ def checkMailListAndContext(gid,sid,tid):
     context = store.checkMailListAndContext(gid,sid,tid)
     return context
 
-def getReportData(token):
-    result = store.getReportData(token)
-    if result:
-        return {'results': result}
-    else:
-        return {'error': {'msg': 'Invalid request or the report has expired!'}}
-
 def shareReportData(reporttoken, usertoken):
-    if not store.checkReportTokenStatus(reporttoken):
-        return {'results': 'badtoken'}
     address = store.getUserMailAddress(usertoken)
     if address:
-        store.updateReportTokenExpires(reporttoken)
         return {'results': 'ok', 'address': address}
     else:
         return {'results': 'error'}

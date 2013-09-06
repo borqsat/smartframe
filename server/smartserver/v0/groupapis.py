@@ -667,13 +667,6 @@ def doHandleCycleReport():
     @return:ok-{'results':{'count':(int)count, 'sessions':[ {planname':(string)value,'starttime':(string)value, 'result':{'total':(int)value, 'pass':(int)value, 'fail':(int)value, 'error':(int)value}, 'runtime':(string)value},... ] }}
             error-{'errors':{'code':value,'msg':(string)info}}
 
-    @mode: fetch
-    @type token:string
-    @param token:the access token, report token
-    @rtype: JSON
-    @return:ok-{'results':{'count':(int)count, 'sessions':[ {planname':(string)value,'starttime':(string)value, 'result':{'total':(int)value, 'pass':(int)value, 'fail':(int)value, 'error':(int)value}, 'runtime':(string)value},... ] }}
-            error-{'errors':{'code':value,'msg':(string)info}}
-
     @mode: share
     @type token:string
     @param token:the access token, user token
@@ -686,8 +679,6 @@ def doHandleCycleReport():
     mode = request.params['mode']
     if mode == "generate":
         return getTestCycleReport(request.params['gid'], request.params['cid'])
-    elif mode == "fetch":
-        return getReportData(request.params['token'])
     elif mode == "share":
         result = shareReportData(request.params['reporttoken'], request.params['token'])
         if result['results'] == "ok":

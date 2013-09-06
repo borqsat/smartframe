@@ -1008,7 +1008,7 @@ function showReportInfo(gid,cid){
     invokeWebApi('/cycle/report',
                 prepareData({'cid': cid, 'gid': gid, 'mode': 'generate'}),
                 function(data) {
-                  showCommentInfo(data);
+                  showCommentInfo();
                   showCycleBaseInfo(data);
                   showFailureSummaryInfo(data);
                   showFailureDetailsInfo(data,gid);
@@ -1027,7 +1027,7 @@ function toggle(){
     }
 }
 
-function showCommentInfo(data, tag){
+function showCommentInfo(){
     $('#show-title').html('<a href=\"javascript:void(0)\" onclick=\"toggle()\">Tap here to get more information</a>');
     $('#article').html( "<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
     					"<b>Product:</b> The device platform and product information. <br />" + 
@@ -1038,26 +1038,16 @@ function showCommentInfo(data, tag){
               "<b>Critial Issues:</b> Phone hang, kernel reboot/panic, system crash, etc. <br />"+
               "<b>Non-Critical Issues:</b> Application/process force close/ANR, core dump (native process crash), etc.<br />"+
               "<b>First Failure Uptime:</b> From the <b>Start Time</b> to first failure occurs. <br />");
-    if (tag !== "staticReport"){
-      $('#show-title').append("<a id=\"sharereport\" style=\"margin-left: 60%\">Share report</a>");
-      $("a#sharereport").unbind().bind('click', function(data){
-                                                    return function(){
-                                                           var reportlink = window.location.protocol + "//" + window.location.host + "/smartserver/group.html#report/" + data['results']['token'];
-                                                           invokeWebApi('/cycle/report', 
-                                                                        prepareData({'link': reportlink, 'reporttoken': data['results']['token'], 'mode': 'share'}),
-                                                                        function(data){
-                                                                          if (data['results'] === 'ok'){ alert("A link of this report will be sent to you by email shortly!");}
-                                                                          else if (data['results'] === 'error'){
-                                                                            alert("Your email address has not been verified, please share the link manually!");
-                                                                            window.open(reportlink);
-                                                                          }
-                                                                          else if (data['results'] === 'badtoken'){
-                                                                            alert("This report has expired, please refresh this page!");
-                                                                          }
-                                                                        });
-                                                    };
-                                              }(data));
-    }
+
+    $('#show-title').append("<a id=\"sharereport\" style=\"margin-left: 58%\">Capture report</a>");
+    $("a#sharereport").unbind().bind('click', function(){
+                                                        var target = $('#board');
+                                                        html2canvas(target, {
+                                                        onrendered: function(canvas) {
+                                                        var data = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");  
+                                                        window.location.href = data;
+                                                        }});
+                                            });
 }
 
 function showCycleBaseInfo(data){
@@ -1152,7 +1142,6 @@ function showFailuresInfo(gid,sid){
 
 function showFailureDetailsInfo(data,gid){
     var data = data.results.issuedetail;
-
     var $dev_table = $('<table border="1">').attr('class','table table-bordered');
     var $th = '<thead><tr>'+
               '<th></th>'+
@@ -1173,14 +1162,8 @@ function showFailureDetailsInfo(data,gid){
         var sid = data[i].sid;
         var deviceSerial = data[i].imei;
         if (deviceSerial ==="") deviceSerial = "N/A";
-        if (gid === "staticReport"){
-          var deviceLink = deviceSerial;
-          var failureLink = failureCount;
-        }
-        else{
-          var deviceLink = "<a href=\"#/group/"+gid+"/session/"+sid+"\">"+deviceSerial+"</a>";
-          var failureLink = "<a href=\"#/group/"+gid+"/session/"+sid+"/fail\">"+failureCount+"</a>";
-        }
+        var deviceLink = "<a href=\"#/group/"+gid+"/session/"+sid+"\">"+deviceSerial+"</a>";
+        var failureLink = "<a href=\"#/group/"+gid+"/session/"+sid+"/fail\">"+failureCount+"</a>";
         var $tr = "<tr>"+
                     (failureCount==0?"<td></td>":"<td onclick=showPic('pic_"+i.toString()+"'); id='tr_"+i.toString()+"'><img id='pic_"+i.toString()+"' src='static/img/spread.png'></img></td>")+        
                     "<td>"+deviceLink+"</td>"+
@@ -1303,25 +1286,12 @@ function showDomainInfo(data){
     }
 }
 
-function showStaticReport(token){
-    invokeWebApi("/cycle/report",
-                {'token' : token, 'mode': 'fetch'},
-                function(data){
-                     showCommentInfo(data, "staticReport");
-                     showCycleBaseInfo(data);
-                     showFailureSummaryInfo(data);
-                     showFailureDetailsInfo(data, "staticReport");
-                     showDomainInfo(data);
-                });
-}
-
 var AppRouter = Backbone.Router.extend({
     routes: {
         "group/:gid" : "showGroupView",
         "group/:gid/session/:sid" : "showSessionView",
         "group/:gid/report/:cid" : "showReportView",
-        "group/:gid/session/:sid/fail" : "showFailView",
-        "report/:token" : "showStaticReportView"
+        "group/:gid/session/:sid/fail" : "showFailView"
     },
     showGroupView: function(gid){
         checkLogIn();
@@ -1375,16 +1345,6 @@ var AppRouter = Backbone.Router.extend({
         if(_appglobal.t2 !== undefined) clearTimeout(_appglobal.t2);
         showGroupInfo(gid);
         showReportInfo(gid,cid);
-    },
-    showStaticReportView: function(token){ 
-        $('#group-div').hide();
-        $('#session-div').hide();
-        $('#session-name').hide();
-        $('#header').hide();
-        $('#board-header').hide();
-        $('#group-members-div').hide();
-        $('#report-div').show();
-        showStaticReport(token);
     }
 });
 var index_router = new AppRouter;
