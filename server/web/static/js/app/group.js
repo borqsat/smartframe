@@ -1044,7 +1044,7 @@ function showCommentInfo(){
                                                         var target = $('#board');
                                                         html2canvas(target, {
                                                         onrendered: function(canvas) {
-                                                        var data = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");  
+                                                        var data = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream; Content-Disposition: attachment; filename=report.png");  
                                                         window.location.href = data;
                                                         }});
                                             });
