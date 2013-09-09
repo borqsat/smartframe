@@ -1039,7 +1039,7 @@ function showCommentInfo(){
               "<b>Non-Critical Issues:</b> Application/process force close/ANR, core dump (native process crash), etc.<br />"+
               "<b>First Failure Uptime:</b> From the <b>Start Time</b> to first failure occurs. <br />");
 
-    $('#show-title').append("<a id=\"sharereport\" style=\"margin-left: 58%\">Capture report</a>");
+    $('#show-title').append("<a id=\"sharereport\" style=\"margin-left: 57%\">Report snapshot</a>");
     $("a#sharereport").unbind().bind('click', function(){
                                                         var target = $('#board');
                                                         html2canvas(target, {
