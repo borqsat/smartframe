@@ -236,17 +236,18 @@ function viewLatest(){
     $('#tabhistory').removeClass('active');
     $('#live_cases_div').show();
     $('#cases_div').hide();
+    clearInterval(_appglobal.t1);
+    _appglobal.t1 = setInterval("pollSessionStatus(\""+_appglobal.gid+"\",\""+_appglobal.sid+"\")", 20000);
     clearCheckStatus();
-    _appglobal.collectIDs['farthernode'] = 'live_cases_div';
 }
 
 function viewHistory(){
+    clearInterval(_appglobal.t1);  
     $('#tablatest').removeClass('active');
     $('#tabhistory').addClass('active');
     $('#live_cases_div').hide();
     $('#cases_div').show();
     clearCheckStatus();
-    _appglobal.collectIDs['farthernode'] = 'cases_div';    
 }
 
 function clearTab() {
@@ -540,21 +541,23 @@ function renderCaseSnaps(gid, sid, tid){
 
 function createDetailTable(div, ids){
     var $div_detail = $("#"+div);
+    var $tbf = $('<table>').attr('id', ids).attr('class','table table-striped table-hover').attr('style','table-layout:fixed;word-wrap:break-word;margin-bottom:0px;position:relative;');
     var $tb = $('<table>').attr('id', ids).attr('class','table table-striped table-hover').attr('style','table-layout:fixed;word-wrap:break-word;');
     var $th = '<thead><tr>'+
-              '<th id="selectAll" align="left" width="3%"></th>'+
-              '<th align="left" width="6%">Tid</th>'+
-              '<th align="left" width="31%">Testcase</th>'+
-              '<th align="left" width="17%">Start Time</th>'+
-              '<th align="left" width="7%">Result</th>'+
-              '<th align="left" width="5%">Log</th>'+
-              '<th align="left" width="7%">Image</th>'+
-              '<th align="left" width="24%"><a href="javascript:showComment()">Comments</th>'+
+              '<th id="selectAll" width="3%"></th>'+
+              '<th width="6%">Tid</th>'+
+              '<th width="31%">Testcase</th>'+
+              '<th width="17%">Start Time</th>'+
+              '<th width="7%">Result</th>'+
+              '<th width="5%">Log</th>'+
+              '<th width="7%">Image</th>'+
+              '<th width="24%"><a href="javascript:showComment()">Comments</th>'+
               '</tr></thead>';
     var $tbody = '<tbody></tbody>';
-    $tb.append($th);
+    $tbf.append($th);
     $tb.append($tbody);
-    $div_detail.html($tb);
+    $div_detail.html($tbf);
+    $div_detail.append($tb);
 }
 
 var ws = undefined;
@@ -616,7 +619,7 @@ function renderSnapshotDiv(gid, sid) {
 function selectAll(ids){
     if ($("#"+ids+" input#checkbox_selectAll").attr("checked") !== undefined){
         for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
-           var results = $("#"+ids+" > tbody > tr")[i]['id'].split('.');
+           var results = $("#"+ids+" > tbody > tr")[i]['id'].split('_');
            if(results[1] === 'error' || results[1] === 'fail'){
               var key = _appglobal.collectIDs['tids'].indexOf(results[0]);
               if (key === -1){
@@ -629,7 +632,7 @@ function selectAll(ids){
     else{
         _appglobal.collectIDs['tids'] = [];
         for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
-           var results = $("#"+ids+" > tbody > tr")[i]['id'].split('.');
+           var results = $("#"+ids+" > tbody > tr")[i]['id'].split('_');
            if(results[1] === 'error' || results[1] === 'fail'){
               $("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', false);
            }
@@ -639,7 +642,7 @@ function selectAll(ids){
 
 function collectinBetween(ids, max, min){
     for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
-      var results = $("#"+ids+" > tbody > tr")[i]['id'].split('.');
+      var results = $("#"+ids+" > tbody > tr")[i]['id'].split('_');
       if (min < results[0] && results[0] < max){
          if(results[1] === 'error' || results[1] === 'fail'){
             var key = _appglobal.collectIDs['tids'].indexOf(results[0]);
@@ -689,6 +692,22 @@ function keepCheckStatus(ids){
     }
 }
 
+function freezeTablehead(ids){
+    window.onscroll = function(){
+      if ($(window).scrollTop() >= ($("#"+ids+" > tbody").offset().top + $("#"+ids+" > thead").height()) & $("#"+ids+"").attr("style").indexOf("position:fixed") === -1){
+        $("#"+ids+"").attr("style", "top:0px;position:fixed;word-break:break-all;margin-left:-1px; width:"+$("#"+ids+" > tbody > tr").width()+"px;");
+      }
+      else if ($(window).scrollTop() < ($("#"+ids+" > tbody").offset().top + $("#"+ids+" > thead").height()) & $("#"+ids+"").attr("style").indexOf("position:fixed") !== -1){
+        $("#"+ids+"").attr("style", "table-layout:fixed;word-wrap:break-word;margin-bottom:0px;position:relative;");
+      }
+    };
+    window.onresize = function(){
+      if ($("#"+ids+"").attr("style").indexOf("position:fixed") !== -1){
+        $("#"+ids+"").attr("style", "top:0px;position:fixed;word-break:break-all;margin-left:-1px; width:"+$("#"+ids+" > tbody > tr").width()+"px;");
+      }
+    };
+}
+
 function fillDetailTable(gid, sid, data, ids, tag) {
     var tablerows = '';
     var detail_table = $("#"+ids+" > tbody").html('');
@@ -703,7 +722,7 @@ function fillDetailTable(gid, sid, data, ids, tag) {
           var clog = citem['log'];
           var comResult = citem['comments'];
           if(tag !== 'total' && tag !== cresult) continue;
-          var trId = ctid + "." + cresult;
+          var trId = ctid + "_" + cresult;
           
           if(comResult !== undefined){
              if(comResult['endsession'] === 0)
@@ -725,61 +744,62 @@ function fillDetailTable(gid, sid, data, ids, tag) {
           }
           if(cresult === 'fail'){
               tablerows += "<tr id=\""+trId+"\">"+
-                                        "<td><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID(event, '"+ctid+"', '"+ids+"')\"></input></td>"+
-                                        "<td>"+ctid+"</td>"+    
-                                        "<td>"+cname+"</td>"+              
-                                        "<td>"+ctime+"</td>"+
-                                        "<td><font color=\"red\">"+cresult+"<font></td>"+
-                                        "<td><a href=\""+storeBaseURL+"/log/"+clog+"\">log</a></td>"+
-                                        "<td><a href=\"javascript:showHistoryDiv('"+gid+"','"+sid+"','"+ctid+"');\">image</a></td>"+
-                                        "<td>"+                                      
+                                        "<td width=\"3%\"><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID(event, '"+ctid+"', '"+ids+"')\"></input></td>"+
+                                        "<td width=\"6%\">"+ctid+"</td>"+    
+                                        "<td width=\"31%\">"+cname+"</td>"+              
+                                        "<td width=\"17%\">"+ctime+"</td>"+
+                                        "<td width=\"7%\"><font color=\"red\">"+cresult+"<font></td>"+
+                                        "<td width=\"5%\"><a href=\""+storeBaseURL+"/log/"+clog+"\">log</a></td>"+
+                                        "<td width=\"7%\"><a href=\"javascript:showHistoryDiv('"+gid+"','"+sid+"','"+ctid+"');\">image</a></td>"+
+                                        "<td width=\"24%\">"+                                      
                                         "<span id=\"span_"+ctid+"\" onmouseover=\"showHint('"+ctid+"')\" onmouseout=\"hideHint('"+ctid+"')\">"+showComment+"</span>"+
                                         "<br><div id=\"hint_"+ctid+"\" style=\"display:none\">"+hintInfo+"</div>"+
                                         "</td></tr>";                                                 
          } else if (cresult === 'error') {
                 tablerows += "<tr id=\""+trId+"\">"+
-                                     "<td><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID(event, '"+ctid+"', '"+ids+"')\"></input></td>"+
-                                     "<td>"+ctid+"</td>"+
-                                     "<td>"+cname+"</td>"+
-                                     "<td>"+ctime+"</td>"+
-                                     "<td><font color=\"red\">"+cresult+"<font></td>"+
-                                     "<td></td>"+
-                                     "<td></td>"+
-                                     "<td>"+
+                                     "<td width=\"3%\"><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID(event, '"+ctid+"', '"+ids+"')\"></input></td>"+
+                                     "<td width=\"6%\">"+ctid+"</td>"+
+                                     "<td width=\"31%\">"+cname+"</td>"+
+                                     "<td width=\"17%\">"+ctime+"</td>"+
+                                     "<td width=\"7%\"><font color=\"red\">"+cresult+"<font></td>"+
+                                     "<td width=\"5%\"></td>"+
+                                     "<td width=\"7%\"></td>"+
+                                     "<td width=\"24%\">"+
                                      "<span id=\"span_"+ctid+"\" onmouseover=\"showHint('"+ctid+"')\" onmouseout=\"hideHint('"+ctid+"')\">"+showComment+"</span>"+
                                      "<br><div id=\"hint_"+ctid+"\" style=\"display:none\">"+hintInfo+"</div>"+
                                      "</td></tr>";
          } else if (cresult === 'running' || cresult === 'pass'){
                  if (cresult == 'running'){
                     tablerows += "<tr id=\""+trId+"\">"+
-                                        "<td></td>"+
-                                        "<td>"+ctid+"</td>"+
-                                        "<td>"+cname+"</td>"+
-                                        "<td>"+ctime+"</td>"+
-                                        "<td>N/A</td>"+
-                                        "<td></td>"+
-                                        "<td></td>"+
-                                        "<td>"+
+                                        "<td width=\"3%\"></td>"+
+                                        "<td width=\"6%\">"+ctid+"</td>"+
+                                        "<td width=\"31%\">"+cname+"</td>"+
+                                        "<td width=\"17%\">"+ctime+"</td>"+
+                                        "<td width=\"7%\">N/A</td>"+
+                                        "<td width=\"5%\"></td>"+
+                                        "<td width=\"7%\"></td>"+
+                                        "<td width=\"24%\">"+
                                         "<span id=\"span_"+ctid+"\" onmouseover=\"showHint('"+ctid+"')\" onmouseout=\"hideHint('"+ctid+"')\">"+showComment+"</span>"+
                                         "<br><div id=\"hint_"+ctid+"\" style=\"display:none\">"+hintInfo+"</div>"+
                                         "</td>"+
                                         "</tr>";     
                  } else {    
                     tablerows += "<tr id=\""+trId+"\">"+
-                                        "<td></td>"+
-                                        "<td>"+ctid+"</td>"+
-                                        "<td>"+cname+"</td>"+
-                                        "<td>"+ctime+"</td>"+
-                                        "<td>"+cresult+"</td>"+
-                                        "<td></td>"+
-                                        "<td></td>"+
-                                        "<td></td>"+
+                                        "<td width=\"3%\"></td>"+
+                                        "<td width=\"6%\">"+ctid+"</td>"+
+                                        "<td width=\"31%\">"+cname+"</td>"+
+                                        "<td width=\"17%\">"+ctime+"</td>"+
+                                        "<td width=\"7%\">"+cresult+"</td>"+
+                                        "<td width=\"5%\"></td>"+
+                                        "<td width=\"7%\"></td>"+
+                                        "<td width=\"24%\"></td>"+
                                         "</tr>";
                  }    
           }
     }
     detail_table.append(tablerows);
     keepCheckStatus(ids);
+    freezeTablehead(ids);
 
     if(!$('#comDiv').length) {
         var comdiv = fillCommentDiv();
@@ -943,6 +963,16 @@ function initScreenInfo(data) {
     _appglobal.screensize = {'width':wd, 'height':ht}
 }
 
+function viewLatestTab(gid, sid){
+    viewLatest();
+    showLiveSessionCases(gid, sid);
+}
+
+function viewHistoryTab(gid, sid){
+    viewHistory();
+    showHistorySessionCases(gid, sid);
+}
+
 function showSessionInfo(gid,sid) {
     invokeWebApi('/group/'+gid+'/test/'+sid+'/summary',
                   prepareData({}),
@@ -952,17 +982,14 @@ function showSessionInfo(gid,sid) {
                         initScreenInfo(data);
                         if(data['results']['endtime'] === 'N/A') {
                             $('#tabs_session').show();
-                            viewLatest();
                             createSessionBaseInfo(data, gid, sid, true);
+                            viewLatestTab(gid, sid);
                             $('#tabhistory').unbind().bind('click', function() {
-                                viewHistory();
+                                viewHistoryTab(gid, sid);
                             });
                             $('#tablatest').unbind().bind('click', function() {
-                                viewLatest();
+                                viewLatestTab(gid, sid);
                             });
-                            showHistorySessionCases(gid, sid);
-                            showLiveSessionCases(gid, sid);
-                            _appglobal.t1 = setInterval("pollSessionStatus(\""+gid+"\",\""+sid+"\")", 20000);
                         }
                         else {
                             clearTab();
