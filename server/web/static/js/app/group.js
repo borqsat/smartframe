@@ -1110,7 +1110,7 @@ function showCommentInfo(){
         }
     });
 
-    $('#show-title').append("<a id=\"sharereport\" style=\"margin-left: 57%\">Report snapshot</a>");
+    $('#show-title').append("<a id=\"sharereport\" style=\"float:right;margin-right:5px;\">Report snapshot</a>");
     $("a#sharereport").unbind().bind('click', function(){
                                                         var target = $('#board');
                                                         html2canvas(target, {
