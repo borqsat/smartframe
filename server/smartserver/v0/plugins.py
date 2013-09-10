@@ -104,7 +104,7 @@ class LoginPlugin(object):
                 return err('03', 'The API needs a valid "token" parameter. No token provided in the request!')
 
             if uid is None:  # if the uid is None, then we return an error message.
-                return err('01', 'The token has expired or is invalid!')
+                return err('01', 'Invalid token!')
             else:  # pass uid/token to callback
                 if has_uid:
                     kwargs[self.uid_keyword] = uid

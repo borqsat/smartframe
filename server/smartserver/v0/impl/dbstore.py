@@ -647,14 +647,11 @@ class DataStore(object):
         Use UTC time, if utcnow >= the expire time of a token, remove this token from db.
         '''
         print "Start validating token expire time"
-        for token in self._db['tokens'].find({}, {'_id': 0, 'token': 1, 'expires': 1, 'reportdata': 1}):
+        for token in self._db['tokens'].find({}, {'_id': 0, 'token': 1, 'expires': 1}):
             if time.time() >= token['expires']:
                 self.deleteToken(token['token'])
-            if token.has_key('reportdata') and token['reportdata'].has_key('cid') and self._db['testsessions'].find({'cid': int(token['reportdata']['cid'])}).count() == 0:
-                self.deleteToken(token['token'])
 
-
-    def createToken(self, appid, uid, info, expires, reportdata={}):
+    def createToken(self, appid, uid, info, expires):
         """
         write a user account record in database
         """
@@ -663,8 +660,7 @@ class DataStore(object):
         m.update(str(uuid.uuid1()))
         token = m.hexdigest()
         tokens.insert({'appid': appid, 'uid': uid,
-                      'info': info, 'token': token, 
-                      'expires': (time.time() + expires), 'reportdata': reportdata})
+                      'info': info, 'token': token, 'expires': (time.time() + expires)})
         return {'token': token, 'uid': uid}
 
     def deleteToken(self, token):
@@ -828,7 +824,6 @@ class DataStore(object):
         res2 = []
         res3 = []
         res4 = []
-
         rdata = session.find({'gid': gid, 'cid': int(cid)})
         for d in rdata:
             sidList.append(d['sid'])
