@@ -1044,8 +1044,18 @@ function showCommentInfo(){
                                                         var target = $('#board');
                                                         html2canvas(target, {
                                                         onrendered: function(canvas) {
-                                                        var data = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");  
-                                                        window.location.href = data;
+                                                        var data = canvas.toDataURL("image/png");
+                                                        window.open('data:text/html;charset=utf-8,' + 
+                                                              encodeURIComponent(
+                                                                  '<html>'+
+                                                                  '<head><title>Report snapshot</title></head>'+
+                                                                  '<body>'+
+                                                                  '<a href=\''+data+'\' download=\'report.png\'>'+
+                                                                  '<img src=\''+data+'\'></img></a>'+
+                                                                  '</body>'+
+                                                                  '</html>'
+                                                              )
+                                                        );
                                                         }});
                                             });
 }
