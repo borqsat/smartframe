@@ -6,14 +6,22 @@ function showGroupInfo(id) {
 			    	data = data.results;
 			    	if(data === undefined) return;
 			    	
-			    	uploaded_avatar = data.info['uploaded_avatar'];
-			    	if(uploaded_avatar !== undefined){
-			    			path = storeBaseURL + "/snap/" + uploaded_avatar;
-			    	}else{
-			    			path = "http://storage.aliyun.com/wutong-data/system/1_S.jpg"
+			    	var avatar = data.info['avatar'];
+			    	var uploaded_avatar = data.info['uploaded_avatar'];
+			    	var avatar_path = ""
+			    	switch(avatar)
+			    	{
+			    	case "default_avatar":
+			    		avatar_path = "http://storage.aliyun.com/wutong-data/system/1_S.jpg"
+			    		break;
+			    	case "uploaded_avatar":
+			    		avatar_path = storeBaseURL + "/snap/" + uploaded_avatar;
+			    		break;
+			    	default:
+			    		avatar_path = "http://storage.aliyun.com/wutong-data/system/1_S.jpg"
 			    	}
-			    	$("#small-avatar").attr("src",path);
-				});
+			    	$("#small-avatar").attr("src",avatar_path);
+	  });
 	
       invokeWebApi('/group/'+id+'/info',
                    prepareData({}),
@@ -39,18 +47,14 @@ function showGroupInfo(id) {
                             var role = o['rolename'];
                             var info = o['info'];
                             var path = ""
-                            if ('avatar' in info){
-                            	var avatar = info['avatar'];
-                            	if (avatar === "uploaded_avatar"){
-                            		path = storeBaseURL + "/snap/" + info[avatar];
-                            	}else if (avatar === "default_avatar"){
-                            		path = info[avatar];
-                            	}else{
-                            		path = "http://storage.aliyun.com/wutong-data/system/1_S.jpg"
-                            	}
+                            var avatar = info['avatar'];
+                            if (avatar === "uploaded_avatar"){
+                            	path = storeBaseURL + "/snap/" + info[avatar];
+                            }else if (avatar === "default_avatar"){
+                            	path = info[avatar];
                             }else{
                             	path = "http://storage.aliyun.com/wutong-data/system/1_S.jpg"
-                            }
+                            	}
                             var role = o['rolename'];
                             if (role === 'member'){ role = ""};
                             $groupprf.append('<div><img style="width:30px;height:30px" src="'+path+'"></img><span style="font-size:15px;">' 
@@ -59,8 +63,8 @@ function showGroupInfo(id) {
                                              + '<a href="javascript:deletemembersById(\''+id+'\',\''+uid+'\',\' '+role+'\')">' 
                                              + (bAdmin && o['rolename'] !== 'owner'? '[X]':'')+'</a></span></div>')
                           })
-                    })
-                                        
+                          
+                    })          
       $('#dialog-user')
                       .dialog({
                           resizable:false,
@@ -232,17 +236,18 @@ function viewLatest(){
     $('#tabhistory').removeClass('active');
     $('#live_cases_div').show();
     $('#cases_div').hide();
+    clearInterval(_appglobal.t1);
+    _appglobal.t1 = setInterval("pollSessionStatus(\""+_appglobal.gid+"\",\""+_appglobal.sid+"\")", 20000);
     clearCheckStatus();
-    _appglobal.collectIDs['farthernode'] = 'live_cases_div';
 }
 
 function viewHistory(){
+    clearInterval(_appglobal.t1);  
     $('#tablatest').removeClass('active');
     $('#tabhistory').addClass('active');
     $('#live_cases_div').hide();
     $('#cases_div').show();
     clearCheckStatus();
-    _appglobal.collectIDs['farthernode'] = 'cases_div';    
 }
 
 function clearTab() {
@@ -335,9 +340,10 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
         var cid = test_session[k].cid;
         var count = test_session[k].count;
         var starttime = test_session[k].starttime;
-        var product = test_session[k].product;
+        var product = test_session[k].sessions[0].product;
+        var revision = test_session[k].sessions[0].revision
         var key = "" ;
-        key = product + ":" + test_session[k].sessions[0].revision;
+        key = product + ":" + revision;
         if (cid !== "" && cid !== "N/A"){
             if (_appglobal.cyclelist[key] === undefined) {
                 _appglobal.cyclelist[key] = [];
@@ -347,7 +353,7 @@ function renderTestSessionDiv_devicelist(div_id, test_session){
         for (var i = 0 ; i < test_session[k].sessions.length; i++) {
             var session_item = test_session[k].sessions[i];
             session_item['cid'] = cid;    
-            session_item['product'] = product;
+            session_item['product'] = session_item.product;
             session_item['revision'] = session_item.revision;
             sessions.push(session_item);
         }
@@ -407,7 +413,7 @@ function renderTestSessionDiv_cyclelist(div_id, test_session){
         var livecount = test_session[k].livecount;
         var starttime = test_session[k].starttime;
         var endtime = test_session[k].endtime;
-        var product = test_session[k].product;
+        var product = test_session[k].sessions[0].product;
         var revision = test_session[k].sessions[0].revision;
         if (cid !== "" && cid !== "N/A") {
             $tr = "<tr>"+
@@ -535,21 +541,23 @@ function renderCaseSnaps(gid, sid, tid){
 
 function createDetailTable(div, ids){
     var $div_detail = $("#"+div);
+    var $tbf = $('<table>').attr('id', ids).attr('class','table table-striped table-hover').attr('style','table-layout:fixed;word-wrap:break-word;margin-bottom:0px;position:relative;');
     var $tb = $('<table>').attr('id', ids).attr('class','table table-striped table-hover').attr('style','table-layout:fixed;word-wrap:break-word;');
     var $th = '<thead><tr>'+
-              '<th id="selectAll" align="left" width="3%"></th>'+
-              '<th align="left" width="6%">Tid</th>'+
-              '<th align="left" width="31%">Testcase</th>'+
-              '<th align="left" width="17%">Start Time</th>'+
-              '<th align="left" width="7%">Result</th>'+
-              '<th align="left" width="5%">Log</th>'+
-              '<th align="left" width="7%">Image</th>'+
-              '<th align="left" width="24%"><a href="javascript:showComment()">Comments</th>'+
+              '<th id="selectAll" width="3%"></th>'+
+              '<th width="6%">Tid</th>'+
+              '<th width="31%">Testcase</th>'+
+              '<th width="17%">Start Time</th>'+
+              '<th width="7%">Result</th>'+
+              '<th width="5%">Log</th>'+
+              '<th width="7%">Image</th>'+
+              '<th width="24%"><a href="javascript:showComment()">Comments</th>'+
               '</tr></thead>';
     var $tbody = '<tbody></tbody>';
-    $tb.append($th);
+    $tbf.append($th);
     $tb.append($tbody);
-    $div_detail.html($tb);
+    $div_detail.html($tbf);
+    $div_detail.append($tb);
 }
 
 var ws = undefined;
@@ -608,10 +616,49 @@ function renderSnapshotDiv(gid, sid) {
     }
 }
 
-function collectID(ctid){
-    var key = _appglobal.collectIDs['tids'].indexOf(ctid);
+function selectAll(ids){
+    if ($("#"+ids+" input#checkbox_selectAll").attr("checked") !== undefined){
+        for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
+           var results = $("#"+ids+" > tbody > tr")[i]['id'].split('_');
+           if(results[1] === 'error' || results[1] === 'fail'){
+              var key = _appglobal.collectIDs['tids'].indexOf(results[0]);
+              if (key === -1){
+                  _appglobal.collectIDs['tids'].push(results[0]);
+                  $("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', true);
+              }
+           }
+        }
+    }
+    else{
+        _appglobal.collectIDs['tids'] = [];
+        for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
+           var results = $("#"+ids+" > tbody > tr")[i]['id'].split('_');
+           if(results[1] === 'error' || results[1] === 'fail'){
+              $("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', false);
+           }
+        }
+    }
+}
+
+function collectinBetween(ids, max, min){
+    for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
+      var results = $("#"+ids+" > tbody > tr")[i]['id'].split('_');
+      if (min < results[0] && results[0] < max){
+         if(results[1] === 'error' || results[1] === 'fail'){
+            var key = _appglobal.collectIDs['tids'].indexOf(results[0]);
+            if (key === -1){
+              _appglobal.collectIDs['tids'].push(results[0]);
+              $("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', true);
+            }
+         }
+      }
+    }
+}
+
+function collecter(tid){
+    var key = _appglobal.collectIDs['tids'].indexOf(tid);
     if (key === -1){
-      _appglobal.collectIDs['tids'].push(ctid);
+      _appglobal.collectIDs['tids'].push(tid);
     }
     else if (key === 0){
       _appglobal.collectIDs['tids'].splice(0, 1);
@@ -621,18 +668,20 @@ function collectID(ctid){
     }
 }
 
-function selectAll(ids){
-    for(var i = 0; i < $("#"+ids+" > tbody > tr").length; i++){
-       var results = $("#"+ids+" > tbody > tr")[i]['id'].split('.');
-       if(results[1] === 'error' || results[1] === 'fail'){
-          collectID(results[0]);
-          if ($("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked') === undefined){
-            $("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', true);
-          }
-          else
-            {$("table#"+ids+" input#checkbox_"+results[0]+"").attr('checked', false);}
-       }
+function collectID(event, ctid, ids){
+    if (event.shiftKey){
+      if (_appglobal.collectIDs['tids'].length === 0){
+        _appglobal.collectIDs['tids'].push(ctid);
+      }
+      else{
+        var lastID = _appglobal.collectIDs['tids'][_appglobal.collectIDs['tids'].length - 1];
+        collecter(ctid);
+        if (ctid !== lastID){
+          collectinBetween(ids, Math.max(ctid, lastID), Math.min(ctid, lastID));
+        }
+      }
     }
+    else{collecter(ctid);}
 }
 
 function keepCheckStatus(ids){
@@ -641,6 +690,22 @@ function keepCheckStatus(ids){
             $("table#"+ids+" input#checkbox_"+_appglobal.collectIDs['tids'][i]+"").attr('checked', true);  
         }
     }
+}
+
+function freezeTablehead(ids){
+    window.onscroll = function(){
+      if ($(window).scrollTop() >= ($("#"+ids+" > tbody").offset().top + $("#"+ids+" > thead").height()) & $("#"+ids+"").attr("style").indexOf("position:fixed") === -1){
+        $("#"+ids+"").attr("style", "top:0px;position:fixed;word-break:break-all;margin-left:-1px; width:"+$("#"+ids+" > tbody > tr").width()+"px;");
+      }
+      else if ($(window).scrollTop() < ($("#"+ids+" > tbody").offset().top + $("#"+ids+" > thead").height()) & $("#"+ids+"").attr("style").indexOf("position:fixed") !== -1){
+        $("#"+ids+"").attr("style", "table-layout:fixed;word-wrap:break-word;margin-bottom:0px;position:relative;");
+      }
+    };
+    window.onresize = function(){
+      if ($("#"+ids+"").attr("style").indexOf("position:fixed") !== -1){
+        $("#"+ids+"").attr("style", "top:0px;position:fixed;word-break:break-all;margin-left:-1px; width:"+$("#"+ids+" > tbody > tr").width()+"px;");
+      }
+    };
 }
 
 function fillDetailTable(gid, sid, data, ids, tag) {
@@ -657,7 +722,7 @@ function fillDetailTable(gid, sid, data, ids, tag) {
           var clog = citem['log'];
           var comResult = citem['comments'];
           if(tag !== 'total' && tag !== cresult) continue;
-          var trId = ctid + "." + cresult;
+          var trId = ctid + "_" + cresult;
           
           if(comResult !== undefined){
              if(comResult['endsession'] === 0)
@@ -679,61 +744,62 @@ function fillDetailTable(gid, sid, data, ids, tag) {
           }
           if(cresult === 'fail'){
               tablerows += "<tr id=\""+trId+"\">"+
-                                        "<td><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID('"+ctid+"')\"></input></td>"+
-                                        "<td>"+ctid+"</td>"+    
-                                        "<td>"+cname+"</td>"+              
-                                        "<td>"+ctime+"</td>"+
-                                        "<td><font color=\"red\">"+cresult+"<font></td>"+
-                                        "<td><a href=\""+storeBaseURL+"/log/"+clog+"\">log</a></td>"+
-                                        "<td><a href=\"javascript:showHistoryDiv('"+gid+"','"+sid+"','"+ctid+"');\">image</a></td>"+
-                                        "<td>"+                                      
+                                        "<td width=\"3%\"><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID(event, '"+ctid+"', '"+ids+"')\"></input></td>"+
+                                        "<td width=\"6%\">"+ctid+"</td>"+    
+                                        "<td width=\"31%\">"+cname+"</td>"+              
+                                        "<td width=\"17%\">"+ctime+"</td>"+
+                                        "<td width=\"7%\"><font color=\"red\">"+cresult+"<font></td>"+
+                                        "<td width=\"5%\"><a href=\""+storeBaseURL+"/log/"+clog+"\">log</a></td>"+
+                                        "<td width=\"7%\"><a href=\"javascript:showHistoryDiv('"+gid+"','"+sid+"','"+ctid+"');\">image</a></td>"+
+                                        "<td width=\"24%\">"+                                      
                                         "<span id=\"span_"+ctid+"\" onmouseover=\"showHint('"+ctid+"')\" onmouseout=\"hideHint('"+ctid+"')\">"+showComment+"</span>"+
                                         "<br><div id=\"hint_"+ctid+"\" style=\"display:none\">"+hintInfo+"</div>"+
                                         "</td></tr>";                                                 
          } else if (cresult === 'error') {
                 tablerows += "<tr id=\""+trId+"\">"+
-                                     "<td><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID('"+ctid+"')\"></input></td>"+
-                                     "<td>"+ctid+"</td>"+
-                                     "<td>"+cname+"</td>"+
-                                     "<td>"+ctime+"</td>"+
-                                     "<td><font color=\"red\">"+cresult+"<font></td>"+
-                                     "<td></td>"+
-                                     "<td></td>"+
-                                     "<td>"+
+                                     "<td width=\"3%\"><input id=\"checkbox_"+ctid+"\" type=\"checkbox\" onclick=\"collectID(event, '"+ctid+"', '"+ids+"')\"></input></td>"+
+                                     "<td width=\"6%\">"+ctid+"</td>"+
+                                     "<td width=\"31%\">"+cname+"</td>"+
+                                     "<td width=\"17%\">"+ctime+"</td>"+
+                                     "<td width=\"7%\"><font color=\"red\">"+cresult+"<font></td>"+
+                                     "<td width=\"5%\"></td>"+
+                                     "<td width=\"7%\"></td>"+
+                                     "<td width=\"24%\">"+
                                      "<span id=\"span_"+ctid+"\" onmouseover=\"showHint('"+ctid+"')\" onmouseout=\"hideHint('"+ctid+"')\">"+showComment+"</span>"+
                                      "<br><div id=\"hint_"+ctid+"\" style=\"display:none\">"+hintInfo+"</div>"+
                                      "</td></tr>";
          } else if (cresult === 'running' || cresult === 'pass'){
                  if (cresult == 'running'){
                     tablerows += "<tr id=\""+trId+"\">"+
-                                        "<td></td>"+
-                                        "<td>"+ctid+"</td>"+
-                                        "<td>"+cname+"</td>"+
-                                        "<td>"+ctime+"</td>"+
-                                        "<td>N/A</td>"+
-                                        "<td></td>"+
-                                        "<td></td>"+
-                                        "<td>"+
+                                        "<td width=\"3%\"></td>"+
+                                        "<td width=\"6%\">"+ctid+"</td>"+
+                                        "<td width=\"31%\">"+cname+"</td>"+
+                                        "<td width=\"17%\">"+ctime+"</td>"+
+                                        "<td width=\"7%\">N/A</td>"+
+                                        "<td width=\"5%\"></td>"+
+                                        "<td width=\"7%\"></td>"+
+                                        "<td width=\"24%\">"+
                                         "<span id=\"span_"+ctid+"\" onmouseover=\"showHint('"+ctid+"')\" onmouseout=\"hideHint('"+ctid+"')\">"+showComment+"</span>"+
                                         "<br><div id=\"hint_"+ctid+"\" style=\"display:none\">"+hintInfo+"</div>"+
                                         "</td>"+
                                         "</tr>";     
                  } else {    
                     tablerows += "<tr id=\""+trId+"\">"+
-                                        "<td></td>"+
-                                        "<td>"+ctid+"</td>"+
-                                        "<td>"+cname+"</td>"+
-                                        "<td>"+ctime+"</td>"+
-                                        "<td>"+cresult+"</td>"+
-                                        "<td></td>"+
-                                        "<td></td>"+
-                                        "<td></td>"+
+                                        "<td width=\"3%\"></td>"+
+                                        "<td width=\"6%\">"+ctid+"</td>"+
+                                        "<td width=\"31%\">"+cname+"</td>"+
+                                        "<td width=\"17%\">"+ctime+"</td>"+
+                                        "<td width=\"7%\">"+cresult+"</td>"+
+                                        "<td width=\"5%\"></td>"+
+                                        "<td width=\"7%\"></td>"+
+                                        "<td width=\"24%\"></td>"+
                                         "</tr>";
                  }    
           }
     }
     detail_table.append(tablerows);
     keepCheckStatus(ids);
+    freezeTablehead(ids);
 
     if(!$('#comDiv').length) {
         var comdiv = fillCommentDiv();
@@ -897,6 +963,16 @@ function initScreenInfo(data) {
     _appglobal.screensize = {'width':wd, 'height':ht}
 }
 
+function viewLatestTab(gid, sid){
+    viewLatest();
+    showLiveSessionCases(gid, sid);
+}
+
+function viewHistoryTab(gid, sid){
+    viewHistory();
+    showHistorySessionCases(gid, sid);
+}
+
 function showSessionInfo(gid,sid) {
     invokeWebApi('/group/'+gid+'/test/'+sid+'/summary',
                   prepareData({}),
@@ -906,17 +982,14 @@ function showSessionInfo(gid,sid) {
                         initScreenInfo(data);
                         if(data['results']['endtime'] === 'N/A') {
                             $('#tabs_session').show();
-                            viewLatest();
                             createSessionBaseInfo(data, gid, sid, true);
+                            viewLatestTab(gid, sid);
                             $('#tabhistory').unbind().bind('click', function() {
-                                viewHistory();
+                                viewHistoryTab(gid, sid);
                             });
                             $('#tablatest').unbind().bind('click', function() {
-                                viewLatest();
+                                viewLatestTab(gid, sid);
                             });
-                            showHistorySessionCases(gid, sid);
-                            showLiveSessionCases(gid, sid);
-                            _appglobal.t1 = setInterval("pollSessionStatus(\""+gid+"\",\""+sid+"\")", 20000);
                         }
                         else {
                             clearTab();
@@ -1016,28 +1089,26 @@ function showReportInfo(gid,cid){
                 },true);
 }
 
-
-
-function toggle(){	
-  	var articleID=document.getElementById("article");
-    if (articleID.style.display=="none"){
-        articleID.style.display="block";
-    } else {
-        articleID.style.display="none";
-    }
-}
-
 function showCommentInfo(){
-    $('#show-title').html('<a href=\"javascript:void(0)\" onclick=\"toggle()\">Tap here to get more information</a>');
+    $('#show-title').html('<a id="tapComments" style="text-align:center">Tap here to get more information</a><br />');
     $('#article').html( "<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
     					"<b>Product:</b> The device platform and product information. <br />" + 
     					"<b>Start Time:</b> The test start time. <br />" + 
     					"<b>End Time: </b>The test finish timestamp. Genericlly the value should be the ciritical issue happen time or the test stop time. 'N/A' means the test is ongoing. <br />" + 
     					"<b>Uptime:</b> Uptime = Endtime - StarTime . EndTime is the critical issue happen time or test stop time. <br />" + 
-              "<b>Failures</b>= (critical issues) + (Non-Critical issues). <br />"+
-              "<b>Critial Issues:</b> Phone hang, kernel reboot/panic, system crash, etc. <br />"+
-              "<b>Non-Critical Issues:</b> Application/process force close/ANR, core dump (native process crash), etc.<br />"+
-              "<b>First Failure Uptime:</b> From the <b>Start Time</b> to first failure occurs. <br />");
+                        "<b>Failures</b>= (critical issues) + (Non-Critical issues). <br />"+
+                        "<b>Critial Issues:</b> Phone hang, kernel reboot/panic, system crash, etc. <br />"+
+                        "<b>Non-Critical Issues:</b> Application/process force close/ANR, core dump (native process crash), etc.<br />"+
+                        "<b>First Failure Uptime:</b> From the <b>Start Time</b> to first failure occurs. <br />");
+
+    $("#tapComments").bind("click", function(){
+        var articleID=document.getElementById("article");
+        if (articleID.style.display=="none"){
+            articleID.style.display="block";
+        } else {
+            articleID.style.display="none";
+        }
+    });
 
     $('#show-title').append("<a id=\"sharereport\" style=\"margin-left: 57%\">Report snapshot</a>");
     $("a#sharereport").unbind().bind('click', function(){
@@ -1172,14 +1243,12 @@ function showFailureDetailsInfo(data,gid){
         var sid = data[i].sid;
         var deviceSerial = data[i].imei;
         if (deviceSerial ==="") deviceSerial = "N/A";
-        var deviceLink = "<a href=\"#/group/"+gid+"/session/"+sid+"\">"+deviceSerial+"</a>";
-        var failureLink = "<a href=\"#/group/"+gid+"/session/"+sid+"/fail\">"+failureCount+"</a>";
         var $tr = "<tr>"+
                     (failureCount==0?"<td></td>":"<td onclick=showPic('pic_"+i.toString()+"'); id='tr_"+i.toString()+"'><img id='pic_"+i.toString()+"' src='static/img/spread.png'></img></td>")+        
-                    "<td>"+deviceLink+"</td>"+
+                    "<td><a href=\"#/group/"+gid+"/session/"+sid+"\">"+deviceSerial+"</a></td>"+
                     "<td>"+data[i].starttime+"</td>"+
                     "<td>"+data[i].endtime+"</td>"+ 
-                    (failureCount==0?"<td style='text-align:center'>"+0+"</td>":"<td style='text-align:center'>"+failureLink+"</td>")+
+                    (failureCount==0?"<td style='text-align:center'>"+0+"</td>":"<td style='text-align:center'><a href=\"#/group/"+gid+"/session/"+sid+"/fail\">"+failureCount+"</a></td>")+
                     "<td>"+setRunTime(data[i].faildur)+"</td>"+
                     "<td>"+setRunTime(data[i].totaldur)+"</td>"+
                     "</tr>";

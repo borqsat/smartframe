@@ -97,7 +97,7 @@ textarea,input{-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizi
 textarea.input-error,input.input-error{background-color:#eae6e6;border-color:#a82424;}
 textarea:focus,input:focus{outline:0;}
 input[type="radio"]{-webkit-appearance:radio;}
-input[type="checkbox"]{-webkit-appearance:checkbox;margin-right:4px; zoom:40%;}
+input[type="checkbox"]{-webkit-appearance:checkbox;min-height: 0px;}
 input[type="text"],input[type="password"],input[type="email"]{transition:background 85ms ease-in,border-color 85ms ease-in;-moz-transition:background 85ms ease-in,border-color 85ms ease-in;-ms-transition:background 85ms ease-in,border-color 85ms ease-in;-webkit-transition:background 85ms ease-in,border-color 85ms ease-in;width:250px;}input[type="text"].full,input[type="password"].full,input[type="email"].full{width:100%;}
 input[type="text"].inline-input,input[type="password"].inline-input,input[type="email"].inline-input{background:none;border:0;margin:0;padding:2px;min-height:0;height:18px;width:200px;}
 input[type="email"]:invalid{box-shadow:none;}

@@ -483,7 +483,7 @@ def doUploadCaseFile(gid, sid, tid):
     return uploadCaseResultFile(gid, sid, tid, request.body, ftype, xtype)
 
 
-@appweb.route('/group/<gid>/test/<sid>/update', method='POST', content_type='application/json')
+@appweb.route('/group/<gid>/test/<sid>/update', method='POST', content_type=['application/json','multipart/form-data'])
 def doUpdateGroupTestSession(gid, sid):
     """
     URL:/group/<gid>/test/<sid>/update
@@ -501,7 +501,10 @@ def doUpdateGroupTestSession(gid, sid):
     @return:ok-{'results':1}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    return updateTestSession(gid, sid, request.json)
+    if 'multipart/form-data' in request.content_type:
+        return updateXMLTestResult(gid, sid, request.files.get('file').file)
+    else:
+        return updateTestSession(gid, sid, request.json)
 
 @appweb.route('/group/<gid>/test/<sid>/delete', method='GET')
 def doDeleteGroupTestSession(uid, gid, sid):
