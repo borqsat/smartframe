@@ -1081,7 +1081,7 @@ function showReportInfo(gid,cid){
     invokeWebApi('/group/'+gid+'/testsummary',
                 prepareData({'cid':cid}),
                 function(data){
-                  showCommentInfo();
+                  showCommentInfo(data);
                   showCycleBaseInfo(data);
                   showFailureSummaryInfo(data);
                   showFailureDetailsInfo(data,gid);
@@ -1089,7 +1089,7 @@ function showReportInfo(gid,cid){
                 },true);
 }
 
-function showCommentInfo(){
+function showCommentInfo(data){
     $('#show-title').html('<a id="tapComments" style="text-align:center">Tap here to get more information</a>');
     $('#article').html( "<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
     					"<b>Product:</b> The device platform and product information. <br />" + 
@@ -1111,24 +1111,30 @@ function showCommentInfo(){
     });
 
     $('#show-title').append("<a id=\"sharereport\" style=\"float:right;margin-right:5px;\">Report snapshot</a>");
-    $("a#sharereport").unbind().bind('click', function(){
-                                                        var target = $('#board');
-                                                        html2canvas(target, {
-                                                        onrendered: function(canvas) {
-                                                        var data = canvas.toDataURL("image/png");
-                                                        window.open('data:text/html;charset=utf-8,' + 
-                                                              encodeURIComponent(
-                                                                  '<html>'+
-                                                                  '<head><title>Report snapshot</title></head>'+
-                                                                  '<body>'+
-                                                                  '<a href=\''+data+'\' download=\'report.png\'>'+
-                                                                  '<img src=\''+data+'\'></img></a>'+
-                                                                  '</body>'+
-                                                                  '</html>'
-                                                              )
-                                                        );
-                                                        }});
-                                            });
+    $("a#sharereport").unbind().bind('click', 
+      function(data){
+        return function(){
+                var target = $('#board');
+                html2canvas(target, {
+                          onrendered: function(canvas) {
+                                          var reg = new RegExp("(/)", "g");
+                                          filename = data['results']['cylesummany']['product'] + '-' + 
+                                                     data['results']['cylesummany']['buildid'] + '-' + 
+                                                     data['results']['cylesummany']['starttime'].replace(reg, "_").replace(" ", "-").replace(":", "_") +
+                                                     ".png";
+                                          var datat = canvas.toDataURL("image/png");
+                                          window.open('data:text/html;charset=utf-8,' + 
+                                                encodeURIComponent(
+                                                    '<html>'+
+                                                    '<head><title>Report snapshot</title></head>'+
+                                                    '<body>'+
+                                                    '<a href=\''+datat+'\' download=\''+filename+'\'>'+
+                                                    '<img src=\''+datat+'\'></img></a>'+
+                                                    '</body>'+
+                                                    '</html>')
+                                          );}
+                                     });}
+      }(data));
 }
 
 function showCycleBaseInfo(data){
