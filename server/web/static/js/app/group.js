@@ -1090,7 +1090,7 @@ function showReportInfo(gid,cid){
 }
 
 function showCommentInfo(){
-    $('#show-title').html('<a id="tapComments" style="text-align:center">Tap here to get more information</a><br />');
+    $('#show-title').html('<a id="tapComments" style="text-align:center">Tap here to get more information</a>');
     $('#article').html( "<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
     					"<b>Product:</b> The device platform and product information. <br />" + 
     					"<b>Start Time:</b> The test start time. <br />" + 
