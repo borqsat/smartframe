@@ -4,7 +4,6 @@
 from __future__ import absolute_import
 from .worker import worker as w
 from .v0.impl.dbstore import store
-from .v0 import sendmail 
 
 
 @w.task(ignore_result=True)
@@ -58,8 +57,4 @@ def ws_update_testsession_summary(sid):
 @w.task(ignore_result=True)
 def ws_validate_token_expiretime():
     store.validate_token_expiretime()
-
-@w.task(ignore_result=True)
-def ws_send_mail_to_user(link, address):
-    sendmail.sendReportMail(link, address)
 

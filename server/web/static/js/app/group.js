@@ -1078,9 +1078,9 @@ function createSessionBaseInfo(data, gid, sid, blive) {
 }
 
 function showReportInfo(gid,cid){
-    invokeWebApi('/cycle/report',
-                prepareData({'cid': cid, 'gid': gid, 'mode': 'generate'}),
-                function(data) {
+    invokeWebApi('/group/'+gid+'/testsummary',
+                prepareData({'cid':cid}),
+                function(data){
                   showCommentInfo();
                   showCycleBaseInfo(data);
                   showFailureSummaryInfo(data);

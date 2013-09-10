@@ -652,43 +652,11 @@ def doGetGroupTestSessions(gid):
     @return:ok-{'results':{'count':(int)count, 'sessions':[ {planname':(string)value,'starttime':(string)value, 'result':{'total':(int)value, 'pass':(int)value, 'fail':(int)value, 'error':(int)value}, 'runtime':(string)value},... ] }}
             error-{'errors':{'code':value,'msg':(string)info}}
     """
-    return getTestSessionList(gid)
-
-@appweb.route('/cycle/report', method='GET')
-def doHandleCycleReport():
-    """
-    URL:/cycle/report
-    TYPE:http/GET
-
-    Depend on the request mode, generate/fetch/share the report of a cycle
-
-    @mode: generate
-    @type gid:string
-    @param gid:the id of a group
-    @type cid:string
-    @param cid:the id of a cycle
-    @rtype: JSON
-    @return:ok-{'results':{'count':(int)count, 'sessions':[ {planname':(string)value,'starttime':(string)value, 'result':{'total':(int)value, 'pass':(int)value, 'fail':(int)value, 'error':(int)value}, 'runtime':(string)value},... ] }}
-            error-{'errors':{'code':value,'msg':(string)info}}
-
-    @mode: share
-    @type token:string
-    @param token:the access token, user token
-    @rtype: JSON
-    @return:ok-{'results': 'ok'}
-            error-{'results': 'error'}
-            bad -{'results': 'badtoken'}
-
-    """
-    mode = request.params['mode']
-    if mode == "generate":
-        return getTestCycleReport(request.params['gid'], request.params['cid'])
-    elif mode == "share":
-        result = shareReportData(request.params['reporttoken'], request.params['token'])
-        if result['results'] == "ok":
-            tasks.ws_send_mail_to_user.delay(request.params['link'], result['address'])
-        return result
-
+    cid = request.params.get('cid')
+    if cid is None:
+        return getTestSessionList(gid)
+    else:
+        return getTestCycleReport(gid, cid)
 
 if __name__ == '__main__':
     print 'WebServer Serving on 8080...'

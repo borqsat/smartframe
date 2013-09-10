@@ -128,10 +128,3 @@ def checkErrorCount(sid):
 def checkMailListAndContext(gid,sid,tid):
     context = store.checkMailListAndContext(gid,sid,tid)
     return context
-
-def shareReportData(reporttoken, usertoken):
-    address = store.getUserMailAddress(usertoken)
-    if address:
-        return {'results': 'ok', 'address': address}
-    else:
-        return {'results': 'error'}
