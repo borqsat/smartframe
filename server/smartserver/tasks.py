@@ -57,3 +57,4 @@ def ws_update_testsession_summary(sid):
 @w.task(ignore_result=True)
 def ws_validate_token_expiretime():
     store.validate_token_expiretime()
+

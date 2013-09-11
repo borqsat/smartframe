@@ -420,7 +420,7 @@ def doCreateCaseResult(gid, sid, tid):
     """
     tasks.ws_active_testsession.delay(sid)
     result = createCaseResult(gid, sid, tid, request.json['casename'], request.json['starttime'])
-    tasks.ws_update_testsession_summary(sid)
+    tasks.ws_update_testsession_summary.delay(sid)
     return result
 
 
@@ -657,7 +657,6 @@ def doGetGroupTestSessions(gid):
         return getTestSessionList(gid)
     else:
         return getTestCycleReport(gid, cid)
-
 
 if __name__ == '__main__':
     print 'WebServer Serving on 8080...'
