@@ -1312,6 +1312,51 @@ class DataStore(object):
         errorCount = self._db['testresults'].find({'sid': sid, 'result': 'error'}).count()
         return errorCount
 
+    def updateDeviceMemory(self,gid,sid,value):
+        deviceMemory = self._db['testdeviceMemory']
+        deviceMemory.insert({'gid':gid,'sid': sid, 'date':value['date'],'cpu':value['cpu'],'memory':value['memory'],'process':value['process']})
+        
+        processList = self._db['testprocesslist']
+        temresult = processList.find_one({'gid':gid,'sid':sid})
+        if temresult and temresult.count()>0:
+            for key in ['cpu','process']:
+                temresult[key] +=[k for k in value[key] if k not in temresult[key]]
+            processList.update({'gid':gid,'sid':sid},{'$set':{'cpu':cpuList,'process': appList}})   
+        
+        else:
+            processList.insert({'gid':gid, 'sid':sid, 'cpu':value['cpu'].keys(),'process':value['process'].keys()})
+
+    def getDeviceMemory(self,gid,sid,value):
+        testdeviceMemory = self._db['testdeviceMemory']
+        tmpres=testdeviceMemory.find({'gid':gid,'sid':sid}) 
+        result={'date':[],'dataset':{}}
+        for tmpSel in ['cpu','process']:
+            if tmpSel in value :
+                for tmpK in value[tmpSel]:
+                    result['dataset'][tmpSel+','+tmpK]=[]
+        if 'memory' in value :
+            result['dataset']['memory']=[]
+
+        for t in tmpres:
+            result['date'].append(t['date'])
+            for tmpSel in ['cpu','process']:
+                if tmpSel in value :
+                    for tmpK in value[tmpSel]:
+                        if tmpK in t[tmpSel]:
+                            result['dataset'][tmpSel+','+tmpK].append(t[tmpSel][tmpK])
+                        else: 
+                            result['dataset'][tmpSel+','+tmpK].append(0)
+            if 'memory' in value :
+                result['dataset']['memory'].append(t['memory'])
+
+        return result
+
+    def getMemoryList(self,gid,sid):
+        processList = self._db['testprocesslist']
+        result=processList.find_one({'gid':gid,'sid':sid})
+        return result
+
+
 def __getStore():
     mongo_uri = MONGODB_URI
     replicaset = MONGODB_REPLICASET

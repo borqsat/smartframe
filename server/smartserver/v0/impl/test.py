@@ -128,3 +128,18 @@ def checkErrorCount(sid):
 def checkMailListAndContext(gid,sid,tid):
     context = store.checkMailListAndContext(gid,sid,tid)
     return context
+
+def updateDeviceMemory(gid,sid,types,value):
+    store.updateDeviceMemory(gid, sid, types, value)
+    return {'results':1}    
+
+def getDeviceMemory(gid,sid,types):
+    result = store.getDeviceMemory(gid,sid,types)
+    if result is None:
+        return {'errors':{'code':404,'msg':'None result.'}}
+    else:
+        return {'results':result}
+
+def getMemoryList(gid,sid):
+    result = store.getMemoryList(gid,sid)
+    return result

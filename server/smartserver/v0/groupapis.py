@@ -658,6 +658,64 @@ def doGetGroupTestSessions(gid):
     else:
         return getTestCycleReport(gid, cid)
 
+@appweb.route('/group/<gid>/test/<sid>/updatedevicememory', method='POST', content_type='application/json')
+def doUpdateDeviceMemory(gid,sid):
+    """
+    URL:/group/<gid>/test/<sid>/updatedevicememory
+    TYPE:http/POST
+
+    update a test session memoryinfo
+
+    @type gid:string
+    @param gid:the id of group
+    @type sid:string
+    @param sid:the id of test session
+    @type data:JSON
+    @param data:{'date':(string)date,'cpu':{'processname':(int)value,...} ,'memory':int(value),'process':{'processname':(int)value,...}}
+    @rtype: JSON
+    @return:ok-{'results':1}
+            error-{'errors':{'code':value,'msg':(string)info}}
+    """
+    return updateDeviceMemory(gid, sid, request.json)
+
+@appweb.route('/group/<gid>/test/<sid>/devicememory',  method='POST', content_type='application/json')
+def doGetDeviceMemory(gid,sid):
+    """
+    URL:/group/<gid>/test/<sid>/devicememory
+    TYPE:http/GET
+
+    get memoryinfo from the session
+
+    @type gid:string
+    @param gid:the id of group
+    @type sid:string
+    @param sid:the id of test session
+    @type data:JSON
+    @param data:{'cpu':[a,b] ,'memory':1,'process':[a,b]}
+    @rtype: JSON
+    @return:ok-{'results':{'date':[a,b], 'dataset':{'process,test':[a,b],'memory':[a,b], 'cpu,test':[a,b],... }}}
+            error-{'errors':{'code':value,'msg':(string)info}}
+    """
+    return getDeviceMemory(gid, sid, request.json)
+
+@appweb.route('/group/<gid>/test/<sid>/processlist', method='GET')
+def doGetMemoryList(gid,sid):
+    """
+    URL:/group/<gid>/test/<sid>/processlist
+    TYPE:http/GET
+
+    get process list from the session
+
+    @type gid:string
+    @param gid:the id of group
+    @type sid:string
+    @param sid:the id of test session
+    @rtype: JSON
+    @return:ok-{'results':{'process':'a,b',cpu':'a,b' }}
+            error-{'errors':{'code':value,'msg':(string)info}}
+    """
+    return getMemoryList(gid,sid)
+
 
 if __name__ == '__main__':
     print 'WebServer Serving on 8080...'
