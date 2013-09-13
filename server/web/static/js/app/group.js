@@ -1080,8 +1080,8 @@ function createSessionBaseInfo(data, gid, sid, blive) {
 function showReportInfo(gid,cid){
     invokeWebApi('/group/'+gid+'/testsummary',
                 prepareData({'cid':cid}),
-                function(data) {
-                  showCommentInfo();
+                function(data){
+                  showCommentInfo(data);
                   showCycleBaseInfo(data);
                   showFailureSummaryInfo(data);
                   showFailureDetailsInfo(data,gid);
@@ -1089,8 +1089,8 @@ function showReportInfo(gid,cid){
                 },true);
 }
 
-function showCommentInfo(){
-    $('#show-title').html('<a id="tapComments" style="text-align:center">Tap here to get more information</a><br />');
+function showCommentInfo(data){
+    $('#show-title').html('<a id="tapComments" style="text-align:center">Tap here to get more information</a>');
     $('#article').html( "<b>MTBF</b> = Total Uptime/Total Failures  <br />" +
     					"<b>Product:</b> The device platform and product information. <br />" + 
     					"<b>Start Time:</b> The test start time. <br />" + 
@@ -1109,6 +1109,32 @@ function showCommentInfo(){
             articleID.style.display="none";
         }
     });
+
+    $('#show-title').append("<a id=\"sharereport\" style=\"float:right;margin-right:5px;\">Report snapshot</a>");
+    $("a#sharereport").unbind().bind('click', 
+      function(data){
+        return function(){
+                var target = $('#board');
+                html2canvas(target, {
+                          onrendered: function(canvas) {
+                                          var reg = new RegExp("(/)", "g");
+                                          filename = data['results']['cylesummany']['product'] + '-' + 
+                                                     data['results']['cylesummany']['buildid'] + '-' + 
+                                                     data['results']['cylesummany']['starttime'].replace(reg, "_").replace(" ", "-").replace(":", "_") +
+                                                     ".png";
+                                          var datat = canvas.toDataURL("image/png");
+                                          window.open('data:text/html;charset=utf-8,' + 
+                                                encodeURIComponent(
+                                                    '<html>'+
+                                                    '<head><title>Report snapshot</title></head>'+
+                                                    '<body>'+
+                                                    '<a href=\''+datat+'\' download=\''+filename+'\'>'+
+                                                    '<img src=\''+datat+'\'></img></a>'+
+                                                    '</body>'+
+                                                    '</html>')
+                                          );}
+                                     });}
+      }(data));
 }
 
 function showCycleBaseInfo(data){
@@ -1203,7 +1229,6 @@ function showFailuresInfo(gid,sid){
 
 function showFailureDetailsInfo(data,gid){
     var data = data.results.issuedetail;
-
     var $dev_table = $('<table border="1">').attr('class','table table-bordered');
     var $th = '<thead><tr>'+
               '<th></th>'+
@@ -1345,7 +1370,6 @@ function showDomainInfo(data){
        }
     }
 }
-
 
 var AppRouter = Backbone.Router.extend({
     routes: {
