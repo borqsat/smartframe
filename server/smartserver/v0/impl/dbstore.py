@@ -702,20 +702,25 @@ class DataStore(object):
         except ImportError:
             import xml.etree.ElementTree as ET
         root = ET.parse(value).getroot()
+        failList = []
         for testcase in root.iter('testcase'):
-            caseId = testcase.attrib['order']
+            orderID = testcase.attrib['order']
+            cycleId = testcase.attrib['id']
             casename = ''.join([testcase.attrib['component'],'.',testcase.attrib['id'].split('_')[0]])
             for resultInfo in testcase.iter('result_info'):
                 starttime = self.convert_to_str(self.convert_to_datetime(resultInfo.find('start').text))
                 endtime = self.convert_to_str(self.convert_to_datetime(resultInfo.find('end').text))
                 result = resultInfo.find('actual_result').text.lower()
+            if result == 'fail':
+                failList.append(dict((['cycleid', cycleId],['orderid',orderID])))
             caseresult = self._db['testresults']
-            caseresult.insert({'gid': gid, 'sid': sid, 'tid': int(caseId),
+            caseresult.insert({'gid': gid, 'sid': sid, 'tid': int(orderID),
                                'casename': casename, 'log': 'N/A', 
                                'starttime': starttime, 
                                'endtime': endtime,
                                'traceinfo': 'N/A', 'result': result,  'snapshots': []})
         self.updateTestsessionSummary(sid)
+        return failList
 
     def deleteTestSession(self, gid, sid):
         """
