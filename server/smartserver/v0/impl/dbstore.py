@@ -901,21 +901,44 @@ class DataStore(object):
             res2.append(
                 {'issuetype': d['comments.issuetype'], 'count': d['cnt']})
 
-        rdata4 = caseresult.group({'casename': 1}, {'sid': {'$in': sidList}}, {'totalcnt': 0, 'passcnt': 0, 'failcnt': 0, 'blockcnt': 0}, '''
-          function(obj,prev){
-            prev.totalcnt+=1;
-            if(obj.result=='pass'){
-                prev.passcnt+=1;
-            }else if('comments' in obj && obj.comments.caseresult !== undefined) {
-                var resulttag = obj.comments.caseresult.toLowerCase();
-                if (resulttag == 'fail') { prev.failcnt+=1; }
-                else if (resulttag == 'block') { prev.blockcnt+=1; }
-            }
-          }
-          ''')
+        testsessioncases = self._db['testsessioncases']
+        testrdata4 = testsessioncases.find({'sid' : {'$in':sidList}})
+        if testrdata4.count() == 0:
+            rdata4 = caseresult.group(
+                          {'casename': 1}, 
+                          {'sid': {'$in': sidList}}, 
+                          {'totalcnt': 0, 'passcnt': 0, 'failcnt': 0, 'blockcnt': 0}, '''
+                          function(obj,prev){
+                            prev.totalcnt+=1;
+                            if(obj.result=='pass'){
+                                prev.passcnt+=1;
+                            }else if('comments' in obj && obj.comments.caseresult !== undefined) {
+                                var resulttag = obj.comments.caseresult.toLowerCase();
+                                if (resulttag == 'fail') { prev.failcnt+=1; }
+                                else if (resulttag == 'block') { prev.blockcnt+=1; }
+                            }
+                          }
+                          ''')
+        else:
+            rdata4 = []
+            resultList = [result['result'] for result in testrdata4]
+            for subSessionResult in resultList:
+                for subCaseResult in subSessionResult:
+                    try:
+                        if subCaseResult['casename'] not in [name['casename'] for name in rdata4]:
+                            rdata4.append(subCaseResult)
+                        else:
+                            for index in range (len(rdata4)):
+                                if rdata4[index]['casename'] == subCaseResult['casename']:
+                                    rdata4[index]['totalcnt'] += subCaseResult['totalcnt']
+                                    rdata4[index]['failcnt'] += subCaseResult['failcnt']
+                                    rdata4[index]['passcnt'] += subCaseResult['passcnt']
+                                    rdata4[index]['blockcnt'] += subCaseResult['blockcnt']
+                    except:
+                        pass
         domainTag = {}
         tmpi = 0
-
+        
         for d in rdata4:
             try:
                 tmpDomain = d['casename'].split('.')[-2]
@@ -1123,8 +1146,33 @@ class DataStore(object):
         if comments['endsession'] == 1:
             tmpt = caseresult.find_one({'gid': gid, 'sid': sid, 'tid': tids[0]}, {'endtime': 1, '_id': 0})
             self._db['testsessions'].update({'gid': gid, 'sid': sid}, {'$set': {'failtime': tmpt['endtime']}})
-
+            
+        self.updateTestsessionReportSummary(sid)
         return caseresult.update({'gid': gid, 'sid': sid, 'tid': {'$in': tids}}, {'$set': {'comments': comments}}, multi=True)
+
+    def updateTestsessionReportSummary(self, sid):
+        '''
+        count session case pass/fail/blcok summary, update to 'testsessioncases' collection
+        '''
+        testsessioncases = self._db['testsessioncases']
+        caseresult = self._db['testresults']
+        result = caseresult.group(key={'casename': 1}, 
+                                    condition={'sid':sid}, 
+                                    initial={'totalcnt': 0, 'passcnt': 0, 'failcnt': 0, 'blockcnt': 0}, 
+                                    reduce='''
+                                              function(obj,prev){
+                                                prev.totalcnt+=1;
+                                                if(obj.result=='pass'){
+                                                    prev.passcnt+=1;
+                                                }else if('comments' in obj && obj.comments.caseresult !== undefined) {
+                                                    var resulttag = obj.comments.caseresult.toLowerCase();
+                                                    if (resulttag == 'fail') { prev.failcnt+=1; }
+                                                    else if (resulttag == 'block') { prev.blockcnt+=1; }
+                                                }
+                                              }
+                                              '''
+                                )
+        testsessioncases.update({'sid' : sid}, {'$set' : {'result' : result}}, True)
 
     def updateTestsessionSummary(self, sid):
         '''
