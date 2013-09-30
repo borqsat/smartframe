@@ -13,8 +13,11 @@ def updateTestSession(gid, sid, value):
 
 def updateXMLTestResult(gid, sid, value):
     if not value is None:
-        store.updateXmlResult(gid, sid, value)
-        return {'results':1}
+        result = store.updateXmlResult(gid, sid, value)
+        if not result is None:
+            return {'results':{'fail':result}}
+        else:
+            return {'errors':{'code':404,'msg':'None result.'}}
     else:
         return {'errors':{'code':404,'msg':'None result.'}}
 
